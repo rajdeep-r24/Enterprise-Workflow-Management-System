@@ -1,0 +1,46 @@
+<div class="ff-sidebar__brand">
+    <div class="ff-sidebar__brand-mark">F</div>
+    <span class="ff-sidebar__brand-text">ForgeFlow</span>
+</div>
+
+<nav class="ff-nav">
+
+    <div class="ff-nav__section-title">Overview</div>
+    <a href="{% url 'dashboard' %}" class="ff-nav__item {% if request.resolver_match.url_name == 'dashboard' %}is-active{% endif %}" title="Dashboard">
+        <i class="bi bi-grid-1x2"></i><span class="ff-nav__label">Dashboard</span>
+    </a>
+
+    <div class="ff-nav__section-title">Requests</div>
+    <a href="{% url 'new-request' %}" class="ff-nav__item {% if request.resolver_match.url_name == 'new-request' %}is-active{% endif %}" title="New Request">
+        <i class="bi bi-plus-circle"></i><span class="ff-nav__label">New Request</span>
+    </a>
+    <a href="{% url 'my-requests' %}" class="ff-nav__item {% if request.resolver_match.url_name == 'my-requests' %}is-active{% endif %}" title="My Requests">
+        <i class="bi bi-file-earmark-text"></i><span class="ff-nav__label">My Requests</span>
+    </a>
+
+    {% if user_can_approve %}
+    <div class="ff-nav__section-title">Approvals</div>
+    <a href="{% url 'approval-inbox' %}" class="ff-nav__item {% if request.resolver_match.url_name == 'approval-inbox' %}is-active{% endif %}" title="Pending Approvals">
+        <i class="bi bi-check2-square"></i><span class="ff-nav__label">Pending Approvals</span>
+    </a>
+    <a href="{% url 'approval-history' %}" class="ff-nav__item {% if request.resolver_match.url_name == 'approval-history' %}is-active{% endif %}" title="Approval History">
+        <i class="bi bi-clock-history"></i><span class="ff-nav__label">Approval History</span>
+    </a>
+    {% endif %}
+
+    {% if user_can_view_employees %}
+    <div class="ff-nav__section-title">Administration</div>
+    <a href="{% url 'employee-list' %}" class="ff-nav__item {% if request.resolver_match.url_name == 'employee-list' %}is-active{% endif %}" title="Employees">
+        <i class="bi bi-people"></i><span class="ff-nav__label">Employees</span>
+    </a>
+    {% endif %}
+
+    <div class="ff-nav__section-title">Account</div>
+    <a href="{% url 'employee-profile' %}" class="ff-nav__item {% if request.resolver_match.url_name == 'employee-profile' %}is-active{% endif %}" title="Profile">
+        <i class="bi bi-person"></i><span class="ff-nav__label">Profile</span>
+    </a>
+    <a href="{% url 'logout' %}" class="ff-nav__item ff-nav__item--danger" title="Logout">
+        <i class="bi bi-box-arrow-right"></i><span class="ff-nav__label">Logout</span>
+    </a>
+
+</nav>

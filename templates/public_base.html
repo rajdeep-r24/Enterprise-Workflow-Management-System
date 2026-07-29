@@ -1,0 +1,65 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}ForgeFlow{% endblock %}</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="{% static 'css/design-system.css' %}" rel="stylesheet">
+
+    <script>
+        (function () {
+            var t = localStorage.getItem("ff-theme");
+            if (t) document.documentElement.setAttribute("data-theme", t);
+        })();
+    </script>
+    <style>
+        .pf-nav {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: var(--space-5) var(--space-8);
+            max-width: 1200px; margin: 0 auto;
+        }
+        .pf-nav__brand { display: flex; align-items: center; gap: var(--space-2); font-weight: 700; font-size: 16px; color: var(--text-primary); }
+        .pf-nav__brand-mark {
+            width: 30px; height: 30px; border-radius: var(--radius-sm);
+            background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+            display: flex; align-items: center; justify-content: center;
+            color: #fff; font-weight: 700; font-size: 14px;
+        }
+        .pf-center-wrap { min-height: calc(100vh - 76px); display: flex; align-items: center; justify-content: center; padding: var(--space-6); }
+    </style>
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+<nav class="pf-nav">
+    <a href="{% url 'landing' %}" class="pf-nav__brand">
+        <span class="pf-nav__brand-mark">F</span>
+        ForgeFlow
+    </a>
+    <button class="ff-icon-btn" data-theme-toggle title="Toggle theme">
+        <i class="bi bi-moon-stars"></i>
+    </button>
+</nav>
+
+{% if messages %}
+<div style="max-width: 460px; margin: 0 auto;">
+    {% for message in messages %}
+    <div class="ff-alert ff-alert--{{ message.tags|default:'info' }}">
+        <i class="bi bi-info-circle"></i>
+        <span>{{ message }}</span>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+{% block content %}{% endblock %}
+
+<script src="{% static 'js/app-shell.js' %}"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

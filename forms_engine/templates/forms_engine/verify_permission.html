@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1">
+
+    <title>
+        Permission Verification | ForgeFlow
+    </title>
+
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css"
+        rel="stylesheet">
+
+</head>
+
+<body class="bg-light">
+
+<div class="container py-5">
+
+    <div class="row justify-content-center">
+
+        <div class="col-lg-7">
+
+            <div class="card shadow-sm">
+
+                <div class="card-body p-4">
+
+                    <div class="text-center mb-4">
+
+                        <h2>
+                            ForgeFlow
+                        </h2>
+
+                        <p class="text-muted">
+                            Permission Verification
+                        </p>
+
+                    </div>
+
+
+                    {% if verification_status == "VALID" %}
+
+                        <div class="alert alert-success text-center">
+
+                            <h4 class="mb-1">
+                                VALID & APPROVED
+                            </h4>
+
+                            <p class="mb-0">
+                                This permission was verified against
+                                the ForgeFlow system.
+                            </p>
+
+                        </div>
+
+
+                    {% elif verification_status == "EXPIRED" %}
+
+                        <div class="alert alert-warning text-center">
+
+                            <h4 class="mb-1">
+                                EXPIRED
+                            </h4>
+
+                            <p class="mb-0">
+                                This permission was valid but its
+                                permitted time period has ended.
+                            </p>
+
+                        </div>
+
+
+                    {% elif verification_status == "REVOKED" %}
+
+                        <div class="alert alert-danger text-center">
+
+                            <h4 class="mb-1">
+                                REVOKED
+                            </h4>
+
+                            <p class="mb-0">
+                                This permission has been revoked
+                                and is no longer valid.
+                            </p>
+
+                        </div>
+
+
+                    {% else %}
+
+                        <div class="alert alert-danger text-center">
+
+                            <h4 class="mb-1">
+                                INVALID PERMISSION
+                            </h4>
+
+                            <p class="mb-0">
+                                No valid permission could be found
+                                for this verification code.
+                            </p>
+
+                        </div>
+
+                    {% endif %}
+
+
+                    {% if submission %}
+
+                        <table class="table table-bordered mt-4">
+
+                            <tbody>
+
+                                <tr>
+                                    <th>Permission ID</th>
+
+                                    <td>
+                                        {{ submission.permission_id }}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <th>Name</th>
+
+                                    <td>
+                                        {{ submission.submitted_by.get_full_name }}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <th>Permission For</th>
+
+                                    <td>
+
+                                        {% if values.camera %}
+                                            Camera
+                                        {% endif %}
+
+                                        {% if values.laptop %}
+                                            Laptop
+                                        {% endif %}
+
+                                        {% if values.mobile_phone %}
+                                            Mobile Phone
+                                        {% endif %}
+
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <th>Department / Area</th>
+
+                                    <td>
+                                        {{ values.department|default:"-" }}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <th>Valid From</th>
+
+                                    <td>
+                                        {{ values.from_date|default:"-" }}
+                                        {{ values.from_time|default:"" }}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <th>Valid Until</th>
+
+                                    <td>
+                                        {{ values.to_date|default:"-" }}
+                                        {{ values.to_time|default:"" }}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <th>Issued</th>
+
+                                    <td>
+                                        {{ submission.issued_at }}
+                                    </td>
+                                </tr>
+
+                            </tbody>
+
+                        </table>
+
+                    {% endif %}
+
+                    <p class="text-center text-muted small mt-4">
+
+                        Always verify permission documents by scanning
+                        the QR code. Do not rely solely on printed
+                        information.
+
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+</body>
+
+</html>

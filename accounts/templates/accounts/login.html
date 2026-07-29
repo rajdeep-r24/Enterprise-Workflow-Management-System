@@ -1,0 +1,47 @@
+{% extends "public_base.html" %}
+
+{% block title %}Sign in{% endblock %}
+
+{% block content %}
+<div class="pf-center-wrap">
+    <div class="ff-card" style="width: 100%; max-width: 420px;">
+        <div class="ff-card__body" style="padding: var(--space-8);">
+
+            <div style="text-align: center; margin-bottom: var(--space-6);">
+                <div class="pf-nav__brand-mark" style="margin: 0 auto var(--space-4); width: 44px; height: 44px; font-size: 18px;">F</div>
+                <h2 style="margin-bottom: var(--space-1);">Welcome back</h2>
+                <p class="ff-text-muted ff-text-sm" style="margin: 0;">Sign in to your ForgeFlow account</p>
+            </div>
+
+            <form method="post">
+                {% csrf_token %}
+
+                {% if form.non_field_errors %}
+                <div class="ff-alert ff-alert--error">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    <span>{{ form.non_field_errors|striptags }}</span>
+                </div>
+                {% endif %}
+
+                <div class="ff-field">
+                    <label class="ff-label" for="{{ form.username.id_for_label }}">Email</label>
+                    {{ form.username }}
+                </div>
+
+                <div class="ff-field">
+                    <div class="ff-flex ff-justify-between" style="margin-bottom: var(--space-2);">
+                        <label class="ff-label" for="{{ form.password.id_for_label }}" style="margin-bottom: 0;">Password</label>
+                        <a href="{% url 'password_reset' %}" class="ff-text-sm">Forgot password?</a>
+                    </div>
+                    {{ form.password }}
+                </div>
+
+                <button type="submit" class="ff-btn ff-btn--primary ff-btn--block ff-btn--lg">
+                    Sign in
+                </button>
+            </form>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

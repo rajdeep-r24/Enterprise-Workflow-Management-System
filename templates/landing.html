@@ -1,0 +1,98 @@
+{% extends "public_base.html" %}
+{% load static %}
+
+{% block title %}ForgeFlow — Enterprise Approval Workflows{% endblock %}
+
+{% block content %}
+
+<section style="max-width: 1200px; margin: 0 auto; padding: var(--space-16) var(--space-8) var(--space-12);">
+    <div style="max-width: 720px;">
+        <span class="ff-badge ff-badge--info ff-mb-4">
+            <span class="ff-badge__dot"></span> Internal Platform
+        </span>
+        <h1 style="font-size: 46px; line-height: 1.1;">
+            Approvals that move at the speed of your org, not your inbox.
+        </h1>
+        <p style="font-size: 16px; margin-top: var(--space-4); max-width: 560px;">
+            ForgeFlow routes every request — laptops, access, guest visits — through the
+            right approver automatically, with a full audit trail and verifiable
+            permission slips at the end.
+        </p>
+        <div class="ff-flex ff-gap-3" style="margin-top: var(--space-8);">
+            <a href="{% url 'login' %}" class="ff-btn ff-btn--primary ff-btn--lg">
+                Sign in <i class="bi bi-arrow-right"></i>
+            </a>
+        </div>
+    </div>
+
+    <!-- Signature element: the approval chain, visualized -->
+    <div class="ff-card" style="margin-top: var(--space-12); padding: var(--space-8);">
+        <div class="ff-flex ff-items-center ff-justify-between" style="flex-wrap: wrap; gap: var(--space-6);">
+
+            <div class="ff-flex ff-items-center ff-gap-2" style="flex: 1; min-width: 220px;">
+                <div class="ff-stat-card__icon" style="background: var(--primary-subtle); color: var(--primary);"><i class="bi bi-file-earmark-plus"></i></div>
+                <div>
+                    <div style="font-weight: 600; font-size: 13.5px;">Request Submitted</div>
+                    <div class="ff-text-muted ff-text-sm">by Employee</div>
+                </div>
+            </div>
+
+            <i class="bi bi-arrow-right ff-text-muted"></i>
+
+            <div class="ff-flex ff-items-center ff-gap-2" style="flex: 1; min-width: 220px;">
+                <div class="ff-stat-card__icon" style="background: var(--warning-subtle); color: var(--warning);"><i class="bi bi-hourglass-split"></i></div>
+                <div>
+                    <div style="font-weight: 600; font-size: 13.5px;">IT Head Review</div>
+                    <div class="ff-text-muted ff-text-sm">Step 1 of 2</div>
+                </div>
+            </div>
+
+            <i class="bi bi-arrow-right ff-text-muted"></i>
+
+            <div class="ff-flex ff-items-center ff-gap-2" style="flex: 1; min-width: 220px;">
+                <div class="ff-stat-card__icon" style="background: var(--neutral-subtle); color: var(--text-muted);"><i class="bi bi-person-check"></i></div>
+                <div>
+                    <div style="font-weight: 600; font-size: 13.5px;">HR Head Review</div>
+                    <div class="ff-text-muted ff-text-sm">Step 2 of 2</div>
+                </div>
+            </div>
+
+            <i class="bi bi-arrow-right ff-text-muted"></i>
+
+            <div class="ff-flex ff-items-center ff-gap-2" style="flex: 1; min-width: 220px;">
+                <div class="ff-stat-card__icon" style="background: var(--success-subtle); color: var(--success);"><i class="bi bi-patch-check"></i></div>
+                <div>
+                    <div style="font-weight: 600; font-size: 13.5px;">Approved</div>
+                    <div class="ff-text-muted ff-text-sm">Permission issued</div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<section style="max-width: 1200px; margin: 0 auto; padding: 0 var(--space-8) var(--space-16);">
+    <div class="ff-grid ff-grid--3">
+
+        <div class="ff-card ff-card__body" style="padding: var(--space-6);">
+            <div class="ff-stat-card__icon" style="background: var(--primary-subtle); color: var(--primary);"><i class="bi bi-signpost-split"></i></div>
+            <h3>Role-based routing</h3>
+            <p class="ff-text-sm">Every request finds its approver automatically based on role, department, and step order — no manual forwarding.</p>
+        </div>
+
+        <div class="ff-card ff-card__body" style="padding: var(--space-6);">
+            <div class="ff-stat-card__icon" style="background: var(--info-subtle); color: var(--info);"><i class="bi bi-clock-history"></i></div>
+            <h3>Full audit trail</h3>
+            <p class="ff-text-sm">Every approval, rejection, and remark is timestamped and attributed — searchable by approver, not just by request.</p>
+        </div>
+
+        <div class="ff-card ff-card__body" style="padding: var(--space-6);">
+            <div class="ff-stat-card__icon" style="background: var(--success-subtle); color: var(--success);"><i class="bi bi-qr-code"></i></div>
+            <h3>Verifiable permission slips</h3>
+            <p class="ff-text-sm">Approved requests generate a PDF with a scannable QR code, so security or front-desk staff can verify it on the spot.</p>
+        </div>
+
+    </div>
+</section>
+
+{% endblock %}

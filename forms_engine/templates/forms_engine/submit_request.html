@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}
+{{ form_definition.name }}
+{% endblock %}
+
+{% block content %}
+
+<div class="card">
+
+    <div class="card-header">
+
+        <h3>{{ form_definition.name }}</h3>
+
+    </div>
+
+    <div class="card-body">
+
+        <form method="post" enctype="multipart/form-data">
+
+            {% csrf_token %}
+
+            {{ form.as_p }}
+
+            <div class="mb-3">
+                <label class="form-label fw-bold">Attachments (Optional)</label>
+                <input type="file" name="attachments" class="form-control" multiple accept=".pdf,.png,.jpg,.jpeg,.doc,.docx,.xls,.xlsx">
+                <small class="text-muted">Max size: 10MB per file. Allowed: PDF, PNG, JPG/JPEG, DOC/DOCX, XLS/XLSX</small>
+            </div>
+
+            <button class="btn btn-primary">
+                Submit
+            </button>
+
+        </form>
+
+    </div>
+
+</div>
+
+{% endblock %}

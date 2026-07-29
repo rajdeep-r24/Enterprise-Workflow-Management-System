@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}
+Profile
+{% endblock %}
+
+{% block content %}
+
+<h2 class="mb-4">
+
+Employee Profile
+
+</h2>
+
+<div class="card">
+
+    <div class="card-body">
+
+        <table class="table">
+
+            <tr>
+                <th>Name</th>
+                <td>{{ request.user.get_full_name }}</td>
+            </tr>
+
+            <tr>
+                <th>Email</th>
+                <td>{{ request.user.email }}</td>
+            </tr>
+
+            <tr>
+                <th>Employee Code</th>
+                <td>{{ employee.employee_code }}</td>
+            </tr>
+
+            <tr>
+                <th>Organization</th>
+                <td>{{ employee.organization }}</td>
+            </tr>
+
+            <tr>
+                <th>Department</th>
+                <td>{{ employee.department }}</td>
+            </tr>
+
+            <tr>
+                <th>Location</th>
+                <td>{{ employee.location }}</td>
+            </tr>
+
+            <tr>
+                <th>Designation</th>
+                <td>{{ employee.designation }}</td>
+            </tr>
+
+            <tr>
+                <th>Role</th>
+                <td>{{ employee.role }}</td>
+            </tr>
+
+        </table>
+
+    </div>
+
+</div>
+
+{% endblock %}

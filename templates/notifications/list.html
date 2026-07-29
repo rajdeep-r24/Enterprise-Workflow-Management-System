@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}Notifications{% endblock %}
+{% block topbar_title %}Notifications{% endblock %}
+
+{% block content %}
+<div class="ff-card">
+    <div class="ff-card__header" style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">
+        <div>
+            <h2 class="ff-card__title">Your notifications</h2>
+            <p class="ff-text-sm ff-text-muted">Newest activity appears first.</p>
+        </div>
+        {% if unread_count %}
+        <form method="post" action="{% url 'notifications:mark-all-read' %}">
+            {% csrf_token %}
+            <button type="submit" class="ff-btn ff-btn--secondary">Mark all as read</button>
+        </form>
+        {% endif %}
+    </div>
+
+    {% if notifications %}
+        <div class="ff-stack" style="gap: 12px;">
+            {% for notification in notifications %}
+                <div class="ff-card ff-card--bordered" style="padding: 16px; {% if not notification.is_read %}border-left: 4px solid var(--ff-primary);{% endif %}">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap;">
+                        <div>
+                            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                                <strong>{{ notification.title }}</strong>
+                                {% if not notification.is_read %}
+                                    <span class="ff-badge">Unread</span>
+                                {% endif %}
+                            </div>
+                            {% if notification.message %}
+                                <p class="ff-text-sm" style="margin: 6px 0 0;">{{ notification.message }}</p>
+                            {% endif %}
+                            <p class="ff-text-sm ff-text-muted" style="margin: 6px 0 0;">
+                                {{ notification.created_at|date:"M d, Y H:i" }}
+                            </p>
+                        </div>
+                        {% if not notification.is_read %}
+                            <form method="post" action="{% url 'notifications:mark-read' notification.pk %}">
+                                {% csrf_token %}
+                                <button type="submit" class="ff-btn ff-btn--secondary">Mark read</button>
+                            </form>
+                        {% endif %}
+                    </div>
+                    {% if notification.workflow_instance and notification.workflow_instance.formsubmission %}
+                        <div style="margin-top: 10px;">
+                            <a href="{% url 'request-detail' notification.workflow_instance.formsubmission.pk %}" class="ff-link">Open request</a>
+                        </div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="ff-empty-state">
+            <p>No notifications yet.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

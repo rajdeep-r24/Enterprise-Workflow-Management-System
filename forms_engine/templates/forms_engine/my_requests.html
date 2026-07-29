@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}
+My Requests
+{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">My Requests</h2>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Form</th>
+            <th>Status</th>
+            <th>Current Step</th>
+            <th>Submitted</th>
+            <th>Action</th> </tr>
+    </thead>
+    <tbody>
+        {% for submission in submissions %}
+            <tr>
+                <td>{{ submission.form.name }}</td>
+                <td>{{ submission.status }}</td>
+                <td>
+                    {% if submission.workflow_instance.current_step %}
+                        {{ submission.workflow_instance.current_step.name }}
+                    {% else %}
+                        Completed
+                    {% endif %}
+                </td>
+                <td>{{ submission.created_at }}</td>
+                <td> <a class="btn btn-sm btn-primary" href="{% url 'request-detail' submission.id %}">
+                        View
+                    </a>
+                </td>
+            </tr>
+        {% empty %}
+            <tr>
+                <td colspan="5">No Requests Found</td> </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

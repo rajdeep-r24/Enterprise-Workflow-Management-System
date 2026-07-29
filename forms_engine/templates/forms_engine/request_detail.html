@@ -1,0 +1,566 @@
+{% extends "base.html" %}
+
+{% block title %}
+Request Details
+{% endblock %}
+
+{% block content %}
+
+<div class="row">
+
+    <div class="col-lg-8">
+
+        <div class="card shadow-sm mb-4">
+
+            <div class="card-header">
+
+                <h3>{{ submission.form.name }}</h3>
+
+            </div>
+
+            <div class="card-body">
+
+                <table class="table">
+
+                    <tbody>
+
+                    {% for item in values %}
+
+                    <tr>
+
+                        <th width="35%">
+
+                            {{ item.field.label }}
+
+                        </th>
+
+                        <td>
+
+                            {{ item.value }}
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+                <hr>
+
+                {% if submission.attachments.exists %}
+                <div class="mb-4">
+                    <h5 class="mb-3">Attachments</h5>
+                    <ul class="list-group">
+                        {% for attachment in submission.attachments.all %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>{{ attachment.original_filename }}</strong><br>
+                                <small class="text-muted">Uploaded by {{ attachment.uploaded_by.get_full_name|default:attachment.uploaded_by.email }} on {{ attachment.uploaded_at|date:"M d, Y H:i" }}</small>
+                            </div>
+                            <a href="{% url 'download-attachment' attachment.pk %}" class="btn btn-sm btn-outline-primary" target="_blank">
+                                Download
+                            </a>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <hr>
+                {% endif %}
+
+                <p>
+
+                    <strong>Status :</strong>
+
+                    <span class="badge bg-primary">
+
+                        {{ submission.status }}
+
+                    </span>
+
+                </p>
+
+                <p>
+
+                    <strong>Current Step :</strong>
+
+                    {{ submission.workflow_instance.current_step.name|default:"Completed" }}
+
+                </p>
+
+                {% if submission.status == "APPROVED" %}
+
+                <div class="mt-4">
+
+                    <a
+                        href="{% url 'permission-pdf' submission.pk %}"
+                        target="_blank"
+                        class="btn btn-primary">
+
+                        Print Permission
+
+                    </a>
+
+                </div>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="col-lg-4">
+
+        <div class="card shadow-sm">
+
+            <div class="card-header">
+
+                <h5>Workflow Timeline</h5>
+
+            </div>
+
+            <div class="card-body">
+
+                {% for event in events %}
+
+                    <div class="border-start border-3 border-primary ps-3 mb-4">
+
+                        <strong>
+
+                            {{ event.get_event_type_display }}
+
+                        </strong> 
+
+                        <br>
+
+                        {% if event.performed_by %}
+
+                            {{ event.performed_by.get_full_name }}
+
+                            <br>
+
+                        {% endif %}
+
+                        <small class="text-muted">
+
+                            {{ event.created_at }}
+
+                        </small>
+
+                        {% if event.remarks %}
+
+                            <br>
+
+                            <small>
+
+                                {{ event.remarks }}
+
+                            </small>
+
+                        {% endif %}
+
+                    </div>
+
+                {% empty %}
+
+                    <p class="text-muted">
+
+                        No activity available.
+
+                    </p>
+
+                {% endfor %}
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% if can_take_action %}
+
+<hr>
+
+<div class="card shadow-sm mt-4">
+
+    <div class="card-header">
+        <h5>Approval Action</h5>
+    </div>
+
+    <div class="card-body">
+
+        <button
+            class="btn btn-success me-2"
+            data-bs-toggle="modal"
+            data-bs-target="#approveModal">
+
+            Approve
+
+        </button>
+
+        <button
+            class="btn btn-danger"
+            data-bs-toggle="modal"
+            data-bs-target="#rejectModal">
+
+            Reject
+
+        </button>
+
+    </div>
+
+</div>
+
+<div class="modal fade" id="approveModal">
+
+<div class="modal-dialog">
+
+<div class="modal-content">
+
+<form method="post"
+action="{% url 'approve-request' current_step.pk %}">
+
+{% csrf_token %}
+
+<div class="modal-header">
+
+<h5 class="modal-title">
+
+Confirm Approval
+
+</h5>
+
+<button
+type="button"
+class="btn-close"
+data-bs-dismiss="modal">
+
+</button>
+
+</div>
+
+<div class="modal-body">
+
+<p>
+
+Are you sure you want to approve this request?
+
+</p>
+
+<label class="form-label">
+
+Remarks
+
+</label>
+
+<textarea
+name="remarks"
+class="form-control"
+rows="4"></textarea>
+
+<div class="mt-3">
+
+    <label class="form-label">
+        Confirm Password
+    </label>
+
+    <input
+        type="password"
+        name="password"
+        class="form-control"
+        required></div>
+
+</div>
+
+<div class="modal-footer">
+
+<button
+type="button"
+class="btn btn-secondary"
+data-bs-dismiss="modal">
+
+Cancel
+
+</button>
+
+<button
+type="submit"
+class="btn btn-success">
+
+Approve
+
+</button>
+
+</div>
+
+</form>
+
+</div>
+
+</div>
+
+</div>
+
+<div class="modal fade" id="rejectModal">
+
+<div class="modal-dialog">
+
+<div class="modal-content">
+
+<form method="post"
+action="{% url 'reject-request' current_step.pk %}">
+
+{% csrf_token %}
+
+<div class="modal-header">
+
+<h5 class="modal-title">
+
+Confirm Rejection
+
+</h5>
+
+<button
+type="button"
+class="btn-close"
+data-bs-dismiss="modal">
+
+</button>
+
+</div>
+
+<div class="modal-body">
+
+<p>
+
+Are you sure you want to reject this request?
+
+</p>
+
+<label class="form-label">
+
+Reason <span class="text-danger">*</span>
+
+</label>
+
+<textarea
+name="remarks"
+required
+class="form-control"
+rows="4"></textarea>
+
+<div class="mt-3">
+
+    <label class="form-label">
+        Confirm Password
+    </label>
+
+    <input
+        type="password"
+        name="password"
+        class="form-control"
+        required></div>
+
+</div>
+
+<div class="modal-footer">
+
+<button
+type="button"
+class="btn btn-secondary"
+data-bs-dismiss="modal">
+
+Cancel
+
+</button>
+
+<button
+type="submit"
+class="btn btn-danger">
+
+Reject
+
+</button>
+
+</div>
+
+</form>
+
+</div>
+
+</div>
+
+</div>
+
+{% endif %}
+
+{% if can_revoke %}
+
+<div class="card shadow-sm mt-4 border-danger">
+
+    <div class="card-header">
+        <h5 class="text-danger mb-0">
+            Permission Control
+        </h5>
+    </div>
+
+    <div class="card-body">
+
+        {% if submission.is_revoked %}
+
+            <div class="alert alert-danger mb-0">
+
+                <strong>Permission Revoked</strong>
+
+                {% if submission.revoked_at %}
+                    <br>
+                    Revoked at:
+                    {{ submission.revoked_at }}
+                {% endif %}
+
+                {% if submission.revocation_reason %}
+                    <br>
+                    Reason:
+                    {{ submission.revocation_reason }}
+                {% endif %}
+
+                {% if submission.revoked_by %}
+                    <br>
+                    Revoked by:
+                    {{ submission.revoked_by.get_full_name|default:submission.revoked_by.email }}
+                {% endif %}
+
+            </div>
+
+        {% else %}
+
+            <p>
+                This permission is currently active.
+                Revoking it will immediately invalidate
+                QR verification.
+            </p>
+
+            <button
+                type="button"
+                class="btn btn-danger"
+                data-bs-toggle="modal"
+                data-bs-target="#revokeModal">
+
+                Revoke Permission
+
+            </button>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+
+<div
+    class="modal fade"
+    id="revokeModal"
+    tabindex="-1">
+
+    <div class="modal-dialog">
+
+        <div class="modal-content">
+
+            <form
+                method="post"
+                action="{% url 'revoke-permission' submission.pk %}">
+
+                {% csrf_token %}
+
+                <div class="modal-header">
+
+                    <h5 class="modal-title">
+                        Confirm Permission Revocation
+                    </h5>
+
+                    <button
+                        type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal">
+                    </button>
+
+                </div>
+
+                <div class="modal-body">
+
+                    <div class="alert alert-warning">
+
+                        This action will immediately make
+                        the permission invalid during QR
+                        verification.
+
+                    </div>
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            Revocation Reason
+                        </label>
+
+                        <textarea
+                            name="reason"
+                            class="form-control"
+                            rows="4"
+                            required></textarea>
+
+                    </div>
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            Confirm Your Password
+                        </label>
+
+                        <input
+                            type="password"
+                            name="password"
+                            class="form-control"
+                            autocomplete="current-password"
+                            required>
+
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+
+                    <button
+                        type="button"
+                        class="btn btn-secondary"
+                        data-bs-dismiss="modal">
+
+                        Cancel
+
+                    </button>
+
+                    <button
+                        type="submit"
+                        class="btn btn-danger">
+
+                        Confirm Revocation
+
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endif %}
+{% endblock %}

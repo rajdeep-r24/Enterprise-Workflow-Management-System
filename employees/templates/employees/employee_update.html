@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Employee{% endblock %}
+
+{% block content %}
+
+<h2 class="mb-4">Edit Employee</h2>
+
+<div class="card">
+    <div class="card-body">
+
+        <form method="post">
+
+    {% csrf_token %}
+
+    <h4 class="mb-3">Personal Information</h4>
+
+    {{ user_form.as_p }}
+
+    <hr>
+
+    <h4 class="mb-3">Employment Information</h4>
+
+    {{ employee_form.as_p }}
+
+    <button class="btn btn-success">
+        Update Employee
+    </button>
+
+    <a href="{% url 'employee-detail' employee.id %}" class="btn btn-secondary">
+        Cancel
+    </a>
+
+</form>
+
+    </div>
+</div>
+
+{% endblock %}

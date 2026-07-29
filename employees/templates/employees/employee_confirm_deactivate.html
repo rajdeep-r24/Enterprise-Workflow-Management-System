@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}Deactivate Employee{% endblock %}
+
+{% block content %}
+
+<div class="card">
+
+    <div class="card-body">
+
+        <h3>Deactivate Employee</h3>
+
+        <p>
+
+            Are you sure you want to deactivate
+            <strong>{{ employee.user.get_full_name }}</strong>?
+
+        </p>
+
+        <form method="post">
+
+            {% csrf_token %}
+
+            <button class="btn btn-danger">
+                Yes, Deactivate
+            </button>
+
+            <a href="{% url 'employee-list' %}" class="btn btn-secondary">
+                Cancel
+            </a>
+
+        </form>
+
+    </div>
+
+</div>
+
+{% endblock %}

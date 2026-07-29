@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>New Request</h2>
+
+<div class="row">
+
+{% for form in forms %}
+
+<div class="col-md-4">
+
+<div class="card mb-3">
+
+<div class="card-body">
+
+<h5>{{ form.name }}</h5>
+
+<p>{{ form.description }}</p>
+
+<a
+class="btn btn-primary"
+href="{% url 'submit-request' form.code %}">
+
+Open
+
+</a>
+
+</div>
+
+</div>
+
+</div>
+
+{% endfor %}
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,692 @@
+This is exactly what you should paste into the new chat. It contains the **current state**, **architecture**, **what is complete**, **what is intentionally simplified**, and **what must be done next**. It avoids all the confusion we had.
+
+---
+
+# ForgeFlow Project Context (Read Carefully Before Continuing)
+
+## Project Goal
+
+We are building **ForgeFlow**, a Django-based Workflow & HRMS application.
+
+**Current priority is NOT enterprise features.**
+
+Priority is to complete a **working MVP** first.
+
+The MVP must demonstrate:
+
+```
+HR creates employee
+↓
+Employee logs in
+↓
+Employee submits request
+↓
+Correct approver receives request
+↓
+Approver approves/rejects
+↓
+Employee sees final status
+```
+
+Only after this works completely should we improve UI or add advanced features.
+
+---
+
+# Tech Stack
+
+* Django 6
+* SQLite
+* Bootstrap
+* Custom User Model
+* Django Authentication
+
+---
+
+# Project Structure
+
+Apps currently used:
+
+```
+accounts
+employees
+organizations
+departments
+locations
+designations
+rbac
+workflow
+forms_engine
+dashboards
+```
+
+Many apps exist but most advanced features are intentionally postponed.
+
+---
+
+# Authentication
+
+Already implemented:
+
+* Custom User model
+* Login
+* Logout
+* Remember Me
+* Custom login page
+
+Current model:
+
+```
+accounts.models.User
+```
+
+Employee is linked as
+
+```
+User
+    ↓ OneToOne
+Employee
+```
+
+---
+
+# Employee Module
+
+Completed:
+
+* Employee List
+* Add Employee
+* Edit Employee
+* Deactivate Employee
+
+Employee model contains
+
+```
+User
+Organization
+Department
+Location
+Designation
+Role
+Employee Code
+Manager
+Joining Date
+```
+
+Manager is
+
+```
+Employee.manager
+```
+
+NOT User.
+
+---
+
+# Workflow Module
+
+Models
+
+```
+WorkflowDefinition
+
+↓
+
+WorkflowVersion
+
+↓
+
+WorkflowStepDefinition
+
+↓
+
+WorkflowInstance
+
+↓
+
+WorkflowStepInstance
+```
+
+Current workflow example
+
+```
+Leave Approval
+
+↓
+
+Manager Approval
+
+↓
+
+HR Approval
+
+↓
+
+End
+```
+
+WorkflowStepDefinition has
+
+```
+role_code
+
+examples
+
+MANAGER
+HR_HEAD
+IT_HEAD
+UNIT_HEAD
+```
+
+---
+
+# Forms Engine
+
+Models
+
+```
+FormDefinition
+
+↓
+
+FormField
+
+↓
+
+FormSubmission
+
+↓
+
+FormSubmissionValue
+```
+
+Forms are dynamic.
+
+Nothing is hardcoded.
+
+Examples:
+
+Leave Request
+
+Laptop Permission
+
+Future forms are created only from Admin.
+
+---
+
+# Dynamic Form Rendering
+
+Implemented.
+
+URL
+
+```
+/request/<form_code>/
+```
+
+Example
+
+```
+/request/leave_request/
+
+/request/laptop_permission/
+```
+
+The page is generated dynamically from FormField.
+
+---
+
+# Submission Engine
+
+Implemented.
+
+Submitting a form automatically creates
+
+```
+WorkflowInstance
+
+↓
+
+FormSubmission
+
+↓
+
+FormSubmissionValue
+
+↓
+
+First WorkflowStepInstance
+```
+
+Everything happens inside
+
+```
+forms_engine/services.py
+
+FormEngineService.submit()
+```
+
+---
+
+# Workflow Engine
+
+Implemented
+
+```
+workflow/services/workflow_service.py
+```
+
+Functions
+
+```
+approve()
+
+reject()
+```
+
+Approve
+
+* Marks step approved
+* Creates next step
+* Moves workflow
+* Updates submission status
+
+Reject
+
+* Rejects workflow
+* Rejects submission
+* Ends workflow
+
+---
+
+# Approver Resolver
+
+Created
+
+```
+workflow/services/approver_resolver.py
+```
+
+Purpose
+
+DO NOT hardcode
+
+```
+employee.manager
+```
+
+Instead
+
+```
+ApproverResolver.resolve(employee, role_code)
+```
+
+Examples
+
+```
+MANAGER
+↓
+
+employee.manager.user
+
+HR_HEAD
+↓
+
+Find employee whose role code = HR_HEAD
+
+IT_HEAD
+↓
+
+Find employee whose role code = IT_HEAD
+```
+
+This makes workflows configurable.
+
+---
+
+# Current Request Flow
+
+Employee
+
+↓
+
+Submit Form
+
+↓
+
+Workflow reads first step
+
+↓
+
+role_code
+
+↓
+
+ApproverResolver
+
+↓
+
+Assigned User
+
+↓
+
+Approval Inbox
+
+---
+
+# Current Views
+
+Implemented
+
+```
+submit_request()
+
+my_requests()
+
+approval_inbox()
+
+request_detail()
+
+approve_request()
+
+reject_request()
+```
+
+---
+
+# URLs
+
+```
+/request/<form_code>/
+
+/my-requests/
+
+/requests/<submission_id>
+
+/approvals/
+
+/approvals/<step_id>/approve/
+
+/approvals/<step_id>/reject/
+```
+
+---
+
+# Current Status
+
+Working
+
+✅ Login
+
+✅ Employee CRUD
+
+✅ Dynamic Forms
+
+✅ Leave Request
+
+✅ Laptop Permission Request
+
+✅ My Requests
+
+✅ Approval Inbox
+
+✅ Approve
+
+✅ Reject
+
+✅ Workflow Progression
+
+---
+
+# Biggest Remaining Problem
+
+Authorization.
+
+Currently too many pages are accessible.
+
+Example
+
+Employee can
+
+```
+/employees/
+```
+
+Employee can edit employees.
+
+Employee can deactivate employees.
+
+This is incorrect.
+
+---
+
+# MVP Authorization Plan
+
+Do NOT implement enterprise RBAC.
+
+Implement simple role decorator.
+
+Create
+
+```
+core/permissions.py
+```
+
+Decorator
+
+```
+role_required(...)
+```
+
+Usage
+
+```
+@login_required
+@role_required("HR_HEAD","ADMIN")
+```
+
+Protect
+
+Employee List
+
+Employee Create
+
+Employee Edit
+
+Employee Deactivate
+
+Workflow Admin
+
+Forms Admin
+
+Approvals
+
+---
+
+# Approval Security
+
+Approval Inbox
+
+Must filter
+
+```
+assigned_to=request.user
+```
+
+Approve
+
+Must use
+
+```
+assigned_to=request.user
+```
+
+Reject
+
+Must use
+
+```
+assigned_to=request.user
+```
+
+Nobody should approve someone else's task.
+
+---
+
+# Navigation
+
+Currently users type URLs manually.
+
+Need Navbar + Sidebar.
+
+Employee
+
+```
+Dashboard
+
+New Request
+
+My Requests
+
+Logout
+```
+
+Manager
+
+```
+Dashboard
+
+Pending Approvals
+
+My Requests
+
+Logout
+```
+
+HR
+
+```
+Dashboard
+
+Employees
+
+Forms
+
+Workflow
+
+Logout
+```
+
+Menu items should be hidden based on role.
+
+---
+
+# Final MVP Scope
+
+NO new enterprise features.
+
+NO notifications.
+
+NO audit.
+
+NO AI.
+
+NO dashboards with analytics.
+
+NO history tracking.
+
+NO advanced RBAC.
+
+NO reporting.
+
+Only complete this flow:
+
+```
+HR
+
+↓
+
+Create Employee
+
+↓
+
+Assign Manager
+
+↓
+
+Employee Login
+
+↓
+
+Submit Leave Request
+
+↓
+
+Manager Login
+
+↓
+
+Approve
+
+↓
+
+Employee sees Approved
+```
+
+Also support
+
+```
+Laptop Permission
+
+↓
+
+IT Head
+
+↓
+
+HR Head
+
+↓
+
+Unit Head
+```
+
+using
+
+```
+role_code
+
++
+
+ApproverResolver
+```
+
+without changing code.
+
+---
+
+# Coding Rules Going Forward
+
+1. Finish the MVP before adding any enhancements.
+2. Every new feature must answer:
+
+   * Who can access it?
+   * Can it be bypassed by typing the URL?
+3. Keep solutions simple and beginner-friendly.
+4. Avoid introducing new layers or abstractions unless they solve an immediate MVP problem.
+5. Explain every file change clearly (file name, exact code to replace, and why).
+
+---
+
+## Immediate Next Priority
+
+1. Implement the `role_required` decorator.
+2. Protect all sensitive views (Employees, Forms, Workflow, Approvals).
+3. Build a proper navbar/sidebar so users no longer type URLs.
+4. Test the full workflow with three users:
+
+   * HR
+   * Employee
+   * Manager/IT Head
+5. Polish the UI and prepare the project for submission.
+
+**The goal is a stable, understandable MVP that works end-to-end, not an enterprise-grade platform.**

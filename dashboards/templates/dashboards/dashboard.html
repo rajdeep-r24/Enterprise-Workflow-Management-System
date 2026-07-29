@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+{% block topbar_title %}Dashboard{% endblock %}
+
+{% block content %}
+
+<div class="ff-mb-6">
+    <h1>Welcome back, {{ request.user.first_name }}</h1>
+    <p class="ff-flex ff-items-center ff-gap-2" style="margin: 0;">
+        <span class="ff-badge ff-badge--info">{{ role|default:"USER" }}</span>
+        <span class="ff-text-muted ff-text-sm">{{ request.user.email }}</span>
+    </p>
+</div>
+
+{% if role == "HR_HEAD" or role == "ADMIN" or role == "ORG_ADMIN" or role == "SUPER_ADMIN" %}
+
+<div class="ff-grid ff-grid--4 ff-mb-6">
+    <div class="ff-stat-card">
+        <div class="ff-stat-card__icon" style="background: var(--primary-subtle); color: var(--primary);"><i class="bi bi-people"></i></div>
+        <div class="ff-stat-card__label">Total Employees</div>
+        <div class="ff-stat-card__value">{{ total_employees }}</div>
+    </div>
+    <a href="{% url 'approval-inbox' %}" class="ff-stat-card">
+        <div class="ff-stat-card__icon" style="background: var(--warning-subtle); color: var(--warning);"><i class="bi bi-hourglass-split"></i></div>
+        <div class="ff-stat-card__label">Pending Requests</div>
+        <div class="ff-stat-card__value">{{ pending_requests }}</div>
+    </a>
+    <div class="ff-stat-card">
+        <div class="ff-stat-card__icon" style="background: var(--success-subtle); color: var(--success);"><i class="bi bi-check-circle"></i></div>
+        <div class="ff-stat-card__label">Approved Requests</div>
+        <div class="ff-stat-card__value">{{ approved_requests }}</div>
+    </div>
+    <div class="ff-stat-card">
+        <div class="ff-stat-card__icon" style="background: var(--danger-subtle); color: var(--danger);"><i class="bi bi-x-circle"></i></div>
+        <div class="ff-stat-card__label">Rejected Requests</div>
+        <div class="ff-stat-card__value">{{ rejected_requests }}</div>
+    </div>
+</div>
+
+<div class="ff-flex ff-gap-3">
+    <a href="{% url 'new-request' %}" class="ff-btn ff-btn--primary"><i class="bi bi-plus-circle"></i> New Request</a>
+    <a href="{% url 'approval-inbox' %}" class="ff-btn ff-btn--secondary"><i class="bi bi-check2-square"></i> Pending Approvals</a>
+    <a href="{% url 'approval-history' %}" class="ff-btn ff-btn--secondary"><i class="bi bi-clock-history"></i> Approval History</a>
+    <a href="{% url 'my-requests' %}" class="ff-btn ff-btn--ghost">All Requests</a>
+</div>
+
+{% elif role == "MANAGER" or role == "IT_HEAD" or role == "UNIT_HEAD" %}
+
+<div class="ff-grid ff-grid--3 ff-mb-6">
+    <a href="{% url 'approval-inbox' %}" class="ff-stat-card">
+        <div class="ff-stat-card__icon" style="background: var(--warning-subtle); color: var(--warning);"><i class="bi bi-hourglass-split"></i></div>
+        <div class="ff-stat-card__label">Pending Approvals</div>
+        <div class="ff-stat-card__value">{{ my_pending_approvals }}</div>
+    </a>
+    <a href="{% url 'my-requests' %}" class="ff-stat-card">
+        <div class="ff-stat-card__icon" style="background: var(--primary-subtle); color: var(--primary);"><i class="bi bi-file-earmark-text"></i></div>
+        <div class="ff-stat-card__label">My Requests</div>
+        <div class="ff-stat-card__value">{{ my_requests }}</div>
+    </a>
+    <a href="{% url 'approval-history' %}" class="ff-stat-card">
+        <div class="ff-stat-card__icon" style="background: var(--info-subtle); color: var(--info);"><i class="bi bi-clock-history"></i></div>
+        <div class="ff-stat-card__label">Approval History</div>
+        <div class="ff-stat-card__value"><i class="bi bi-arrow-right"></i></div>
+    </a>
+</div>
+
+<div class="ff-flex ff-gap-3">
+    <a href="{% url 'new-request' %}" class="ff-btn ff-btn--primary"><i class="bi bi-plus-circle"></i> New Request</a>
+    <a href="{% url 'approval-inbox' %}" class="ff-btn ff-btn--secondary"><i class="bi bi-check2-square"></i> Pending Approvals</a>
+    <a href="{% url 'my-requests' %}" class="ff-btn ff-btn--ghost">My Requests</a>
+</div>
+
+{% else %}
+
+<div class="ff-grid ff-grid--3 ff-mb-6">
+    <a href="{% url 'my-requests' %}" class="ff-stat-card">
+        <div class="ff-stat-card__icon" style="background: var(--primary-subtle); color: var(--primary);"><i class="bi bi-file-earmark-text"></i></div>
+        <div class="ff-stat-card__label">My Requests</div>
+        <div class="ff-stat-card__value">{{ my_requests }}</div>
+    </a>
+</div>
+
+<div class="ff-flex ff-gap-3">
+    <a href="{% url 'new-request' %}" class="ff-btn ff-btn--primary"><i class="bi bi-plus-circle"></i> New Request</a>
+    <a href="{% url 'my-requests' %}" class="ff-btn ff-btn--ghost">My Requests</a>
+</div>
+
+{% endif %}
+
+{% endblock %}

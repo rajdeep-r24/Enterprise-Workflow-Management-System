@@ -1,0 +1,93 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Dashboard{% endblock %} · ForgeFlow</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="{% static 'css/design-system.css' %}" rel="stylesheet">
+    <!-- Bootstrap above is a fallback for pages not yet migrated to the ForgeFlow
+         design system (approval inbox, my requests, employee list, etc). Pages
+         using ff-* classes render fully in the new system regardless. -->
+
+    <script>
+        (function () {
+            var t = localStorage.getItem("ff-theme");
+            if (t) document.documentElement.setAttribute("data-theme", t);
+        })();
+    </script>
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+<div class="ff-shell">
+
+    <aside class="ff-sidebar">
+        {% include "includes/sidebar.html" %}
+    </aside>
+
+    <div class="ff-main">
+        <header class="ff-topbar">
+            <div class="ff-topbar__left">
+                <button class="ff-icon-btn d-none d-md-inline-flex" data-sidebar-collapse title="Collapse sidebar">
+                    <i class="bi bi-layout-sidebar"></i>
+                </button>
+                <button class="ff-icon-btn d-inline-flex d-md-none" data-sidebar-mobile-toggle title="Menu">
+                    <i class="bi bi-list"></i>
+                </button>
+                <span class="ff-topbar__title">{% block topbar_title %}{% endblock %}</span>
+            </div>
+
+            <div class="ff-topbar__right" style="position: relative;">
+                <button class="ff-icon-btn" data-theme-toggle title="Toggle theme">
+                    <i class="bi bi-moon-stars"></i>
+                </button>
+
+                <a href="{% url 'notifications:list' %}" class="ff-icon-btn" data-notif-trigger title="Notifications" style="position: relative; text-decoration: none;">
+                    <i class="bi bi-bell"></i>
+                    {% if unread_notifications %}
+                        <span class="ff-badge" style="position: absolute; top: 2px; right: 2px;">{{ unread_notifications }}</span>
+                    {% endif %}
+                </a>
+                <div class="ff-notif-panel" data-notif-panel style="display:none;">
+                    <div class="ff-notif-item ff-text-sm ff-text-muted" style="text-align:center; padding: 24px;">
+                        {% if unread_notifications %}
+                            You have {{ unread_notifications }} unread notification{{ unread_notifications|pluralize }}.
+                        {% else %}
+                            No new notifications
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="ff-avatar" title="{{ request.user.get_full_name }}">
+                    {{ request.user.first_name|slice:":1" }}{{ request.user.last_name|slice:":1" }}
+                </div>
+            </div>
+        </header>
+
+        <main class="ff-content">
+            {% if messages %}
+                {% for message in messages %}
+                <div class="ff-alert ff-alert--{{ message.tags|default:'info' }}">
+                    <i class="bi bi-info-circle"></i>
+                    <span>{{ message }}</span>
+                </div>
+                {% endfor %}
+            {% endif %}
+
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{% static 'js/app-shell.js' %}"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>
