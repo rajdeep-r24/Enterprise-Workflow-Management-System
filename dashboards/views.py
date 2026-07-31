@@ -5,6 +5,9 @@ from employees.models import Employee
 from workflow.models.instances import WorkflowInstance, WorkflowStepInstance
 
 
+from accounts.decorators import public_access
+
+@public_access
 def landing(request):
     if request.user.is_authenticated:
         return redirect("dashboard")
@@ -29,7 +32,7 @@ def dashboard(request):
 
         context = {
             "role": "USER",
-            "my_requests": WorkflowInstance.objects.filter(
+            "my_requests": WorkflowInstance.objects.for_tenant(request.tenant).filter(
                 initiated_by=request.user,
             ).count(),
         }
@@ -46,33 +49,52 @@ def dashboard(request):
         "role": role,
     }
 
-    # HR / ADMIN Dashboard
-    if role in [
-        "HR_HEAD",
-        "ADMIN",
-        "ORG_ADMIN",
-        "SUPER_ADMIN",
-    ]:
+    # ORG_ADMIN Dashboard
+    if role == "ORG_ADMIN":
 
         context.update({
-            "total_employees": Employee.objects.count(),
+            "total_employees": Employee.objects.for_tenant(request.tenant).filter(is_active=True).count(),
 
-            "pending_requests": WorkflowStepInstance.objects.filter(
-                assigned_to=request.user,
-                status="PENDING",
+            "pending_requests": WorkflowInstance.objects.for_tenant(request.tenant).filter(
+                status="IN_PROGRESS",
             ).count(),
 
-            "approved_requests": WorkflowInstance.objects.filter(
+            "approved_requests": WorkflowInstance.objects.for_tenant(request.tenant).filter(
                 status="APPROVED",
             ).count(),
 
-            "rejected_requests": WorkflowInstance.objects.filter(
+            "rejected_requests": WorkflowInstance.objects.for_tenant(request.tenant).filter(
                 status="REJECTED",
             ).count(),
         })
 
-    # Manager / IT / Unit Head Dashboard
+    # Legacy / Compatibility Dashboard for ADMIN / SUPER_ADMIN
     elif role in [
+        "ADMIN",
+        "SUPER_ADMIN",
+    ]:
+
+        context.update({
+            "total_employees": Employee.objects.for_tenant(request.tenant).filter(is_active=True).count(),
+
+            "pending_requests": WorkflowStepInstance.objects.filter(
+                workflow_instance__organization=request.tenant,
+                assigned_to=request.user,
+                status="PENDING",
+            ).count(),
+
+            "approved_requests": WorkflowInstance.objects.for_tenant(request.tenant).filter(
+                status="APPROVED",
+            ).count(),
+
+            "rejected_requests": WorkflowInstance.objects.for_tenant(request.tenant).filter(
+                status="REJECTED",
+            ).count(),
+        })
+
+    # Approver Roles Dashboard
+    elif role in [
+        "HR_HEAD",
         "MANAGER",
         "IT_HEAD",
         "UNIT_HEAD",
@@ -80,11 +102,12 @@ def dashboard(request):
 
         context.update({
             "my_pending_approvals": WorkflowStepInstance.objects.filter(
+                workflow_instance__organization=request.tenant,
                 assigned_to=request.user,
                 status="PENDING",
             ).count(),
 
-            "my_requests": WorkflowInstance.objects.filter(
+            "my_requests": WorkflowInstance.objects.for_tenant(request.tenant).filter(
                 initiated_by=request.user,
             ).count(),
         })
@@ -93,7 +116,7 @@ def dashboard(request):
     else:
 
         context.update({
-            "my_requests": WorkflowInstance.objects.filter(
+            "my_requests": WorkflowInstance.objects.for_tenant(request.tenant).filter(
                 initiated_by=request.user,
             ).count(),
         })

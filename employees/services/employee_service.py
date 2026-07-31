@@ -1,7 +1,7 @@
 from django.db import transaction
 
 from accounts.models import User
-from .models import Employee
+from employees.models import Employee
 
 
 class EmployeeService:

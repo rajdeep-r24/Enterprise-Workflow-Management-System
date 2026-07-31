@@ -6,6 +6,7 @@ class User(AbstractUser):
 
     USER_TYPES = [
         ("EMPLOYEE", "Employee"),
+        ("SYSTEM", "System Identity"),
     ]
 
     user_type = models.CharField(

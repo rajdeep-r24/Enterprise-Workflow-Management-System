@@ -638,3 +638,155 @@ class ForgeFlowWorkflowIntegrationTests(TestCase):
         response = self.client.get(download_url)
         self.assertEqual(response.status_code, 403)
 
+
+class RequestTypeFieldManagementTests(TestCase):
+
+    def setUp(self):
+        self.client = Client()
+        self.organization = Organization.objects.create(name="Acme Corp", code="ACME", email="acme@test.com")
+        self.other_organization = Organization.objects.create(name="Globex", code="GLBX", email="globex@test.com")
+        
+        # We need a department, designation and location to satisfy constraints
+        from employees.models import Department, Designation, Location
+        self.department = Department.objects.create(name="Engineering", code="ENG", organization=self.organization)
+        self.designation = Designation.objects.create(name="Engineer", code="ENGR", organization=self.organization)
+        self.location = Location.objects.create(name="Headquarters", code="HQ", organization=self.organization)
+        
+        self.role_org_admin = Role.objects.create(name="Org Admin", code="ORG_ADMIN")
+        
+        self.admin_user = User.objects.create_user(username="admin", email="admin@acme.test", password="testpass123")
+        self.admin_employee = Employee.objects.create(
+            user=self.admin_user,
+            organization=self.organization,
+            department=self.department,
+            designation=self.designation,
+            location=self.location,
+            role=self.role_org_admin,
+            employee_code="EMP001",
+            joining_date="2024-01-01",
+        )
+        
+        self.workflow_definition = WorkflowDefinition.objects.create(
+            organization=self.organization,
+            name="Test workflow",
+            code="test",
+        )
+        self.workflow_version = WorkflowVersion.objects.create(
+            workflow=self.workflow_definition,
+            version=1,
+            is_latest=True,
+        )
+        
+        self.draft_form = FormDefinition.objects.create(
+            organization=self.organization,
+            name="Draft Form",
+            code="draft",
+            workflow=self.workflow_version,
+            is_published=False,
+        )
+        
+        self.published_form = FormDefinition.objects.create(
+            organization=self.organization,
+            name="Published Form",
+            code="published",
+            workflow=self.workflow_version,
+            is_published=True,
+        )
+        
+        self.draft_field = FormField.objects.create(
+            form=self.draft_form,
+            label="Old Field",
+            field_name="old_field",
+            field_type="text",
+        )
+        
+        self.published_field = FormField.objects.create(
+            form=self.published_form,
+            label="Pub Field",
+            field_name="pub_field",
+            field_type="text",
+        )
+        
+        # Cross tenant setup
+        self.other_workflow_definition = WorkflowDefinition.objects.create(
+            organization=self.other_organization,
+            name="Other workflow",
+            code="other",
+        )
+        self.other_workflow_version = WorkflowVersion.objects.create(
+            workflow=self.other_workflow_definition,
+            version=1,
+            is_latest=True,
+        )
+        self.other_form = FormDefinition.objects.create(
+            organization=self.other_organization,
+            name="Other Form",
+            code="other",
+            workflow=self.other_workflow_version,
+            is_published=False,
+        )
+
+    def test_tenant_scoping(self):
+        self.client.login(username="admin@acme.test", password="testpass123")
+        response = self.client.get(reverse("request-type-fields", args=[self.other_form.pk]))
+        self.assertEqual(response.status_code, 404)
+
+    def test_add_field_draft_success(self):
+        self.client.login(username="admin@acme.test", password="testpass123")
+        response = self.client.post(reverse("request-type-field-add", args=[self.draft_form.pk]), {
+            "label": "New Field",
+            "field_name": "new_field",
+            "field_type": "text",
+            "is_required": True,
+            "order": 1,
+        })
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(FormField.objects.filter(form=self.draft_form, field_name="new_field").exists())
+
+    def test_edit_field_draft_success(self):
+        self.client.login(username="admin@acme.test", password="testpass123")
+        response = self.client.post(reverse("request-type-field-edit", args=[self.draft_form.pk, self.draft_field.pk]), {
+            "label": "Updated Field",
+            "field_name": "old_field",
+            "field_type": "textarea",
+            "order": 1,
+        })
+        self.assertEqual(response.status_code, 302)
+        self.draft_field.refresh_from_db()
+        self.assertEqual(self.draft_field.label, "Updated Field")
+        self.assertEqual(self.draft_field.field_type, "textarea")
+
+    def test_delete_field_draft_success(self):
+        self.client.login(username="admin@acme.test", password="testpass123")
+        response = self.client.post(reverse("request-type-field-delete", args=[self.draft_form.pk, self.draft_field.pk]))
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(FormField.objects.filter(pk=self.draft_field.pk).exists())
+
+    def test_published_form_protection(self):
+        self.client.login(username="admin@acme.test", password="testpass123")
+        
+        # Try add
+        response = self.client.post(reverse("request-type-field-add", args=[self.published_form.pk]), {
+            "label": "New Field",
+            "field_name": "new_field",
+            "field_type": "text",
+            "order": 1,
+        })
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(FormField.objects.filter(form=self.published_form, field_name="new_field").exists())
+        
+        # Try edit
+        response = self.client.post(reverse("request-type-field-edit", args=[self.published_form.pk, self.published_field.pk]), {
+            "label": "Updated Field",
+            "field_name": "pub_field",
+            "field_type": "textarea",
+            "order": 1,
+        })
+        self.assertEqual(response.status_code, 302)
+        self.published_field.refresh_from_db()
+        self.assertEqual(self.published_field.label, "Pub Field")
+        
+        # Try delete
+        response = self.client.post(reverse("request-type-field-delete", args=[self.published_form.pk, self.published_field.pk]))
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(FormField.objects.filter(pk=self.published_field.pk).exists())

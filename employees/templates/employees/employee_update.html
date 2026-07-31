@@ -1,39 +1,55 @@
 {% extends "base.html" %}
 
 {% block title %}Edit Employee{% endblock %}
+{% block topbar_title %}Edit Employee{% endblock %}
 
 {% block content %}
-
-<h2 class="mb-4">Edit Employee</h2>
-
-<div class="card">
-    <div class="card-body">
-
-        <form method="post">
-
-    {% csrf_token %}
-
-    <h4 class="mb-3">Personal Information</h4>
-
-    {{ user_form.as_p }}
-
-    <hr>
-
-    <h4 class="mb-3">Employment Information</h4>
-
-    {{ employee_form.as_p }}
-
-    <button class="btn btn-success">
-        Update Employee
-    </button>
-
-    <a href="{% url 'employee-detail' employee.id %}" class="btn btn-secondary">
-        Cancel
-    </a>
-
-</form>
-
+<div class="ff-flex ff-justify-between ff-items-center ff-mb-6">
+    <div>
+        <h2 class="ff-mb-2">Edit Employee</h2>
     </div>
 </div>
 
+<div class="ff-card shadow-sm" style="max-width: 800px;">
+    <div class="ff-card__body">
+        <form method="post">
+            {% csrf_token %}
+
+            <h4 class="ff-mb-4" style="color: var(--primary);">Personal Information</h4>
+            {% for field in user_form %}
+                <div class="ff-field">
+                    <label class="ff-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.help_text %}
+                        <div class="ff-help">{{ field.help_text }}</div>
+                    {% endif %}
+                    {% for error in field.errors %}
+                        <div class="ff-error-text">{{ error }}</div>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+
+            <hr style="border: 0; border-top: 1px solid var(--border); margin: var(--space-6) 0;">
+
+            <h4 class="ff-mb-4" style="color: var(--primary);">Employment Information</h4>
+            {% for field in employee_form %}
+                <div class="ff-field">
+                    <label class="ff-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.help_text %}
+                        <div class="ff-help">{{ field.help_text }}</div>
+                    {% endif %}
+                    {% for error in field.errors %}
+                        <div class="ff-error-text">{{ error }}</div>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+
+            <div class="ff-flex ff-gap-3" style="margin-top: var(--space-6);">
+                <button type="submit" class="ff-btn ff-btn--primary">Update Employee</button>
+                <a href="{% url 'employee-detail' employee.id %}" class="ff-btn ff-btn--secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
 {% endblock %}

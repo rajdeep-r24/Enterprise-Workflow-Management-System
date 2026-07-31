@@ -6,7 +6,10 @@ from organizations.models import Organization
 from workflow.models import WorkflowInstance, WorkflowVersion
 
 
+from organizations.managers import TenantManager
+
 class FormDefinition(models.Model):
+    objects = TenantManager()
 
     organization = models.ForeignKey(
         Organization,
@@ -17,7 +20,6 @@ class FormDefinition(models.Model):
 
     code = models.CharField(
         max_length=100,
-        unique=True,
     )
 
     description = models.TextField(blank=True)
@@ -37,6 +39,11 @@ class FormDefinition(models.Model):
 
     def __str__(self):
         return self.name
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["organization", "code"], name="unique_form_code_per_org")
+        ]
 
 
 class FormField(models.Model):
@@ -102,6 +109,7 @@ class FormField(models.Model):
 
 
 class FormSubmission(models.Model):
+    objects = TenantManager()
 
     STATUS = [
         ("DRAFT", "Draft"),
@@ -113,6 +121,11 @@ class FormSubmission(models.Model):
     form = models.ForeignKey(
         FormDefinition,
         on_delete=models.PROTECT,
+    )
+
+    organization = models.ForeignKey(
+        Organization,
+        on_delete=models.CASCADE,
     )
 
     workflow_instance = models.OneToOneField(

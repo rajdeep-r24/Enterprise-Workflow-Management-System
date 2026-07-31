@@ -1,0 +1,50 @@
+{% extends "public_base.html" %}
+
+{% block title %}Set Password{% endblock %}
+
+{% block content %}
+<div class="pf-center-wrap">
+    <div class="ff-card" style="width: 100%; max-width: 420px;">
+        <div class="ff-card__body" style="padding: var(--space-8);">
+
+            <div style="text-align: center; margin-bottom: var(--space-6);">
+                <div class="pf-nav__brand-mark" style="margin: 0 auto var(--space-4); width: 44px; height: 44px; font-size: 18px;">F</div>
+                <h2 style="margin-bottom: var(--space-1);">Welcome to ForgeFlow</h2>
+                <p class="ff-text-muted ff-text-sm" style="margin: 0;">Set your password to activate your account</p>
+            </div>
+
+            <form method="post">
+                {% csrf_token %}
+
+                {% if form.non_field_errors %}
+                <div class="ff-alert ff-alert--error">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    <span>{{ form.non_field_errors|striptags }}</span>
+                </div>
+                {% endif %}
+
+                <div class="ff-field">
+                    <label class="ff-label" for="{{ form.password.id_for_label }}">New Password</label>
+                    {{ form.password }}
+                    {% if form.password.errors %}
+                        <div style="color: var(--color-danger); font-size: 0.875rem; margin-top: 4px;">{{ form.password.errors|join:", " }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="ff-field">
+                    <label class="ff-label" for="{{ form.confirm_password.id_for_label }}">Confirm Password</label>
+                    {{ form.confirm_password }}
+                    {% if form.confirm_password.errors %}
+                        <div style="color: var(--color-danger); font-size: 0.875rem; margin-top: 4px;">{{ form.confirm_password.errors|join:", " }}</div>
+                    {% endif %}
+                </div>
+
+                <button type="submit" class="ff-btn ff-btn--primary ff-btn--block ff-btn--lg">
+                    Activate Account
+                </button>
+            </form>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -25,13 +25,13 @@ class FormEngineService:
         submitted_by,
         cleaned_data,
     ):
-
+        organization = submitted_by.employee_profile.organization
         workflow_version = form_definition.workflow
 
-        # Create workflow instance
         workflow_instance = WorkflowInstance.objects.create(
             workflow_version=workflow_version,
             initiated_by=submitted_by,
+            organization=organization,
             status="SUBMITTED",
         )
 
@@ -43,11 +43,11 @@ class FormEngineService:
             remarks="Request submitted",
         )
 
-        # Create form submission
         submission = FormSubmission.objects.create(
             form=form_definition,
             workflow_instance=workflow_instance,
             submitted_by=submitted_by,
+            organization=organization,
             status="SUBMITTED",
         )
 

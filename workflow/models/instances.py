@@ -1,9 +1,18 @@
 from django.db import models
 from accounts.models import User
+from organizations.models import Organization
 from .workflow import WorkflowVersion, WorkflowStepDefinition
 
 
+from organizations.managers import TenantManager
+
 class WorkflowInstance(models.Model):
+    objects = TenantManager()
+    
+    organization = models.ForeignKey(
+        Organization,
+        on_delete=models.CASCADE,
+    )
 
     STATUS_CHOICES = [
         ("DRAFT", "Draft"),

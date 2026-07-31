@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block title %}Locations{% endblock %}
+{% block topbar_title %}Locations{% endblock %}
+
+{% block content %}
+
+<div class="ff-flex ff-justify-between ff-items-center ff-mb-6">
+    <div>
+        <h2 class="ff-mb-2">Locations</h2>
+        <p class="ff-text-secondary mb-0">Manage organization offices and facilities.</p>
+    </div>
+    <a href="{% url 'location-create' %}" class="ff-btn ff-btn--primary">
+        <i class="bi bi-plus"></i> Add Location
+    </a>
+</div>
+
+<div class="ff-card shadow-sm ff-mb-6">
+    <div class="ff-card__body p-0">
+        <div style="padding: var(--space-4); border-bottom: 1px solid var(--border);">
+            <form method="get" class="ff-flex ff-gap-3">
+                <input type="text" name="q" value="{{ query }}" class="ff-input" placeholder="Search locations..." style="max-width: 400px;">
+                <button type="submit" class="ff-btn ff-btn--secondary">Search</button>
+            </form>
+        </div>
+
+        <div class="ff-table-wrap">
+            <table class="ff-table">
+                <thead>
+                    <tr>
+                        <th>Code</th>
+                        <th>Name</th>
+                        <th>Type</th>
+                        <th>City</th>
+                        <th>State</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for location in page_obj %}
+                    <tr>
+                        <td class="ff-mono">{{ location.code }}</td>
+                        <td style="font-weight: 500;">{{ location.name }}</td>
+                        <td>{{ location.get_location_type_display }}</td>
+                        <td>{{ location.city }}</td>
+                        <td>{{ location.state }}</td>
+                        <td>
+                            {% if location.is_active %}
+                                <span class="ff-badge ff-badge--success"><span class="ff-badge__dot"></span> Active</span>
+                            {% else %}
+                                <span class="ff-badge ff-badge--danger"><span class="ff-badge__dot"></span> Inactive</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="ff-flex ff-gap-2">
+                                <a href="{% url 'location-update' location.id %}" class="ff-btn ff-btn--sm ff-btn--secondary">Edit</a>
+                                {% if location.is_active %}
+                                <a href="{% url 'location-deactivate' location.id %}" class="ff-btn ff-btn--sm ff-btn--danger">Deactivate</a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="7">
+                            <div class="ff-table__empty">
+                                <i class="bi bi-geo-alt" style="font-size: 24px; color: var(--text-muted); display: block; margin-bottom: 8px;"></i>
+                                No locations found.
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% if page_obj.has_other_pages %}
+<div class="ff-flex ff-gap-2">
+    {% if page_obj.has_previous %}
+        <a class="ff-btn ff-btn--sm ff-btn--secondary" href="?page={{ page_obj.previous_page_number }}{% if query %}&q={{ query }}{% endif %}">Previous</a>
+    {% endif %}
+    
+    <span class="ff-btn ff-btn--sm ff-btn--ghost" style="pointer-events: none;">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+    
+    {% if page_obj.has_next %}
+        <a class="ff-btn ff-btn--sm ff-btn--secondary" href="?page={{ page_obj.next_page_number }}{% if query %}&q={{ query }}{% endif %}">Next</a>
+    {% endif %}
+</div>
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,25 @@
+{% extends "public_base.html" %}
+
+{% block title %}Invalid Invitation{% endblock %}
+
+{% block content %}
+<div class="pf-center-wrap">
+    <div class="ff-card" style="width: 100%; max-width: 420px;">
+        <div class="ff-card__body" style="padding: var(--space-8); text-align: center;">
+
+            <div class="pf-nav__brand-mark" style="margin: 0 auto var(--space-4); width: 44px; height: 44px; font-size: 18px;">F</div>
+            
+            <h2 style="margin-bottom: var(--space-4); color: var(--color-danger);">Invalid Invitation</h2>
+            
+            <p class="ff-text-muted" style="margin-bottom: var(--space-6);">
+                This invitation link is invalid or has expired. Please contact your organization administrator for a new invitation.
+            </p>
+
+            <a href="{% url 'login' %}" class="ff-btn ff-btn--primary ff-btn--block ff-btn--lg">
+                Back to Sign in
+            </a>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

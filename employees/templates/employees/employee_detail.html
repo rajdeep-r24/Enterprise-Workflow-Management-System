@@ -1,81 +1,75 @@
 {% extends "base.html" %}
 
 {% block title %}Employee Details{% endblock %}
+{% block topbar_title %}Employee Details{% endblock %}
 
 {% block content %}
-
-<h2 class="mb-4">Employee Details</h2>
-
-<div class="card">
-
-    <div class="card-body">
-
-        <table class="table">
-
-            <tr>
-                <th>Employee Code</th>
-                <td>{{ employee.employee_code }}</td>
-            </tr>
-
-            <tr>
-                <th>Name</th>
-                <td>{{ employee.user.get_full_name }}</td>
-            </tr>
-
-            <tr>
-                <th>Email</th>
-                <td>{{ employee.user.email }}</td>
-            </tr>
-
-            <tr>
-                <th>Organization</th>
-                <td>{{ employee.organization }}</td>
-            </tr>
-
-            <tr>
-                <th>Department</th>
-                <td>{{ employee.department }}</td>
-            </tr>
-
-            <tr>
-                <th>Location</th>
-                <td>{{ employee.location }}</td>
-            </tr>
-
-            <tr>
-                <th>Designation</th>
-                <td>{{ employee.designation }}</td>
-            </tr>
-
-            <tr>
-                <th>Role</th>
-                <td>{{ employee.role }}</td>
-            </tr>
-
-            <tr>
-                <th>Joining Date</th>
-                <td>{{ employee.joining_date }}</td>
-            </tr>
-
-            <tr>
-                <th>Status</th>
-                <td>
-                    {% if employee.is_active %}
-                        <span class="badge bg-success">Active</span>
-                    {% else %}
-                        <span class="badge bg-danger">Inactive</span>
-                    {% endif %}
-                </td>
-            </tr>
-
-        </table>
-
-        <a href="/employees/" class="btn btn-secondary">
-            Back
-        </a>
-
+<div class="ff-flex ff-justify-between ff-items-center ff-mb-6">
+    <div>
+        <h2 class="ff-mb-2">Employee Details</h2>
     </div>
-
+    <div class="ff-flex ff-gap-2">
+        <a href="{% url 'employee-update' employee.id %}" class="ff-btn ff-btn--secondary">Edit Employee</a>
+        <a href="{% url 'employee-list' %}" class="ff-btn ff-btn--secondary">Back to List</a>
+    </div>
 </div>
 
+<div class="ff-card shadow-sm" style="max-width: 800px;">
+    <div class="ff-card__body p-0">
+        <div class="ff-table-wrap">
+            <table class="ff-table">
+                <tbody>
+                    <tr>
+                        <th style="width: 30%;">Employee Code</th>
+                        <td class="ff-mono">{{ employee.employee_code }}</td>
+                    </tr>
+                    <tr>
+                        <th>Name</th>
+                        <td style="font-weight: 500;">{{ employee.user.get_full_name }}</td>
+                    </tr>
+                    <tr>
+                        <th>Email</th>
+                        <td>{{ employee.user.email }}</td>
+                    </tr>
+                    <tr>
+                        <th>Organization</th>
+                        <td>{{ employee.organization }}</td>
+                    </tr>
+                    <tr>
+                        <th>Department</th>
+                        <td>{{ employee.department }}</td>
+                    </tr>
+                    <tr>
+                        <th>Location</th>
+                        <td>{{ employee.location }}</td>
+                    </tr>
+                    <tr>
+                        <th>Designation</th>
+                        <td>{{ employee.designation }}</td>
+                    </tr>
+                    <tr>
+                        <th>Role</th>
+                        <td>
+                            <span class="ff-badge ff-badge--info">{{ employee.role }}</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Joining Date</th>
+                        <td>{{ employee.joining_date }}</td>
+                    </tr>
+                    <tr>
+                        <th>Status</th>
+                        <td>
+                            {% if employee.is_active %}
+                                <span class="ff-badge ff-badge--success"><span class="ff-badge__dot"></span> Active</span>
+                            {% else %}
+                                <span class="ff-badge ff-badge--danger"><span class="ff-badge__dot"></span> Inactive</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
 {% endblock %}

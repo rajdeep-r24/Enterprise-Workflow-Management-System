@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block title %}Request Types{% endblock %}
+{% block topbar_title %}Request Types{% endblock %}
+
+{% block content %}
+
+<div class="ff-flex ff-justify-between ff-items-center ff-mb-6">
+    <div>
+        <h2 class="ff-mb-2">Request Types</h2>
+        <p class="ff-text-secondary mb-0">Manage the definitions for employee requests.</p>
+    </div>
+    <a href="{% url 'request-type-create' %}" class="ff-btn ff-btn--primary">
+        <i class="bi bi-plus"></i> Create Request Type
+    </a>
+</div>
+
+<div class="ff-card ff-mb-6">
+    <div class="ff-card__body p-0">
+        <div style="padding: var(--space-4); border-bottom: 1px solid var(--border);">
+            <form method="get" class="ff-flex ff-gap-3">
+                <input type="text" name="q" value="{{ query }}" class="ff-input" placeholder="Search request types..." style="max-width: 400px;">
+                <button type="submit" class="ff-btn ff-btn--secondary">Search</button>
+            </form>
+        </div>
+
+        <div class="ff-table-wrap">
+            <table class="ff-table">
+                <thead>
+                    <tr>
+                        <th>Code</th>
+                        <th>Name</th>
+                        <th>Version</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for rt in page_obj %}
+                    <tr>
+                        <td class="ff-mono">{{ rt.code }}</td>
+                        <td style="font-weight: 500;">{{ rt.name }}</td>
+                        <td>v{{ rt.version }}</td>
+                        <td>
+                            {% if rt.is_published %}
+                                <span class="ff-badge ff-badge--success">
+                                    <span class="ff-badge__dot"></span> Published
+                                </span>
+                            {% else %}
+                                <span class="ff-badge ff-badge--neutral">
+                                    <span class="ff-badge__dot"></span> Draft
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="ff-flex ff-gap-2">
+                                <a href="{% url 'request-type-fields' rt.pk %}" class="ff-btn ff-btn--sm ff-btn--secondary">Fields</a>
+                                <a href="{% url 'request-type-steps' rt.pk %}" class="ff-btn ff-btn--sm ff-btn--secondary">Steps</a>
+                                {% if not rt.is_published %}
+                                    <form action="{% url 'request-type-publish' rt.pk %}" method="post" style="margin: 0;" onsubmit="return confirm('Are you sure you want to publish this Request Type? It cannot be unpublished and fields/steps cannot be modified once published.');">
+                                        {% csrf_token %}
+                                        <button type="submit" class="ff-btn ff-btn--sm ff-btn--primary">Publish</button>
+                                    </form>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="5">
+                            <div class="ff-table__empty">
+                                <i class="bi bi-file-earmark-code" style="font-size: 24px; color: var(--text-muted); display: block; margin-bottom: 8px;"></i>
+                                No request types found.
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% if page_obj.has_other_pages %}
+<div class="ff-flex ff-gap-2">
+    {% if page_obj.has_previous %}
+        <a class="ff-btn ff-btn--sm ff-btn--secondary" href="?page={{ page_obj.previous_page_number }}{% if query %}&q={{ query }}{% endif %}">Previous</a>
+    {% endif %}
+    
+    <span class="ff-btn ff-btn--sm ff-btn--ghost" style="pointer-events: none;">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+    
+    {% if page_obj.has_next %}
+        <a class="ff-btn ff-btn--sm ff-btn--secondary" href="?page={{ page_obj.next_page_number }}{% if query %}&q={{ query }}{% endif %}">Next</a>
+    {% endif %}
+</div>
+{% endif %}
+
+{% endblock %}

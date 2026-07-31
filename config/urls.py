@@ -25,7 +25,11 @@ urlpatterns = [
 
     path("", include("accounts.urls")),
     path("", include("dashboards.urls")),
+    path("", include("departments.urls")),
+    path("", include("designations.urls")),
+    path("", include("locations.urls")),
     path("", include("employees.urls")),
+    path("", include("organizations.urls")),
     path("", include("forms_engine.urls")),
     path("notifications/", include("notifications.urls", namespace="notifications")),
 ]

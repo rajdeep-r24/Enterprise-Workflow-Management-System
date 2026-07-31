@@ -1,0 +1,19 @@
+{% extends "public_base.html" %}
+
+{% block title %}Authentication Error{% endblock %}
+
+{% block content %}
+<div class="ff-container" style="max-width: 500px; margin-top: 10vh;">
+    <div class="ff-card">
+        <div class="ff-card__header">
+            <h2 class="ff-card__title ff-text-danger">Authentication Error</h2>
+        </div>
+        <div class="ff-card__body">
+            <p>{{ error }}</p>
+            <div style="margin-top: var(--space-4); text-align: center;">
+                <a href="{% url 'login' %}" class="ff-btn ff-btn--primary">Return to Login</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

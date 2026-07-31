@@ -29,7 +29,7 @@ from .services import FormEngineService
 def submit_request(request, code):
 
     form_definition = get_object_or_404(
-        FormDefinition,
+        FormDefinition.objects.for_tenant(request.tenant),
         code=code,
         is_published=True,
     )
@@ -122,7 +122,7 @@ def submit_request(request, code):
 def my_requests(request):
 
     submissions = (
-        FormSubmission.objects
+        FormSubmission.objects.for_tenant(request.tenant)
         .select_related(
             "form",
             "workflow_instance__current_step",
@@ -167,6 +167,7 @@ def approval_inbox(request):
             "step_definition",
         )
         .filter(
+            workflow_instance__organization=request.tenant,
             status="PENDING",
             assigned_to=request.user,
         )
@@ -208,6 +209,7 @@ def approval_history(request):
             "step_definition",
         )
         .filter(
+            workflow_instance__organization=request.tenant,
             assigned_to=request.user,
         )
         .exclude(
@@ -258,7 +260,7 @@ def can_view_request(user, submission):
 
 @login_required
 def download_attachment(request, pk):
-    attachment = get_object_or_404(RequestAttachment, pk=pk)
+    attachment = get_object_or_404(RequestAttachment.objects.filter(submission__organization=request.tenant), pk=pk)
     submission = attachment.submission
     
     if not can_view_request(request.user, submission):
@@ -270,7 +272,7 @@ def download_attachment(request, pk):
 def request_detail(request, pk):
 
     submission = get_object_or_404(
-        FormSubmission.objects.select_related(
+        FormSubmission.objects.for_tenant(request.tenant).select_related(
             "form",
             "submitted_by",
             "workflow_instance__current_step",
@@ -422,6 +424,7 @@ def approve_request(request, pk):
 
     step = get_object_or_404(
         WorkflowStepInstance,
+        workflow_instance__organization=request.tenant,
         pk=pk,
         assigned_to=request.user,
         status="PENDING",
@@ -500,6 +503,7 @@ def reject_request(request, pk):
 
     step = get_object_or_404(
         WorkflowStepInstance,
+        workflow_instance__organization=request.tenant,
         pk=pk,
         assigned_to=request.user,
         status="PENDING",
@@ -580,7 +584,7 @@ def reject_request(request, pk):
 def new_request(request):
 
     forms = (
-        FormDefinition.objects
+        FormDefinition.objects.for_tenant(request.tenant)
         .filter(
             is_published=True,
         )
@@ -606,7 +610,7 @@ def new_request(request):
 def permission_pdf(request, pk):
 
     submission = get_object_or_404(
-        FormSubmission.objects.select_related(
+        FormSubmission.objects.for_tenant(request.tenant).select_related(
             "submitted_by",
             "workflow_instance",
         ),
@@ -939,3 +943,253 @@ def revoke_permission(request, pk):
         "request-detail",
         submission.pk,
     )
+
+# =========================================================
+# REQUEST TYPE MANAGEMENT
+# =========================================================
+
+from workflow.models import WorkflowDefinition, WorkflowVersion
+from django.core.paginator import Paginator
+from django.db.models import Q
+from .forms import RequestTypeForm
+
+@login_required
+@role_required("ORG_ADMIN", "SUPER_ADMIN", "ADMIN", "HR_HEAD")
+def request_type_list(request):
+    query = request.GET.get("q", "")
+    request_types = FormDefinition.objects.for_tenant(request.tenant).order_by("name")
+    
+    if query:
+        request_types = request_types.filter(
+            Q(name__icontains=query) | Q(code__icontains=query)
+        )
+        
+    paginator = Paginator(request_types, 10)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+    
+    return render(request, "forms_engine/request_type_list.html", {
+        "page_obj": page_obj,
+        "query": query,
+    })
+
+@login_required
+@role_required("ORG_ADMIN", "SUPER_ADMIN", "ADMIN", "HR_HEAD")
+def request_type_create(request):
+    if request.method == "POST":
+        form = RequestTypeForm(request.POST, tenant=request.tenant)
+        if form.is_valid():
+            with transaction.atomic():
+                workflow_def = WorkflowDefinition.objects.create(
+                    organization=request.tenant,
+                    name=form.cleaned_data["name"],
+                    code=form.cleaned_data["code"],
+                    description=form.cleaned_data["description"]
+                )
+                
+                workflow_version = WorkflowVersion.objects.create(
+                    workflow=workflow_def,
+                    version=1,
+                    is_latest=True
+                )
+                
+                form_def = form.save(commit=False)
+                form_def.organization = request.tenant
+                form_def.workflow = workflow_version
+                form_def.is_published = False
+                form_def.save()
+                
+            messages.success(request, "Request type created successfully.")
+            return redirect("request-type-list")
+    else:
+        form = RequestTypeForm(tenant=request.tenant)
+        
+    return render(request, "forms_engine/request_type_form.html", {
+        "form": form,
+        "title": "Create Request Type"
+    })
+
+@login_required
+@role_required("ORG_ADMIN", "SUPER_ADMIN", "ADMIN", "HR_HEAD")
+def request_type_publish(request, pk):
+    request_type = get_object_or_404(FormDefinition.objects.for_tenant(request.tenant), pk=pk)
+    
+    if request.method == "POST":
+        if request_type.is_published:
+            messages.error(request, "Request type is already published.")
+            return redirect("request-type-list")
+            
+        if not request_type.fields.exists():
+            messages.error(request, "Cannot publish request type without any fields.")
+            return redirect("request-type-list")
+            
+        if not request_type.workflow.steps.exists():
+            messages.error(request, "Cannot publish request type without any approval steps.")
+            return redirect("request-type-list")
+            
+        request_type.is_published = True
+        request_type.save(update_fields=["is_published"])
+        messages.success(request, "Request type published successfully.")
+        
+    return redirect("request-type-list")
+
+from .models import FormField
+from .forms import FormFieldForm
+
+@login_required
+@role_required("ORG_ADMIN", "SUPER_ADMIN", "ADMIN", "HR_HEAD")
+def request_type_fields(request, pk):
+    request_type = get_object_or_404(FormDefinition.objects.for_tenant(request.tenant), pk=pk)
+    fields = request_type.fields.all()
+    return render(request, "forms_engine/request_type_fields.html", {
+        "request_type": request_type,
+        "fields": fields,
+    })
+
+@login_required
+@role_required("ORG_ADMIN", "SUPER_ADMIN", "ADMIN", "HR_HEAD")
+def request_type_field_add(request, pk):
+    request_type = get_object_or_404(FormDefinition.objects.for_tenant(request.tenant), pk=pk)
+    
+    if request_type.is_published:
+        messages.error(request, "Cannot add fields to a published request type.")
+        return redirect("request-type-fields", pk=request_type.pk)
+
+    if request.method == "POST":
+        form = FormFieldForm(request.POST, form_definition=request_type)
+        if form.is_valid():
+            field = form.save(commit=False)
+            field.form = request_type
+            field.save()
+            messages.success(request, "Field added successfully.")
+            return redirect("request-type-fields", pk=request_type.pk)
+    else:
+        form = FormFieldForm(form_definition=request_type)
+
+    return render(request, "forms_engine/request_type_field_form.html", {
+        "request_type": request_type,
+        "form": form,
+        "title": "Add Field",
+    })
+
+@login_required
+@role_required("ORG_ADMIN", "SUPER_ADMIN", "ADMIN", "HR_HEAD")
+def request_type_field_edit(request, rt_pk, field_pk):
+    request_type = get_object_or_404(FormDefinition.objects.for_tenant(request.tenant), pk=rt_pk)
+    field = get_object_or_404(FormField, pk=field_pk, form=request_type)
+
+    if request_type.is_published:
+        messages.error(request, "Cannot edit fields of a published request type.")
+        return redirect("request-type-fields", pk=request_type.pk)
+
+    if request.method == "POST":
+        form = FormFieldForm(request.POST, instance=field, form_definition=request_type)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Field updated successfully.")
+            return redirect("request-type-fields", pk=request_type.pk)
+    else:
+        form = FormFieldForm(instance=field, form_definition=request_type)
+
+    return render(request, "forms_engine/request_type_field_form.html", {
+        "request_type": request_type,
+        "form": form,
+        "title": "Edit Field",
+    })
+
+@login_required
+@role_required("ORG_ADMIN", "SUPER_ADMIN", "ADMIN", "HR_HEAD")
+def request_type_field_delete(request, rt_pk, field_pk):
+    request_type = get_object_or_404(FormDefinition.objects.for_tenant(request.tenant), pk=rt_pk)
+    field = get_object_or_404(FormField, pk=field_pk, form=request_type)
+
+    if request_type.is_published:
+        messages.error(request, "Cannot delete fields of a published request type.")
+        return redirect("request-type-fields", pk=request_type.pk)
+
+    if request.method == "POST":
+        field.delete()
+        messages.success(request, "Field deleted successfully.")
+        
+    return redirect("request-type-fields", pk=request_type.pk)
+
+from workflow.models import WorkflowStepDefinition
+from .forms import WorkflowStepForm
+
+@login_required
+@role_required("ORG_ADMIN", "SUPER_ADMIN", "ADMIN", "HR_HEAD")
+def request_type_steps(request, pk):
+    request_type = get_object_or_404(FormDefinition.objects.for_tenant(request.tenant), pk=pk)
+    steps = request_type.workflow.steps.all()
+    return render(request, "forms_engine/request_type_steps.html", {
+        "request_type": request_type,
+        "steps": steps,
+    })
+
+@login_required
+@role_required("ORG_ADMIN", "SUPER_ADMIN", "ADMIN", "HR_HEAD")
+def request_type_step_add(request, pk):
+    request_type = get_object_or_404(FormDefinition.objects.for_tenant(request.tenant), pk=pk)
+    
+    if request_type.is_published:
+        messages.error(request, "Cannot add steps to a published request type.")
+        return redirect("request-type-steps", pk=request_type.pk)
+
+    if request.method == "POST":
+        form = WorkflowStepForm(request.POST, workflow_version=request_type.workflow, tenant=request.tenant)
+        if form.is_valid():
+            step = form.save(commit=False)
+            step.workflow_version = request_type.workflow
+            step.save()
+            messages.success(request, "Step added successfully.")
+            return redirect("request-type-steps", pk=request_type.pk)
+    else:
+        form = WorkflowStepForm(workflow_version=request_type.workflow, tenant=request.tenant)
+
+    return render(request, "forms_engine/request_type_step_form.html", {
+        "request_type": request_type,
+        "form": form,
+        "title": "Add Approval Step",
+    })
+
+@login_required
+@role_required("ORG_ADMIN", "SUPER_ADMIN", "ADMIN", "HR_HEAD")
+def request_type_step_edit(request, rt_pk, step_pk):
+    request_type = get_object_or_404(FormDefinition.objects.for_tenant(request.tenant), pk=rt_pk)
+    step = get_object_or_404(WorkflowStepDefinition, pk=step_pk, workflow_version=request_type.workflow)
+
+    if request_type.is_published:
+        messages.error(request, "Cannot edit steps of a published request type.")
+        return redirect("request-type-steps", pk=request_type.pk)
+
+    if request.method == "POST":
+        form = WorkflowStepForm(request.POST, instance=step, workflow_version=request_type.workflow, tenant=request.tenant)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Step updated successfully.")
+            return redirect("request-type-steps", pk=request_type.pk)
+    else:
+        form = WorkflowStepForm(instance=step, workflow_version=request_type.workflow, tenant=request.tenant)
+
+    return render(request, "forms_engine/request_type_step_form.html", {
+        "request_type": request_type,
+        "form": form,
+        "title": "Edit Approval Step",
+    })
+
+@login_required
+@role_required("ORG_ADMIN", "SUPER_ADMIN", "ADMIN", "HR_HEAD")
+def request_type_step_delete(request, rt_pk, step_pk):
+    request_type = get_object_or_404(FormDefinition.objects.for_tenant(request.tenant), pk=rt_pk)
+    step = get_object_or_404(WorkflowStepDefinition, pk=step_pk, workflow_version=request_type.workflow)
+
+    if request_type.is_published:
+        messages.error(request, "Cannot delete steps of a published request type.")
+        return redirect("request-type-steps", pk=request_type.pk)
+
+    if request.method == "POST":
+        step.delete()
+        messages.success(request, "Step deleted successfully.")
+        
+    return redirect("request-type-steps", pk=request_type.pk)
+

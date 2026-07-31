@@ -47,7 +47,7 @@
 </nav>
 
 {% if messages %}
-<div style="max-width: 460px; margin: 0 auto;">
+<div style="max-width: 480px; margin: var(--space-6) auto 0;">
     {% for message in messages %}
     <div class="ff-alert ff-alert--{{ message.tags|default:'info' }}">
         <i class="bi bi-info-circle"></i>
@@ -60,6 +60,15 @@
 {% block content %}{% endblock %}
 
 <script src="{% static 'js/app-shell.js' %}"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        document.querySelectorAll('.ff-field input, .ff-field select, .ff-field textarea').forEach(function(el) {
+            if (el.type !== 'checkbox' && el.type !== 'radio' && el.type !== 'file') {
+                el.classList.add('ff-input');
+            }
+        });
+    });
+</script>
 {% block extra_js %}{% endblock %}
 </body>
 </html>

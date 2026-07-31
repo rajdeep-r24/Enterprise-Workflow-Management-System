@@ -35,12 +35,31 @@
     </a>
     {% endif %}
 
+    {% if employee_role == 'ORG_ADMIN' %}
+    <div class="ff-nav__section-title">Organization Setup</div>
+    <a href="{% url 'request-type-list' %}" class="ff-nav__item {% if request.resolver_match.url_name == 'request-type-list' %}is-active{% endif %}" title="Request Types">
+        <i class="bi bi-file-earmark-code"></i><span class="ff-nav__label">Request Types</span>
+    </a>
+    <a href="{% url 'department-list' %}" class="ff-nav__item {% if request.resolver_match.url_name == 'department-list' %}is-active{% endif %}" title="Departments">
+        <i class="bi bi-diagram-3"></i><span class="ff-nav__label">Departments</span>
+    </a>
+    <a href="{% url 'designation-list' %}" class="ff-nav__item {% if request.resolver_match.url_name == 'designation-list' %}is-active{% endif %}" title="Designations">
+        <i class="bi bi-award"></i><span class="ff-nav__label">Designations</span>
+    </a>
+    <a href="{% url 'location-list' %}" class="ff-nav__item {% if request.resolver_match.url_name == 'location-list' %}is-active{% endif %}" title="Locations">
+        <i class="bi bi-geo-alt"></i><span class="ff-nav__label">Locations</span>
+    </a>
+    {% endif %}
+
     <div class="ff-nav__section-title">Account</div>
     <a href="{% url 'employee-profile' %}" class="ff-nav__item {% if request.resolver_match.url_name == 'employee-profile' %}is-active{% endif %}" title="Profile">
         <i class="bi bi-person"></i><span class="ff-nav__label">Profile</span>
     </a>
-    <a href="{% url 'logout' %}" class="ff-nav__item ff-nav__item--danger" title="Logout">
-        <i class="bi bi-box-arrow-right"></i><span class="ff-nav__label">Logout</span>
-    </a>
+    <form method="post" action="{% url 'logout' %}" style="margin: 0; padding: 0;">
+        {% csrf_token %}
+        <button type="submit" class="ff-nav__item ff-nav__item--danger" title="Logout">
+            <i class="bi bi-box-arrow-right"></i><span class="ff-nav__label">Logout</span>
+        </button>
+    </form>
 
 </nav>

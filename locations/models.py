@@ -1,8 +1,10 @@
 from django.db import models
 from organizations.models import Organization
 
+from organizations.managers import TenantManager
 
 class Location(models.Model):
+    objects = TenantManager()
 
     LOCATION_TYPES = [
         ("HQ", "Headquarters"),

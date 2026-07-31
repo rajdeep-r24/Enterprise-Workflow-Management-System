@@ -106,10 +106,12 @@ class WorkflowServiceApproveTests(TestCase):
         )
 
         self.instance = WorkflowInstance.objects.create(
+            organization=self.org,
             workflow_version=self.version, initiated_by=self.requester_user,
             current_step=self.step1, status="IN_PROGRESS",
         )
         self.submission = FormSubmission.objects.create(
+            organization=self.org,
             form=self.form_def, workflow_instance=self.instance,
             submitted_by=self.requester_user, status="SUBMITTED",
         )

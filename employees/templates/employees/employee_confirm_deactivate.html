@@ -1,38 +1,31 @@
 {% extends "base.html" %}
 
 {% block title %}Deactivate Employee{% endblock %}
+{% block topbar_title %}Deactivate Employee{% endblock %}
 
 {% block content %}
-
-<div class="card">
-
-    <div class="card-body">
-
-        <h3>Deactivate Employee</h3>
-
-        <p>
-
-            Are you sure you want to deactivate
-            <strong>{{ employee.user.get_full_name }}</strong>?
-
-        </p>
-
-        <form method="post">
-
-            {% csrf_token %}
-
-            <button class="btn btn-danger">
-                Yes, Deactivate
-            </button>
-
-            <a href="{% url 'employee-list' %}" class="btn btn-secondary">
-                Cancel
-            </a>
-
-        </form>
-
+<div class="ff-flex ff-justify-between ff-items-center ff-mb-6">
+    <div>
+        <h2 class="ff-mb-2" style="color: var(--danger);">Deactivate Employee</h2>
     </div>
-
 </div>
 
+<div class="ff-card shadow-sm" style="max-width: 600px; border-color: var(--danger-border);">
+    <div class="ff-card__body">
+        <p class="ff-mb-4">Are you sure you want to deactivate the employee <strong style="color: var(--text-primary);">{{ employee.user.get_full_name }} ({{ employee.employee_code }})</strong>?</p>
+        
+        <div class="ff-alert ff-alert--warning ff-mb-6">
+            <i class="bi bi-exclamation-triangle"></i>
+            <span>This employee will lose access to the system immediately.</span>
+        </div>
+        
+        <form method="post">
+            {% csrf_token %}
+            <div class="ff-flex ff-gap-3">
+                <button type="submit" class="ff-btn ff-btn--danger">Confirm Deactivation</button>
+                <a href="{% url 'employee-list' %}" class="ff-btn ff-btn--secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
 {% endblock %}

@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}Deactivate Department{% endblock %}
+{% block topbar_title %}Deactivate Department{% endblock %}
+
+{% block content %}
+<div class="ff-flex ff-justify-between ff-items-center ff-mb-6">
+    <div>
+        <h2 class="ff-mb-2" style="color: var(--danger);">Deactivate Department</h2>
+    </div>
+</div>
+
+<div class="ff-card shadow-sm" style="max-width: 600px; border-color: var(--danger-border);">
+    <div class="ff-card__body">
+        <p class="ff-mb-4">Are you sure you want to deactivate the department <strong style="color: var(--text-primary);">{{ department.name }} ({{ department.code }})</strong>?</p>
+        
+        <div class="ff-alert ff-alert--warning ff-mb-6">
+            <i class="bi bi-exclamation-triangle"></i>
+            <span>Employees in this department must be reassigned before deactivation.</span>
+        </div>
+        
+        <form method="post">
+            {% csrf_token %}
+            <div class="ff-flex ff-gap-3">
+                <button type="submit" class="ff-btn ff-btn--danger">Confirm Deactivation</button>
+                <a href="{% url 'department-list' %}" class="ff-btn ff-btn--secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -5,11 +5,15 @@ from django.views.decorators.http import require_POST
 from .models import Notification
 from .services import NotificationService
 
+from django.db.models import Q
 
 @login_required
 def notification_list(request):
     notifications = (
-        Notification.objects.filter(recipient=request.user)
+        Notification.objects.filter(
+            Q(workflow_instance__organization=request.tenant) | Q(workflow_instance__isnull=True),
+            recipient=request.user,
+        )
         .select_related("workflow_instance")
         .order_by("-created_at", "-pk")
     )
@@ -27,7 +31,9 @@ def notification_list(request):
 @require_POST
 def mark_notification_read(request, pk):
     notification = get_object_or_404(
-        Notification,
+        Notification.objects.filter(
+            Q(workflow_instance__organization=request.tenant) | Q(workflow_instance__isnull=True)
+        ),
         pk=pk,
         recipient=request.user,
     )
@@ -39,5 +45,9 @@ def mark_notification_read(request, pk):
 @login_required
 @require_POST
 def mark_all_notifications_read(request):
-    Notification.objects.filter(recipient=request.user, is_read=False).update(is_read=True)
+    Notification.objects.filter(
+        Q(workflow_instance__organization=request.tenant) | Q(workflow_instance__isnull=True),
+        recipient=request.user, 
+        is_read=False,
+    ).update(is_read=True)
     return redirect("notifications:list")

@@ -37,4 +37,10 @@ urlpatterns = [
     views.employee_deactivate,
     name="employee-deactivate",
     ),
+
+    path(
+        "onboarding/<str:token>/",
+        views.employee_onboarding,
+        name="employee-onboarding",
+    ),
 ]

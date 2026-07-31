@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}Deactivate Designation{% endblock %}
+{% block topbar_title %}Deactivate Designation{% endblock %}
+
+{% block content %}
+<div class="ff-flex ff-justify-between ff-items-center ff-mb-6">
+    <div>
+        <h2 class="ff-mb-2" style="color: var(--danger);">Deactivate Designation</h2>
+    </div>
+</div>
+
+<div class="ff-card shadow-sm" style="max-width: 600px; border-color: var(--danger-border);">
+    <div class="ff-card__body">
+        <p class="ff-mb-4">Are you sure you want to deactivate the designation <strong style="color: var(--text-primary);">{{ designation.name }} ({{ designation.code }})</strong>?</p>
+        
+        <div class="ff-alert ff-alert--warning ff-mb-6">
+            <i class="bi bi-exclamation-triangle"></i>
+            <span>Employees with this designation must be reassigned before deactivation.</span>
+        </div>
+        
+        <form method="post">
+            {% csrf_token %}
+            <div class="ff-flex ff-gap-3">
+                <button type="submit" class="ff-btn ff-btn--danger">Confirm Deactivation</button>
+                <a href="{% url 'designation-list' %}" class="ff-btn ff-btn--secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

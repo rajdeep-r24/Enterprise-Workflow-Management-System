@@ -1,8 +1,10 @@
 from django.db import models
 from organizations.models import Organization
 
+from organizations.managers import TenantManager
 
 class Department(models.Model):
+    objects = TenantManager()
     organization = models.ForeignKey(
         Organization,
         on_delete=models.CASCADE,
