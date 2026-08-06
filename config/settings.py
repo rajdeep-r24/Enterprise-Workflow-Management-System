@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 from pathlib import Path
-from decouple import config
+from decouple import config, Csv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -31,7 +31,7 @@ GOOGLE_CLIENT_SECRET = config("GOOGLE_CLIENT_SECRET", default="")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config("DEBUG", cast=bool)
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = config("ALLOWED_HOSTS", default="127.0.0.1,localhost", cast=Csv())
 
 
 # Application definition
@@ -140,6 +140,7 @@ USE_I18N = True
 
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [BASE_DIR / "static"]
+STATIC_ROOT = BASE_DIR / "staticfiles"
 
 AUTH_USER_MODEL = "accounts.User"
 
@@ -171,15 +172,25 @@ SECURE_REFERRER_POLICY = "same-origin"
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
-PUBLIC_BASE_URL = "http://127.0.0.1:8000"
+PUBLIC_BASE_URL = config("PUBLIC_BASE_URL", default="http://127.0.0.1:8000")
 
-# PUBLIC_BASE_URL = "http://192.168.13.80"
+CSRF_TRUSTED_ORIGINS = config(
+    "CSRF_TRUSTED_ORIGINS", 
+    default="http://127.0.0.1:8000,http://localhost:8000", 
+    cast=Csv()
+)
 
-# ALLOWED_HOSTS = [
-#     "127.0.0.1",
-#     "localhost",
-#     "192.168.13.80",
-# ]
+IS_PRODUCTION = config("PRODUCTION", default=False, cast=bool)
+
+if IS_PRODUCTION:
+    MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')
+    STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_HSTS_SECONDS = 31536000
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
 
 # Email (used for password reset). Defaults to printing emails to the
 # console in dev. For production, set EMAIL_BACKEND to

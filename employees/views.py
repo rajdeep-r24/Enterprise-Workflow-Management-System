@@ -95,18 +95,14 @@ def employee_create(request):
         form = EmployeeRegistrationForm(request.POST, tenant=request.tenant)
 
         if form.is_valid():
-            employee = form.save()
+            from .services.provisioning import EmployeeProvisioningService
+            result = EmployeeProvisioningService.provision_employee(form.cleaned_data, request.tenant)
             
-            # Create invitation
-            invitation, raw_token = InvitationService.create_invitation(employee, request.user)
+            # Store credentials securely in the session for one-time display
+            request.session['provisioned_email'] = result.employee.user.email
+            request.session['provisioned_password'] = result.temp_password
             
-            # For local development testing
-            print(f"\n--- ONBOARDING INVITATION CREATED ---")
-            print(f"Employee: {employee.user.email}")
-            print(f"Raw Token: {raw_token}")
-            print(f"-------------------------------------\n")
-            
-            return redirect("employee-list")
+            return redirect("employee-create-success")
 
     else:
         form = EmployeeRegistrationForm(tenant=request.tenant)
@@ -116,6 +112,26 @@ def employee_create(request):
         "employees/employee_create.html",
         {"form": form},
     )
+
+@login_required
+@role_required(*HR_ROLES)
+def employee_create_success(request):
+    email = request.session.pop('provisioned_email', None)
+    password = request.session.pop('provisioned_password', None)
+    
+    # If the session does not contain the credentials, they refreshed or accessed directly
+    if not email or not password:
+        return redirect('employee-list')
+        
+    return render(
+        request,
+        "employees/employee_create_success.html",
+        {
+            "employee_email": email,
+            "temp_password": password,
+        }
+    )
+
 
 
 @login_required

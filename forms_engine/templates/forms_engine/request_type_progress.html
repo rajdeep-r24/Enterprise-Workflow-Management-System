@@ -1,0 +1,28 @@
+<div class="ff-card shadow-sm ff-mb-6">
+    <div class="ff-card__body ff-flex ff-justify-between ff-items-center" style="padding: var(--sp-4);">
+        <div class="ff-flex ff-gap-4">
+            <span class="ff-font-medium {% if current_step >= 1 %}ff-text-primary{% else %}ff-text-secondary{% endif %}">
+                {% if current_step > 1 %}<i class="bi bi-check-circle-fill ff-text-success"></i>{% elif current_step == 1 %}●{% else %}○{% endif %} 
+                Step 1: Basic Information
+            </span>
+            <span class="ff-text-secondary">|</span>
+            
+            <span class="ff-font-medium {% if current_step >= 2 %}ff-text-primary{% else %}ff-text-secondary{% endif %}">
+                {% if current_step > 2 %}<i class="bi bi-check-circle-fill ff-text-success"></i>{% elif current_step == 2 %}●{% else %}○{% endif %} 
+                Step 2: Fields
+            </span>
+            <span class="ff-text-secondary">|</span>
+            
+            <span class="ff-font-medium {% if current_step >= 3 %}ff-text-primary{% else %}ff-text-secondary{% endif %}">
+                {% if current_step > 3 %}<i class="bi bi-check-circle-fill ff-text-success"></i>{% elif current_step == 3 %}●{% else %}○{% endif %} 
+                Step 3: Workflow
+            </span>
+            <span class="ff-text-secondary">|</span>
+            
+            <span class="ff-font-medium {% if current_step >= 4 %}ff-text-primary{% else %}ff-text-secondary{% endif %}">
+                {% if current_step > 4 %}<i class="bi bi-check-circle-fill ff-text-success"></i>{% elif current_step == 4 %}●{% else %}○{% endif %} 
+                Step 4: Publish
+            </span>
+        </div>
+    </div>
+</div>

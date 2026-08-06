@@ -49,7 +49,11 @@
                         <td>{{ employee.designation }}</td>
                         <td>
                             {% if employee.is_active %}
-                                <span class="ff-badge ff-badge--success"><span class="ff-badge__dot"></span> Active</span>
+                                {% if employee.user.requires_password_change %}
+                                    <span class="ff-badge ff-badge--warning"><span class="ff-badge__dot"></span> Pending Activation</span>
+                                {% else %}
+                                    <span class="ff-badge ff-badge--success"><span class="ff-badge__dot"></span> Active</span>
+                                {% endif %}
                             {% else %}
                                 <span class="ff-badge ff-badge--danger"><span class="ff-badge__dot"></span> Inactive</span>
                             {% endif %}

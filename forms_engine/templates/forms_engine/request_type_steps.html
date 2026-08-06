@@ -4,6 +4,7 @@
 {% block topbar_title %}Request Type Steps{% endblock %}
 
 {% block content %}
+{% include "forms_engine/request_type_progress.html" with current_step=3 %}
 
 <div class="ff-flex ff-justify-between ff-items-center ff-mb-6">
     <div>
@@ -11,10 +12,13 @@
         <p class="ff-text-secondary mb-0">Manage the workflow approval steps for this request type.</p>
     </div>
     <div class="ff-flex ff-gap-2">
-        <a href="{% url 'request-type-list' %}" class="ff-btn ff-btn--secondary">Back to List</a>
+        <a href="{% url 'request-type-list' %}" class="ff-btn ff-btn--ghost">Back to List</a>
         {% if not request_type.is_published %}
-        <a href="{% url 'request-type-step-add' request_type.pk %}" class="ff-btn ff-btn--primary">
+        <a href="{% url 'request-type-step-add' request_type.pk %}" class="ff-btn ff-btn--secondary">
             <i class="bi bi-plus"></i> Add Step
+        </a>
+        <a href="{% url 'request-type-summary' request_type.pk %}" class="ff-btn ff-btn--primary">
+            Continue to Publish Summary
         </a>
         {% endif %}
     </div>

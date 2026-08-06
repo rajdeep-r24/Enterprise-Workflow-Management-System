@@ -51,8 +51,11 @@ def dashboard(request):
 
     # ORG_ADMIN Dashboard
     if role == "ORG_ADMIN":
+        from api.services.setup_progress import SetupProgressService
+        setup_progress = SetupProgressService.get_progress(request.tenant)
 
         context.update({
+            "setup_progress": setup_progress,
             "total_employees": Employee.objects.for_tenant(request.tenant).filter(is_active=True).count(),
 
             "pending_requests": WorkflowInstance.objects.for_tenant(request.tenant).filter(

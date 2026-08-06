@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}Publish Summary - {{ request_type.name }}{% endblock %}
+{% block topbar_title %}Publish Summary{% endblock %}
+
+{% block content %}
+{% include "forms_engine/request_type_progress.html" with current_step=4 %}
+
+<div class="ff-flex ff-justify-between ff-items-center ff-mb-6">
+    <div>
+        <h2 class="ff-mb-2">Request Type Summary</h2>
+        <p class="ff-text-secondary mb-0">Review the setup before publishing.</p>
+    </div>
+</div>
+
+<div class="ff-card shadow-sm" style="max-width: 600px;">
+    <div class="ff-card__body">
+        
+        <div class="ff-flex ff-flex-col ff-gap-4 ff-mb-6">
+            <div class="ff-flex ff-items-center ff-gap-3">
+                <i class="bi bi-check-circle-fill ff-text-success" style="font-size: 1.25rem;"></i>
+                <span class="ff-font-medium">Basic Information</span>
+            </div>
+            
+            <div class="ff-flex ff-items-center ff-gap-3">
+                <i class="bi bi-check-circle-fill ff-text-success" style="font-size: 1.25rem;"></i>
+                <span class="ff-font-medium">Fields ({{ fields_count }})</span>
+            </div>
+            
+            <div class="ff-flex ff-items-center ff-gap-3">
+                <i class="bi bi-check-circle-fill ff-text-success" style="font-size: 1.25rem;"></i>
+                <span class="ff-font-medium">Workflow Steps ({{ steps_count }})</span>
+            </div>
+        </div>
+
+        <div class="ff-mb-6" style="padding-top: var(--sp-4); border-top: 1px solid var(--border);">
+            <div class="ff-text-sm ff-text-secondary ff-mb-1">Status</div>
+            <div>
+                {% if request_type.is_published %}
+                    <span class="ff-badge ff-badge--success">Published</span>
+                {% else %}
+                    <span class="ff-badge ff-badge--neutral">Draft</span>
+                {% endif %}
+            </div>
+        </div>
+
+        <form method="post" action="{% url 'request-type-publish' request_type.pk %}">
+            {% csrf_token %}
+            <div class="ff-flex ff-gap-3">
+                {% if not request_type.is_published %}
+                    <button type="submit" class="ff-btn ff-btn--primary">Save & Publish</button>
+                {% endif %}
+                <a href="{% url 'request-type-steps' request_type.pk %}" class="ff-btn ff-btn--ghost">Back</a>
+            </div>
+        </form>
+
+    </div>
+</div>
+
+{% endblock %}

@@ -15,6 +15,61 @@
 
 {% if role == "HR_HEAD" or role == "ADMIN" or role == "ORG_ADMIN" or role == "SUPER_ADMIN" %}
 
+{% if setup_progress and not setup_progress.hide_entirely %}
+<div class="ff-card shadow-sm ff-mb-6" style="border-top: 4px solid var(--primary);">
+    <div class="ff-card__body">
+        <h2 style="margin-bottom: var(--sp-2);">Welcome to ForgeFlow 👋</h2>
+        <p class="ff-text-secondary ff-mb-6">Let's get your organization ready.</p>
+        
+        {% if setup_progress.show_success_card %}
+        <div class="ff-alert ff-alert--success">
+            <i class="bi bi-check-circle-fill"></i>
+            <div class="ff-alert__content">
+                <strong style="display: block; margin-bottom: 4px;">🎉 Your organization is ready.</strong>
+                <span>You have successfully completed all setup steps. This message will automatically hide after a few days.</span>
+            </div>
+        </div>
+        {% else %}
+        
+        <div class="ff-flex ff-justify-between ff-items-center ff-mb-3">
+            <span class="ff-text-sm ff-font-medium ff-text-secondary">Estimated setup time: 5 minutes</span>
+            <span class="ff-text-sm ff-font-medium ff-text-secondary">Progress: {{ setup_progress.completed_count }} / {{ setup_progress.total_steps }} completed</span>
+        </div>
+        
+        <div style="height: 8px; background: var(--border); border-radius: var(--r-full); overflow: hidden; margin-bottom: var(--sp-6);">
+            <div style="width: {{ setup_progress.percentage }}%; background: var(--primary); height: 100%; transition: width 0.3s ease;"></div>
+        </div>
+        
+        <div class="ff-flex ff-flex-col ff-gap-4">
+            {% for step in setup_progress.steps %}
+            <div style="border: 1px solid var(--border); border-radius: var(--r-md); padding: var(--sp-4); {% if step.is_completed %}background: var(--surface); opacity: 0.8;{% else %}background: var(--canvas-subtle);{% endif %}">
+                <div class="ff-flex ff-justify-between ff-items-center">
+                    <div>
+                        <h4 class="ff-font-semibold" style="margin: 0 0 var(--sp-1) 0; font-size: 16px;">
+                            {% if step.is_completed %}
+                                <i class="bi bi-check-circle-fill ff-text-success" style="margin-right: 4px;"></i>
+                            {% endif %}
+                            Step {{ forloop.counter }}: {{ step.title }}
+                        </h4>
+                        <p class="ff-text-sm ff-text-secondary" style="margin: 0; max-width: 500px;">{{ step.description }}</p>
+                    </div>
+                    <div style="flex-shrink: 0; margin-left: var(--sp-4);">
+                        {% if step.is_completed %}
+                            <span class="ff-badge ff-badge--success"><i class="bi bi-check2"></i> Created</span>
+                        {% else %}
+                            <a href="{% url step.action_url_name %}" class="ff-btn ff-btn--primary ff-btn--sm">{{ step.action_label }}</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+
 <div class="ff-grid ff-grid--4 ff-mb-6">
     <div class="ff-stat-card">
         <div class="ff-stat-card__icon" style="background: var(--primary-subtle); color: var(--primary);"><i class="bi bi-people"></i></div>

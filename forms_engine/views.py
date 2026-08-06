@@ -999,14 +999,25 @@ def request_type_create(request):
                 form_def.is_published = False
                 form_def.save()
                 
-            messages.success(request, "Request type created successfully.")
-            return redirect("request-type-list")
+            messages.success(request, "Basic information saved successfully.")
+            return redirect("request-type-fields", pk=form_def.pk)
     else:
         form = RequestTypeForm(tenant=request.tenant)
         
     return render(request, "forms_engine/request_type_form.html", {
         "form": form,
         "title": "Create Request Type"
+    })
+
+@login_required
+@role_required("ORG_ADMIN", "SUPER_ADMIN", "ADMIN", "HR_HEAD")
+def request_type_summary(request, pk):
+    request_type = get_object_or_404(FormDefinition.objects.for_tenant(request.tenant), pk=pk)
+    
+    return render(request, "forms_engine/request_type_summary.html", {
+        "request_type": request_type,
+        "fields_count": request_type.fields.count(),
+        "steps_count": request_type.workflow.steps.count(),
     })
 
 @login_required

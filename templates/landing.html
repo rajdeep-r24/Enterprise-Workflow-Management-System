@@ -2,97 +2,1584 @@
 {% load static %}
 
 {% block title %}ForgeFlow — Enterprise Approval Workflows{% endblock %}
+{% block meta_description %}ForgeFlow routes every request through the right approver, automatically. Full audit trail. QR-verifiable permission slips. Built for the enterprise.{% endblock %}
+
+{% block nav_actions %}
+<a href="{% url 'login' %}" class="ff-btn ff-btn--secondary ff-btn--sm">Sign in</a>
+<a href="{% url 'organization_signup' %}" class="ff-btn ff-btn--primary ff-btn--sm">Get started free <i class="bi bi-arrow-right"></i></a>
+{% endblock %}
+
+{% block extra_head %}
+<style>
+/* ==========================================================================
+   ForgeFlow Landing — Page Styles
+   ========================================================================== */
+
+/* ---- Layout ---- */
+.lp-section { max-width: 1200px; margin: 0 auto; padding: 0 var(--sp-8); }
+
+/* ---- Reveal ---- */
+[data-reveal] {
+    opacity: 0; transform: translateY(22px);
+    transition: opacity 650ms cubic-bezier(0.19,1,0.22,1), transform 650ms cubic-bezier(0.19,1,0.22,1);
+}
+[data-reveal].is-revealed { opacity: 1; transform: translateY(0); }
+[data-reveal][data-delay="1"] { transition-delay: 80ms; }
+[data-reveal][data-delay="2"] { transition-delay: 160ms; }
+[data-reveal][data-delay="3"] { transition-delay: 240ms; }
+[data-reveal][data-delay="4"] { transition-delay: 320ms; }
+[data-reveal][data-delay="5"] { transition-delay: 400ms; }
+[data-reveal][data-delay="6"] { transition-delay: 480ms; }
+
+/* ---- Theme smooth ---- */
+.theme-switching, .theme-switching *, .theme-switching *::before, .theme-switching *::after {
+    transition:
+        background-color 480ms cubic-bezier(0.4,0,0.2,1),
+        border-color     480ms cubic-bezier(0.4,0,0.2,1),
+        color            480ms cubic-bezier(0.4,0,0.2,1),
+        box-shadow       480ms cubic-bezier(0.4,0,0.2,1) !important;
+}
+
+/* ==========================================================================
+   HERO
+   ========================================================================== */
+.lp-hero-section {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--sp-16);
+    align-items: center;
+    min-height: calc(100vh - 64px);
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: var(--sp-16) var(--sp-8) var(--sp-12);
+}
+
+@media (max-width: 900px) {
+    .lp-hero-section { grid-template-columns: 1fr; min-height: auto; padding-top: var(--sp-12); }
+}
+
+/* Hero aurora */
+.lp-hero-bg {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100vh;
+    pointer-events: none; z-index: -1; overflow: hidden;
+}
+.lp-aurora-orb {
+    position: absolute; border-radius: 50%; filter: blur(100px); opacity: 0;
+    animation: aurora-in 1.2s ease both;
+}
+.lp-aurora-orb--1 {
+    width: 55vw; height: 55vw; top: -15%; left: -10%;
+    background: radial-gradient(circle, rgba(79,70,229,.12) 0%, transparent 65%);
+    animation-delay: .2s; animation: aurora-in 1.2s .2s ease both, aorb-1 20s 1.4s ease-in-out infinite;
+}
+.lp-aurora-orb--2 {
+    width: 45vw; height: 45vw; top: -5%; right: -5%;
+    background: radial-gradient(circle, rgba(139,92,246,.1) 0%, transparent 65%);
+    animation: aurora-in 1.2s .4s ease both, aorb-2 24s 1.6s ease-in-out infinite;
+}
+.lp-aurora-orb--3 {
+    width: 35vw; height: 35vw; bottom: 10%; right: 20%;
+    background: radial-gradient(circle, rgba(236,72,153,.06) 0%, transparent 65%);
+    animation: aurora-in 1.2s .6s ease both, aorb-3 18s 1.8s ease-in-out infinite;
+}
+
+[data-theme="dark"] .lp-aurora-orb--1 { background: radial-gradient(circle, rgba(99,120,255,.18) 0%, transparent 65%); }
+[data-theme="dark"] .lp-aurora-orb--2 { background: radial-gradient(circle, rgba(160,110,255,.15) 0%, transparent 65%); }
+[data-theme="dark"] .lp-aurora-orb--3 { background: radial-gradient(circle, rgba(236,72,153,.1) 0%, transparent 65%); }
+
+@keyframes aurora-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes aorb-1 { 0%,100% { transform:translate(0,0) scale(1); } 40% { transform:translate(3vw,-2vh) scale(1.06); } 70% { transform:translate(-2vw,2vh) scale(.95); } }
+@keyframes aorb-2 { 0%,100% { transform:translate(0,0) scale(1); } 35% { transform:translate(-2vw,3vh) scale(1.04); } 65% { transform:translate(3vw,-2vh) scale(.97); } }
+@keyframes aorb-3 { 0%,100% { transform:translate(0,0) scale(1); } 50% { transform:translate(2vw,-3vh) scale(1.08); } }
+
+/* Hero copy */
+.lp-hero__eyebrow {
+    display: inline-flex; align-items: center; gap: var(--sp-2);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--r-full);
+    padding: 5px var(--sp-3) 5px var(--sp-2);
+    font-size: var(--text-xs); font-weight: 700;
+    color: var(--text-secondary); letter-spacing: var(--tracking-wide);
+    text-transform: uppercase; margin-bottom: var(--sp-6);
+    background: var(--surface);
+    backdrop-filter: blur(8px);
+}
+.lp-hero__eyebrow-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--success);
+    box-shadow: 0 0 0 3px rgba(16,185,129,.2);
+    animation: pulse-dot 2s ease-in-out infinite;
+}
+@keyframes pulse-dot {
+    0%,100% { box-shadow: 0 0 0 3px rgba(16,185,129,.2); }
+    50%      { box-shadow: 0 0 0 6px rgba(16,185,129,.08); }
+}
+
+.lp-hero__title {
+    font-size: clamp(38px, 4.5vw, 60px);
+    font-weight: 800; letter-spacing: -0.035em;
+    line-height: 1.06; color: var(--text-primary);
+    margin-bottom: var(--sp-5);
+}
+.lp-hero__title em {
+    font-style: normal;
+    background: linear-gradient(130deg, var(--accent) 0%, #8B5CF6 45%, #EC4899 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.lp-hero__sub {
+    font-size: var(--text-lg); color: var(--text-tertiary);
+    max-width: 480px; line-height: var(--leading-relaxed);
+    margin-bottom: var(--sp-8);
+}
+.lp-hero__ctas { display: flex; gap: var(--sp-3); flex-wrap: wrap; margin-bottom: var(--sp-8); }
+.lp-hero__trust {
+    display: flex; align-items: center; gap: var(--sp-3);
+    font-size: var(--text-xs); color: var(--text-tertiary); font-weight: 500;
+}
+.lp-hero__trust-avatars {
+    display: flex;
+}
+.lp-hero__trust-avatar {
+    width: 24px; height: 24px; border-radius: 50%;
+    border: 2px solid var(--canvas);
+    background: var(--accent-subtle); color: var(--accent);
+    font-size: 9px; font-weight: 800;
+    display: flex; align-items: center; justify-content: center;
+    margin-left: -6px;
+}
+.lp-hero__trust-avatar:first-child { margin-left: 0; }
+
+/* ---- Hero Simulation Panel ---- */
+.lp-sim-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r-2xl);
+    overflow: hidden;
+    box-shadow: var(--shadow-xl);
+    position: relative;
+}
+
+.lp-sim-panel::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, var(--accent) 0%, #8B5CF6 50%, #EC4899 100%);
+    z-index: 1;
+}
+
+/* Sim chrome bar */
+.sim-chrome {
+    display: flex; align-items: center; gap: var(--sp-2);
+    padding: var(--sp-3) var(--sp-4);
+    border-bottom: 1px solid var(--border);
+    background: var(--canvas-subtle);
+}
+.sim-chrome__dot {
+    width: 10px; height: 10px; border-radius: 50%;
+}
+.sim-chrome__dot--red   { background: #FF5F57; }
+.sim-chrome__dot--yellow{ background: #FEBC2E; }
+.sim-chrome__dot--green { background: #28C840; }
+.sim-chrome__title {
+    flex: 1; text-align: center;
+    font-size: var(--text-xs); color: var(--text-tertiary); font-weight: 600;
+    margin-left: -42px;
+}
+
+/* Progress track */
+.sim-progress-wrap {
+    padding: var(--sp-4) var(--sp-5) 0;
+}
+.sim-progress-track {
+    height: 4px; background: var(--border);
+    border-radius: var(--r-full); overflow: hidden;
+    margin-bottom: var(--sp-4);
+}
+.sim-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), #8B5CF6);
+    border-radius: var(--r-full);
+    width: 0;
+    transition: width 800ms cubic-bezier(0.19,1,0.22,1);
+}
+.sim-steps {
+    display: flex; justify-content: space-between; margin-bottom: var(--sp-4);
+}
+.sim-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--border-strong);
+    transition: background 300ms, box-shadow 300ms, transform 300ms;
+    position: relative;
+}
+.sim-dot.is-done    { background: var(--accent); }
+.sim-dot.is-active  { background: var(--accent); transform: scale(1.5); box-shadow: 0 0 0 4px rgba(79,70,229,.2); }
+
+/* Request card */
+.sim-body {
+    padding: 0 var(--sp-5) var(--sp-5);
+    display: flex; flex-direction: column; gap: var(--sp-3);
+    min-height: 280px;
+}
+
+.sim-request-card {
+    background: var(--surface-raised);
+    border: 1px solid var(--border);
+    border-radius: var(--r-md);
+    padding: var(--sp-4);
+    opacity: 0; transform: translateY(12px);
+    transition: opacity 400ms ease, transform 400ms cubic-bezier(0.19,1,0.22,1);
+}
+.sim-request-card.is-in { opacity: 1; transform: translateY(0); }
+
+.sim-card__who { display: flex; align-items: center; gap: var(--sp-3); margin-bottom: var(--sp-3); }
+.sim-card__avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent) 0%, #8B5CF6 100%);
+    color: #fff; font-size: var(--text-xs); font-weight: 800;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.sim-card__name { font-size: var(--text-sm); font-weight: 700; }
+.sim-card__dept { font-size: var(--text-xs); color: var(--text-tertiary); }
+.sim-card__request {
+    background: var(--canvas-subtle);
+    border: 1px solid var(--border);
+    border-radius: var(--r-sm);
+    padding: var(--sp-3);
+    margin-bottom: var(--sp-3);
+}
+.sim-card__request-type { font-size: var(--text-xs); font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: var(--tracking-wide); }
+.sim-card__request-title { font-size: var(--text-sm); font-weight: 700; margin-top: var(--sp-1); }
+.sim-card__badge {
+    font-size: var(--text-xs); font-weight: 700;
+    color: var(--accent); background: var(--accent-subtle);
+    border: 1px solid var(--accent-subtle-border);
+    border-radius: var(--r-full); padding: 2px var(--sp-2);
+    display: inline-block;
+}
+
+/* Notification stack */
+.sim-notif-stack {
+    display: flex; flex-direction: column; gap: var(--sp-2);
+}
+.sim-notif {
+    display: flex; align-items: center; gap: var(--sp-2);
+    padding: var(--sp-2) var(--sp-3);
+    border-radius: var(--r-sm);
+    font-size: var(--text-xs); font-weight: 600;
+    opacity: 0; transform: translateX(16px);
+    transition: opacity 350ms ease, transform 350ms cubic-bezier(0.19,1,0.22,1);
+    border: 1px solid var(--border);
+    background: var(--surface);
+}
+.sim-notif.is-in { opacity: 1; transform: translateX(0); }
+.sim-notif--success { border-color: var(--success-border); background: var(--success-subtle); color: var(--success-text); }
+.sim-notif--warning { border-color: var(--warning-border); background: var(--warning-subtle); color: var(--warning-text); }
+.sim-notif--info    { border-color: var(--info-border);    background: var(--info-subtle);    color: var(--info-text); }
+
+/* QR reveal */
+.sim-qr {
+    display: flex; align-items: center; gap: var(--sp-3);
+    padding: var(--sp-3) var(--sp-4);
+    border: 1px solid var(--success-border);
+    background: var(--success-subtle);
+    border-radius: var(--r-md);
+    opacity: 0; transform: translateY(8px);
+    transition: opacity 500ms ease, transform 500ms cubic-bezier(0.34,1.56,0.64,1);
+}
+.sim-qr.is-in { opacity: 1; transform: translateY(0); }
+.sim-qr__code {
+    font-size: 36px; color: var(--success);
+    line-height: 1;
+}
+.sim-qr__label { font-size: var(--text-xs); font-weight: 700; color: var(--success-text); }
+.sim-qr__sub   { font-size: var(--text-xs); color: var(--text-tertiary); margin-top: 2px; }
+
+.sim-state-label {
+    font-size: var(--text-xs); color: var(--text-tertiary); font-weight: 600;
+    text-align: right; padding-right: 2px; margin-bottom: var(--sp-2);
+}
+
+/* ==========================================================================
+   THE REAL COST — Dark section
+   ========================================================================== */
+.lp-cost-section {
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: var(--sp-20) var(--sp-8);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Subtle noise texture overlay */
+.lp-cost-section::before {
+    content: '';
+    position: absolute; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+    opacity: .4;
+    pointer-events: none;
+}
+
+.lp-cost-inner {
+    max-width: 1200px; margin: 0 auto;
+    position: relative;
+}
+
+.lp-cost-header {
+    max-width: 640px; margin-bottom: var(--sp-12);
+}
+
+.lp-cost-eyebrow {
+    font-size: var(--text-xs); font-weight: 700; text-transform: uppercase;
+    letter-spacing: var(--tracking-wider); color: var(--danger-text);
+    margin-bottom: var(--sp-4);
+}
+
+.lp-cost-title {
+    font-size: clamp(28px, 3.5vw, 44px); font-weight: 800;
+    letter-spacing: var(--tracking-tight); line-height: 1.1;
+    margin-bottom: var(--sp-4);
+}
+
+.lp-cost-sub {
+    font-size: var(--text-md); color: var(--text-tertiary);
+    line-height: var(--leading-relaxed);
+}
+
+.lp-cost-stats {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--sp-6);
+}
+@media (max-width: 760px) { .lp-cost-stats { grid-template-columns: 1fr; } }
+
+.lp-stat-card {
+    padding: var(--sp-6);
+    border: 1px solid var(--border);
+    border-radius: var(--r-xl);
+    background: var(--canvas-subtle);
+    position: relative; overflow: hidden;
+}
+.lp-stat-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 2px;
+}
+.lp-stat-card--red::before    { background: var(--danger); }
+.lp-stat-card--amber::before  { background: var(--warning); }
+.lp-stat-card--neutral::before { background: var(--border-strong); }
+
+.lp-stat-card__value {
+    font-size: var(--text-4xl); font-weight: 800;
+    letter-spacing: var(--tracking-tight); margin-bottom: var(--sp-1);
+    line-height: 1;
+}
+.lp-stat-card--red   .lp-stat-card__value { color: var(--danger); }
+.lp-stat-card--amber .lp-stat-card__value { color: var(--warning); }
+.lp-stat-card__label { font-size: var(--text-sm); font-weight: 600; margin-bottom: var(--sp-2); }
+.lp-stat-card__body  { font-size: var(--text-xs); color: var(--text-tertiary); line-height: var(--leading-relaxed); }
+
+/* ==========================================================================
+   THE APPROVAL TRANSIT — ForgeFlow Signature
+   ========================================================================== */
+.lp-transit-section {
+    padding: var(--sp-20) var(--sp-8);
+    max-width: 1200px; margin: 0 auto;
+}
+
+.lp-transit-header { text-align: center; max-width: 640px; margin: 0 auto var(--sp-12); }
+.lp-transit-eyebrow {
+    font-size: var(--text-xs); font-weight: 700; text-transform: uppercase;
+    letter-spacing: var(--tracking-wider); color: var(--accent); margin-bottom: var(--sp-3);
+}
+.lp-transit-title {
+    font-size: clamp(26px, 3.5vw, 40px); font-weight: 800;
+    letter-spacing: var(--tracking-tight); margin-bottom: var(--sp-4);
+}
+.lp-transit-sub { font-size: var(--text-md); color: var(--text-tertiary); line-height: var(--leading-relaxed); }
+
+/* Transit arena */
+.lp-transit-arena {
+    display: grid; grid-template-columns: 1fr 300px; gap: var(--sp-8);
+    align-items: start;
+}
+@media (max-width: 860px) { .lp-transit-arena { grid-template-columns: 1fr; } }
+
+.lp-transit-map {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r-2xl);
+    padding: var(--sp-8) var(--sp-8) var(--sp-6);
+    position: relative;
+    overflow: hidden;
+}
+
+.lp-transit-map::before {
+    content: '';
+    position: absolute; inset: 0;
+    background-image:
+        linear-gradient(var(--border) 1px, transparent 1px),
+        linear-gradient(90deg, var(--border) 1px, transparent 1px);
+    background-size: 32px 32px;
+    opacity: 0.25;
+    pointer-events: none;
+}
+
+/* Transit track */
+.lp-transit-track-wrap {
+    position: relative; height: 6px;
+    background: var(--border);
+    border-radius: var(--r-full);
+    margin-bottom: var(--sp-8);
+    overflow: visible;
+}
+.lp-transit-track-fill {
+    height: 100%; border-radius: var(--r-full);
+    background: linear-gradient(90deg, var(--accent), #8B5CF6);
+    width: 0;
+    transition: width 600ms cubic-bezier(0.19,1,0.22,1);
+    box-shadow: 0 0 10px rgba(79,70,229,.4);
+}
+
+/* Token */
+.lp-transit-token {
+    position: absolute; top: 50%;
+    transform: translateY(-50%);
+    width: 24px; height: 24px; border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 0 4px rgba(79,70,229,.2), 0 2px 8px rgba(79,70,229,.5);
+    z-index: 10;
+    left: 0;
+    transition: left 600ms cubic-bezier(0.19,1,0.22,1);
+    display: flex; align-items: center; justify-content: center;
+}
+.lp-transit-token::after {
+    content: '';
+    width: 10px; height: 10px; border-radius: 50%;
+    background: #fff;
+    animation: token-pulse 1.5s ease-in-out infinite;
+}
+@keyframes token-pulse {
+    0%,100% { transform: scale(1); opacity: 1; }
+    50%      { transform: scale(1.3); opacity: .7; }
+}
+.lp-transit-token.is-active {
+    animation: token-glow 1s ease-in-out infinite;
+}
+@keyframes token-glow {
+    0%,100% { box-shadow: 0 0 0 4px rgba(79,70,229,.2), 0 2px 8px rgba(79,70,229,.5); }
+    50%      { box-shadow: 0 0 0 8px rgba(79,70,229,.15), 0 4px 20px rgba(79,70,229,.6); }
+}
+
+/* Station nodes */
+.lp-transit-nodes {
+    display: flex; justify-content: space-between; gap: var(--sp-2);
+    position: relative;
+}
+
+.transit-node {
+    flex: 1; display: flex; flex-direction: column; align-items: center;
+    text-align: center;
+    opacity: 0.4;
+    transition: opacity 300ms, transform 300ms cubic-bezier(0.34,1.56,0.64,1);
+}
+.transit-node.is-active { opacity: 1; transform: translateY(-2px); }
+.transit-node.is-done   { opacity: 0.8; }
+.transit-node.is-approved { opacity: 1; }
+
+.transit-node__badge {
+    width: 44px; height: 44px; border-radius: var(--r-md);
+    border: 2px solid var(--border);
+    background: var(--surface-raised);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; color: var(--text-tertiary);
+    margin-bottom: var(--sp-2);
+    transition: border-color 300ms, background 300ms, box-shadow 300ms, color 300ms;
+    position: relative;
+}
+
+.transit-node.is-pending  .transit-node__badge { border-color: var(--warning-border); color: var(--warning); background: var(--warning-subtle); box-shadow: 0 0 16px rgba(245,158,11,.2); }
+.transit-node.is-approved .transit-node__badge { border-color: var(--success-border); color: var(--success); background: var(--success-subtle); }
+.transit-node.is-done     .transit-node__badge { border-color: var(--success-border); color: var(--success); background: var(--success-subtle); }
+.transit-node:last-child.is-approved .transit-node__badge { border-color: var(--accent-subtle-border); color: var(--accent); background: var(--accent-subtle); }
+
+/* Stamp overlay */
+.transit-node__badge::after {
+    content: '✓';
+    position: absolute; inset: -1px;
+    border-radius: inherit;
+    background: var(--success);
+    color: #fff; font-weight: 800; font-size: 16px;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; transform: scale(0.6) rotate(-12deg);
+    transition: opacity 250ms ease, transform 300ms cubic-bezier(0.34,1.56,0.64,1);
+}
+.transit-node.is-approved .transit-node__badge::after {
+    opacity: 1; transform: scale(1) rotate(0deg);
+}
+.transit-node:last-child.is-approved .transit-node__badge::after {
+    background: var(--accent); content: '✦';
+}
+
+.transit-node__name { font-size: var(--text-xs); font-weight: 700; margin-bottom: 2px; }
+.transit-node__role { font-size: 10px; color: var(--text-tertiary); }
+
+/* Transit CTA */
+.lp-transit-cta {
+    display: flex; align-items: center; justify-content: center;
+    gap: var(--sp-4); margin-top: var(--sp-6);
+    flex-wrap: wrap;
+}
+
+#transit-btn {
+    display: inline-flex; align-items: center; gap: var(--sp-2);
+    height: 44px; padding: 0 var(--sp-6);
+    border-radius: var(--r-sm);
+    background: var(--accent); color: #fff;
+    font-size: var(--text-sm); font-weight: 700; font-family: var(--font-sans);
+    border: none; cursor: pointer;
+    transition: background 160ms, box-shadow 160ms, transform 160ms;
+    box-shadow: 0 2px 12px rgba(79,70,229,.35);
+}
+#transit-btn:hover:not(:disabled) { background: var(--accent-hover); box-shadow: 0 4px 20px rgba(79,70,229,.45); transform: translateY(-1px); }
+#transit-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+#transit-btn.is-running::before { content: ''; display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,.5); border-top-color: #fff; border-radius: 50%; animation: spin 600ms linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Transit log */
+.lp-transit-log-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r-xl);
+    overflow: hidden;
+    position: sticky; top: var(--sp-8);
+}
+.lp-transit-log-panel__header {
+    padding: var(--sp-4) var(--sp-4);
+    border-bottom: 1px solid var(--border);
+    background: var(--canvas-subtle);
+}
+.lp-transit-log-panel__title {
+    font-size: var(--text-xs); font-weight: 700;
+    text-transform: uppercase; letter-spacing: var(--tracking-wider);
+    color: var(--text-tertiary);
+}
+
+#transit-log {
+    padding: var(--sp-3) var(--sp-4);
+    min-height: 180px; max-height: 280px;
+    overflow-y: auto;
+    display: flex; flex-direction: column; gap: var(--sp-2);
+    font-size: var(--text-xs);
+}
+
+.transit-log-row {
+    display: flex; align-items: center; gap: var(--sp-2);
+    padding: var(--sp-2) 0;
+    border-bottom: 1px solid var(--border);
+    animation: log-row-in 260ms cubic-bezier(0.19,1,0.22,1) both;
+}
+.transit-log-row:last-child { border-bottom: none; }
+.transit-log-row.is-approved .transit-log-label { color: var(--success-text); }
+
+@keyframes log-row-in {
+    from { opacity: 0; transform: translateX(-8px); }
+    to   { opacity: 1; transform: translateX(0); }
+}
+
+.transit-log-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.transit-log-label { flex: 1; color: var(--text-secondary); line-height: 1.4; }
+.transit-log-time { color: var(--text-tertiary); flex-shrink: 0; font-family: var(--font-mono); }
+
+/* ==========================================================================
+   FEATURES — Bento grid
+   ========================================================================== */
+.lp-bento {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    grid-template-rows: auto;
+    gap: var(--sp-5);
+}
+
+.lp-bento-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r-xl);
+    padding: var(--sp-6);
+    overflow: hidden;
+    position: relative;
+    transition: box-shadow 200ms ease, border-color 200ms ease;
+    will-change: transform;
+    perspective: 900px;
+}
+.lp-bento-card:hover { box-shadow: var(--shadow-md); border-color: var(--border-strong); }
+
+/* Grid placement */
+.lp-bento-card--a { grid-column: span 5; } /* Routing — large */
+.lp-bento-card--b { grid-column: span 7; } /* Audit trail — wide */
+.lp-bento-card--c { grid-column: span 4; } /* QR slips */
+.lp-bento-card--d { grid-column: span 4; } /* RBAC */
+.lp-bento-card--e { grid-column: span 4; } /* Notifications */
+
+@media (max-width: 860px) {
+    .lp-bento-card--a, .lp-bento-card--b,
+    .lp-bento-card--c, .lp-bento-card--d, .lp-bento-card--e { grid-column: span 12; }
+}
+
+.lp-bento-card__eyebrow {
+    font-size: var(--text-xs); font-weight: 700; text-transform: uppercase;
+    letter-spacing: var(--tracking-wider); color: var(--text-tertiary); margin-bottom: var(--sp-3);
+}
+.lp-bento-card__title { font-size: var(--text-lg); font-weight: 800; margin-bottom: var(--sp-2); letter-spacing: var(--tracking-snug); }
+.lp-bento-card__body  { font-size: var(--text-sm); color: var(--text-tertiary); line-height: var(--leading-relaxed); }
+
+.lp-bento-card__icon {
+    width: 40px; height: 40px; border-radius: var(--r-md);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; margin-bottom: var(--sp-4);
+    transition: transform 200ms cubic-bezier(0.34,1.56,0.64,1);
+}
+.lp-bento-card:hover .lp-bento-card__icon { transform: scale(1.12) rotate(-5deg); }
+
+/* Bento visual embellishments */
+.lp-bento-visual {
+    margin-top: var(--sp-5);
+    border-radius: var(--r-md);
+    overflow: hidden;
+}
+
+/* Routing mini visualization */
+.lp-routing-chain {
+    display: flex; flex-direction: column; gap: var(--sp-2);
+}
+.lp-routing-step {
+    display: flex; align-items: center; gap: var(--sp-3);
+    padding: var(--sp-2) var(--sp-3);
+    background: var(--canvas-subtle);
+    border: 1px solid var(--border);
+    border-radius: var(--r-sm);
+    font-size: var(--text-xs); font-weight: 600;
+    animation: routing-step-pulse 3s ease-in-out infinite;
+}
+.lp-routing-step:nth-child(1) { animation-delay: 0s; }
+.lp-routing-step:nth-child(2) { animation-delay: 1s; }
+.lp-routing-step:nth-child(3) { animation-delay: 2s; }
+@keyframes routing-step-pulse {
+    0%,85%,100% { border-color: var(--border); background: var(--canvas-subtle); }
+    92% { border-color: var(--accent-subtle-border); background: var(--accent-subtle); }
+}
+
+.lp-routing-step__dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.lp-routing-step__label { flex: 1; }
+.lp-routing-step__arrow { color: var(--text-tertiary); font-size: 10px; }
+
+/* Audit mini visualization */
+.lp-audit-mini {
+    display: flex; flex-direction: column; gap: 6px;
+}
+.lp-audit-mini-row {
+    display: flex; align-items: center; gap: var(--sp-2);
+    font-size: var(--text-xs); color: var(--text-secondary);
+    padding: var(--sp-1) 0;
+    border-bottom: 1px solid var(--border);
+}
+.lp-audit-mini-row:last-child { border-bottom: none; }
+.lp-audit-mini-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.lp-audit-mini-time { color: var(--text-tertiary); font-family: var(--font-mono); font-size: 10px; margin-left: auto; }
+
+/* ==========================================================================
+   AUDIT / ENTERPRISE SECTION
+   ========================================================================== */
+.lp-audit-section {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: var(--sp-16); align-items: center;
+}
+@media (max-width: 860px) { .lp-audit-section { grid-template-columns: 1fr; } }
+
+.lp-audit-visual {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r-xl);
+    padding: var(--sp-6);
+    box-shadow: var(--shadow-lg);
+    position: relative; overflow: hidden;
+}
+.lp-audit-visual::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, var(--accent), #8B5CF6, #EC4899);
+}
+.lp-audit-row {
+    display: flex; align-items: center; gap: var(--sp-3);
+    padding: var(--sp-3) 0; border-bottom: 1px solid var(--border);
+}
+.lp-audit-row:last-child { border-bottom: none; }
+.lp-audit-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.lp-audit-label { font-size: var(--text-sm); font-weight: 500; flex: 1; }
+.lp-audit-time  { font-size: var(--text-xs); color: var(--text-tertiary); font-family: var(--font-mono); }
+
+/* ==========================================================================
+   TESTIMONIALS — Scattered layout
+   ========================================================================== */
+.lp-quotes-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: var(--sp-5);
+    align-items: start;
+}
+@media (max-width: 900px) { .lp-quotes-grid { grid-template-columns: 1fr; } }
+
+.lp-testimonial {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--r-xl); padding: var(--sp-6);
+    transition: box-shadow 200ms ease, border-color 200ms ease;
+    perspective: 900px;
+}
+.lp-testimonial:hover { box-shadow: var(--shadow-md); border-color: var(--border-strong); }
+.lp-testimonial--offset { margin-top: var(--sp-8); }
+
+.lp-testimonial__quote {
+    font-size: var(--text-md); color: var(--text-secondary);
+    line-height: var(--leading-relaxed); margin-bottom: var(--sp-5);
+    font-style: italic;
+}
+
+/* The "wow" word — one key word per quote highlighted */
+.lp-testimonial__quote strong {
+    font-style: normal; font-weight: 700;
+    color: var(--text-primary);
+    background: var(--accent-subtle);
+    border-radius: 3px; padding: 1px 4px;
+}
+
+.lp-testimonial__author { display: flex; align-items: center; gap: var(--sp-3); }
+.lp-testimonial__avatar {
+    width: 36px; height: 36px; border-radius: var(--r-full);
+    background: linear-gradient(135deg, var(--accent), #8B5CF6);
+    color: #fff; display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: var(--text-xs);
+}
+.lp-testimonial__name { font-size: var(--text-sm); font-weight: 700; }
+.lp-testimonial__role { font-size: var(--text-xs); color: var(--text-tertiary); }
+
+/* ==========================================================================
+   LOGOS
+   ========================================================================== */
+.lp-logos-section {
+    padding: var(--sp-10) var(--sp-8);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    text-align: center;
+}
+.lp-logos-eyebrow {
+    font-size: var(--text-xs); font-weight: 700;
+    text-transform: uppercase; letter-spacing: var(--tracking-wider);
+    color: var(--text-tertiary); margin-bottom: var(--sp-6);
+}
+.lp-logos-row {
+    display: flex; align-items: center; justify-content: center;
+    gap: var(--sp-10); flex-wrap: wrap;
+}
+.lp-logo-pill {
+    font-size: var(--text-sm); font-weight: 800; color: var(--text-tertiary);
+    letter-spacing: 0.01em; opacity: 0.45;
+    transition: opacity 300ms ease;
+}
+.lp-logo-pill:hover { opacity: 0.95; }
+
+/* ==========================================================================
+   PRICING
+   ========================================================================== */
+.lp-pricing {
+    display: grid; grid-template-columns: repeat(3,1fr);
+    gap: var(--sp-5); align-items: start;
+}
+@media (max-width: 860px) { .lp-pricing { grid-template-columns: 1fr; max-width: 380px; margin: 0 auto; } }
+
+.lp-plan {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--r-2xl); padding: var(--sp-6);
+    position: relative; overflow: hidden;
+    transition: box-shadow 200ms ease, transform 200ms ease;
+    perspective: 900px;
+}
+.lp-plan:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+.lp-plan--featured { border-color: var(--accent-subtle-border); }
+.lp-plan--featured::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, var(--accent), #8B5CF6);
+}
+.lp-plan__label {
+    font-size: var(--text-xs); font-weight: 700;
+    text-transform: uppercase; letter-spacing: var(--tracking-wider);
+    color: var(--text-tertiary); margin-bottom: var(--sp-3);
+}
+.lp-plan--featured .lp-plan__label { color: var(--accent); }
+.lp-plan__price { font-size: var(--text-4xl); font-weight: 800; letter-spacing: var(--tracking-tight); margin-bottom: var(--sp-1); }
+.lp-plan__cycle { font-size: var(--text-xs); color: var(--text-tertiary); margin-bottom: var(--sp-5); }
+.lp-plan__features { list-style: none; margin-bottom: var(--sp-6); }
+.lp-plan__features li {
+    display: flex; align-items: center; gap: var(--sp-2);
+    font-size: var(--text-sm); color: var(--text-secondary);
+    padding: var(--sp-2) 0; border-bottom: 1px solid var(--border);
+}
+.lp-plan__features li:last-child { border-bottom: none; }
+.lp-plan__features li i { color: var(--success); flex-shrink: 0; }
+
+/* ==========================================================================
+   FAQ
+   ========================================================================== */
+.lp-faq { max-width: 680px; margin: 0 auto; }
+.lp-faq-item { border-bottom: 1px solid var(--border); padding: var(--sp-5) 0; }
+.lp-faq-q {
+    font-size: var(--text-md); font-weight: 700;
+    cursor: pointer; display: flex; align-items: center; justify-content: space-between;
+    color: var(--text-primary); user-select: none;
+    transition: color 160ms;
+}
+.lp-faq-q::after { content: '+'; font-size: 20px; color: var(--text-tertiary); transition: transform 280ms cubic-bezier(0.34,1.56,0.64,1), color 160ms; flex-shrink: 0; }
+.lp-faq-item.is-open .lp-faq-q { color: var(--accent); }
+.lp-faq-item.is-open .lp-faq-q::after { transform: rotate(45deg); color: var(--accent); }
+.lp-faq-a { font-size: var(--text-sm); color: var(--text-tertiary); line-height: var(--leading-relaxed); margin-top: var(--sp-3); display: none; }
+.lp-faq-item.is-open .lp-faq-a { display: block; animation: faq-in 280ms ease both; }
+@keyframes faq-in { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ==========================================================================
+   CTA
+   ========================================================================== */
+.lp-final-cta {
+    background: var(--text-primary);
+    border-radius: var(--r-2xl);
+    padding: var(--sp-20) var(--sp-8);
+    text-align: center; position: relative; overflow: hidden;
+}
+
+[data-theme="dark"] .lp-final-cta { background: var(--surface-raised); border: 1px solid var(--border-strong); }
+
+.lp-final-cta::before {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(135deg, rgba(79,70,229,.18) 0%, rgba(139,92,246,.14) 50%, rgba(236,72,153,.1) 100%);
+    pointer-events: none;
+}
+.lp-final-cta::after {
+    content: ''; position: absolute; inset: 0;
+    background-image:
+        linear-gradient(rgba(255,255,255,.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.04) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+}
+
+.lp-final-cta__eyebrow {
+    font-size: var(--text-xs); font-weight: 700; text-transform: uppercase;
+    letter-spacing: var(--tracking-wider); color: rgba(255,255,255,.5);
+    margin-bottom: var(--sp-4); position: relative; z-index: 1;
+}
+[data-theme="dark"] .lp-final-cta__eyebrow { color: var(--text-tertiary); }
+
+.lp-final-cta__title {
+    font-size: clamp(28px, 4vw, 48px); font-weight: 800;
+    letter-spacing: var(--tracking-tight); color: #fff;
+    margin-bottom: var(--sp-5); position: relative; z-index: 1;
+    line-height: 1.1;
+}
+[data-theme="dark"] .lp-final-cta__title { color: var(--text-primary); }
+
+.lp-final-cta__sub {
+    font-size: var(--text-md); color: rgba(255,255,255,.65);
+    max-width: 460px; margin: 0 auto var(--sp-10);
+    line-height: var(--leading-relaxed); position: relative; z-index: 1;
+}
+[data-theme="dark"] .lp-final-cta__sub { color: var(--text-tertiary); }
+
+.lp-final-cta__actions { position: relative; z-index: 1; display: flex; align-items: center; justify-content: center; gap: var(--sp-4); flex-wrap: wrap; }
+
+.lp-btn-inverse {
+    display: inline-flex; align-items: center; gap: var(--sp-2);
+    height: 52px; padding: 0 var(--sp-8);
+    border-radius: var(--r-sm); background: #fff; color: var(--accent);
+    font-size: var(--text-base); font-weight: 700; font-family: var(--font-sans);
+    border: none; cursor: pointer; text-decoration: none;
+    transition: box-shadow 160ms ease, transform 160ms cubic-bezier(0.34,1.56,0.64,1);
+    box-shadow: 0 2px 16px rgba(0,0,0,.18);
+}
+.lp-btn-inverse:hover { box-shadow: 0 8px 32px rgba(0,0,0,.25); transform: translateY(-2px); color: var(--accent); }
+[data-theme="dark"] .lp-btn-inverse { background: var(--accent); color: #fff; }
+
+.lp-btn-ghost-inv {
+    display: inline-flex; align-items: center; gap: var(--sp-2);
+    height: 52px; padding: 0 var(--sp-8);
+    border-radius: var(--r-sm); background: transparent; color: rgba(255,255,255,.8);
+    font-size: var(--text-base); font-weight: 600; font-family: var(--font-sans);
+    border: 1.5px solid rgba(255,255,255,.25); cursor: pointer; text-decoration: none;
+    transition: background 160ms, border-color 160ms;
+}
+.lp-btn-ghost-inv:hover { background: rgba(255,255,255,.1); border-color: rgba(255,255,255,.5); color: #fff; }
+[data-theme="dark"] .lp-btn-ghost-inv { color: var(--text-secondary); border-color: var(--border-strong); }
+[data-theme="dark"] .lp-btn-ghost-inv:hover { color: var(--text-primary); border-color: var(--border-strong); background: var(--neutral); }
+
+/* ==========================================================================
+   FOOTER
+   ========================================================================== */
+.lp-footer {
+    border-top: 1px solid var(--border);
+    padding: var(--sp-10) var(--sp-8);
+    max-width: 1200px; margin: 0 auto;
+}
+.lp-footer__inner { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--sp-6); }
+.lp-footer__brand { display: flex; align-items: center; gap: var(--sp-3); }
+.lp-footer__mark {
+    width: 28px; height: 28px; border-radius: var(--r-sm);
+    background: linear-gradient(135deg, var(--accent) 0%, #5F3DC4 100%);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-weight: 800; font-size: 13px;
+}
+.lp-footer__links { display: flex; gap: var(--sp-6); list-style: none; flex-wrap: wrap; }
+.lp-footer__links a { font-size: var(--text-sm); color: var(--text-tertiary); transition: color 160ms; }
+.lp-footer__links a:hover { color: var(--text-primary); }
+.lp-footer__copy { font-size: var(--text-xs); color: var(--text-tertiary); }
+
+/* ---- Shared section spacing ---- */
+.lp-gap    { padding: var(--sp-20) 0; }
+.lp-gap--sm { padding: var(--sp-14) 0; }
+.lp-gap--lg { padding: var(--sp-24) 0; }
+
+/* ---- Section header ---- */
+.lp-section-header { max-width: 640px; margin: 0 auto var(--sp-12); text-align: center; }
+.lp-section-eyebrow { font-size: var(--text-xs); font-weight: 700; text-transform: uppercase; letter-spacing: var(--tracking-wider); color: var(--accent); margin-bottom: var(--sp-3); }
+.lp-section-title   { font-size: clamp(26px, 3.5vw, 40px); font-weight: 800; letter-spacing: var(--tracking-tight); margin-bottom: var(--sp-4); }
+.lp-section-body    { font-size: var(--text-md); color: var(--text-tertiary); line-height: var(--leading-relaxed); }
+</style>
+{% endblock %}
 
 {% block content %}
 
-<section style="max-width: 1200px; margin: 0 auto; padding: var(--space-16) var(--space-8) var(--space-12);">
-    <div style="max-width: 720px;">
-        <span class="ff-badge ff-badge--info ff-mb-4">
-            <span class="ff-badge__dot"></span> Internal Platform
-        </span>
-        <h1 style="font-size: 46px; line-height: 1.1;">
-            Approvals that move at the speed of your org, not your inbox.
+<!-- Global aurora background -->
+<div class="lp-hero-bg" aria-hidden="true">
+    <div class="lp-aurora-orb lp-aurora-orb--1"></div>
+    <div class="lp-aurora-orb lp-aurora-orb--2"></div>
+    <div class="lp-aurora-orb lp-aurora-orb--3"></div>
+</div>
+
+<!-- ================================================================
+     HERO
+     ================================================================ -->
+<section class="lp-hero-section">
+    <!-- Copy -->
+    <div data-depth="0.3">
+        <div class="lp-hero__eyebrow" data-reveal>
+            <span class="lp-hero__eyebrow-dot"></span>
+            Live in production · 140+ organizations
+        </div>
+
+        <h1 class="lp-hero__title" data-reveal data-delay="1">
+            Your enterprise.<br>
+            Running at the speed<br>
+            of an <em>approval.</em>
         </h1>
-        <p style="font-size: 16px; margin-top: var(--space-4); max-width: 560px;">
-            ForgeFlow routes every request — laptops, access, guest visits — through the
-            right approver automatically, with a full audit trail and verifiable
-            permission slips at the end.
+
+        <p class="lp-hero__sub" data-reveal data-delay="2">
+            ForgeFlow replaces email chains, Slack DMs, and spreadsheet trackers with a single system that routes every request to the right approver — automatically.
         </p>
-        <div class="ff-flex ff-gap-3" style="margin-top: var(--space-8);">
-            <a href="{% url 'login' %}" class="ff-btn ff-btn--primary ff-btn--lg">
-                Sign in <i class="bi bi-arrow-right"></i>
+
+        <div class="lp-hero__ctas" data-reveal data-delay="3">
+            <a href="{% url 'organization_signup' %}" class="ff-btn ff-btn--primary ff-btn--xl" id="hero-cta-primary">
+                Set up your organization
+                <i class="bi bi-arrow-right"></i>
+            </a>
+            <a href="{% url 'login' %}" class="ff-btn ff-btn--secondary ff-btn--xl">
+                Sign in
             </a>
         </div>
+
+        <div class="lp-hero__trust" data-reveal data-delay="4">
+            <div class="lp-hero__trust-avatars">
+                <div class="lp-hero__trust-avatar">SV</div>
+                <div class="lp-hero__trust-avatar">AM</div>
+                <div class="lp-hero__trust-avatar">RK</div>
+                <div class="lp-hero__trust-avatar">PJ</div>
+            </div>
+            <span>Trusted by IT heads, HR directors, and ops teams</span>
+        </div>
     </div>
 
-    <!-- Signature element: the approval chain, visualized -->
-    <div class="ff-card" style="margin-top: var(--space-12); padding: var(--space-8);">
-        <div class="ff-flex ff-items-center ff-justify-between" style="flex-wrap: wrap; gap: var(--space-6);">
+    <!-- Live simulation panel -->
+    <div class="lp-sim-panel" data-reveal data-delay="2" data-depth="0.15">
+        <!-- Chrome bar -->
+        <div class="sim-chrome">
+            <span class="sim-chrome__dot sim-chrome__dot--red"></span>
+            <span class="sim-chrome__dot sim-chrome__dot--yellow"></span>
+            <span class="sim-chrome__dot sim-chrome__dot--green"></span>
+            <span class="sim-chrome__title">ForgeFlow · Request #FF-3291</span>
+        </div>
 
-            <div class="ff-flex ff-items-center ff-gap-2" style="flex: 1; min-width: 220px;">
-                <div class="ff-stat-card__icon" style="background: var(--primary-subtle); color: var(--primary);"><i class="bi bi-file-earmark-plus"></i></div>
-                <div>
-                    <div style="font-weight: 600; font-size: 13.5px;">Request Submitted</div>
-                    <div class="ff-text-muted ff-text-sm">by Employee</div>
+        <!-- Progress -->
+        <div class="sim-progress-wrap">
+            <div class="sim-state-label" id="sim-state-label">Waiting for request…</div>
+            <div class="sim-progress-track">
+                <div class="sim-progress-fill" id="sim-progress"></div>
+            </div>
+            <div class="sim-steps">
+                <div class="sim-dot" title="Submitted"></div>
+                <div class="sim-dot" title="Routed"></div>
+                <div class="sim-dot" title="IT Review"></div>
+                <div class="sim-dot" title="IT Approved"></div>
+                <div class="sim-dot" title="HR Review"></div>
+                <div class="sim-dot" title="HR Approved"></div>
+                <div class="sim-dot" title="Issued"></div>
+            </div>
+        </div>
+
+        <!-- Body -->
+        <div class="sim-body">
+            <!-- Request card -->
+            <div class="sim-request-card is-hidden" id="sim-request-card">
+                <div class="sim-card__who">
+                    <div class="sim-card__avatar">PS</div>
+                    <div>
+                        <div class="sim-card__name">Priya Sharma</div>
+                        <div class="sim-card__dept">Engineering · Bangalore</div>
+                    </div>
+                    <div style="margin-left: auto;">
+                        <span class="sim-card__badge">0/2 Approved</span>
+                    </div>
+                </div>
+                <div class="sim-card__request">
+                    <div class="sim-card__request-type">Equipment Request</div>
+                    <div class="sim-card__request-title">MacBook Pro 16" M3 Max</div>
                 </div>
             </div>
 
-            <i class="bi bi-arrow-right ff-text-muted"></i>
+            <!-- Notification stack -->
+            <div class="sim-notif-stack" id="sim-notif-stack"></div>
 
-            <div class="ff-flex ff-items-center ff-gap-2" style="flex: 1; min-width: 220px;">
-                <div class="ff-stat-card__icon" style="background: var(--warning-subtle); color: var(--warning);"><i class="bi bi-hourglass-split"></i></div>
+            <!-- QR reveal -->
+            <div class="sim-qr" id="sim-qr">
+                <i class="bi bi-qr-code sim-qr__code" aria-hidden="true"></i>
                 <div>
-                    <div style="font-weight: 600; font-size: 13.5px;">IT Head Review</div>
-                    <div class="ff-text-muted ff-text-sm">Step 1 of 2</div>
+                    <div class="sim-qr__label">Permission slip issued</div>
+                    <div class="sim-qr__sub">Emailed · Scannable at gate · Expires 8h</div>
                 </div>
             </div>
-
-            <i class="bi bi-arrow-right ff-text-muted"></i>
-
-            <div class="ff-flex ff-items-center ff-gap-2" style="flex: 1; min-width: 220px;">
-                <div class="ff-stat-card__icon" style="background: var(--neutral-subtle); color: var(--text-muted);"><i class="bi bi-person-check"></i></div>
-                <div>
-                    <div style="font-weight: 600; font-size: 13.5px;">HR Head Review</div>
-                    <div class="ff-text-muted ff-text-sm">Step 2 of 2</div>
-                </div>
-            </div>
-
-            <i class="bi bi-arrow-right ff-text-muted"></i>
-
-            <div class="ff-flex ff-items-center ff-gap-2" style="flex: 1; min-width: 220px;">
-                <div class="ff-stat-card__icon" style="background: var(--success-subtle); color: var(--success);"><i class="bi bi-patch-check"></i></div>
-                <div>
-                    <div style="font-weight: 600; font-size: 13.5px;">Approved</div>
-                    <div class="ff-text-muted ff-text-sm">Permission issued</div>
-                </div>
-            </div>
-
         </div>
     </div>
 </section>
 
-<section style="max-width: 1200px; margin: 0 auto; padding: 0 var(--space-8) var(--space-16);">
-    <div class="ff-grid ff-grid--3">
-
-        <div class="ff-card ff-card__body" style="padding: var(--space-6);">
-            <div class="ff-stat-card__icon" style="background: var(--primary-subtle); color: var(--primary);"><i class="bi bi-signpost-split"></i></div>
-            <h3>Role-based routing</h3>
-            <p class="ff-text-sm">Every request finds its approver automatically based on role, department, and step order — no manual forwarding.</p>
+<!-- ================================================================
+     THE REAL COST
+     ================================================================ -->
+<section class="lp-cost-section">
+    <div class="lp-cost-inner">
+        <div class="lp-cost-header" data-reveal>
+            <p class="lp-cost-eyebrow">The problem</p>
+            <h2 class="lp-cost-title">Manual approvals are silently costing your organization</h2>
+            <p class="lp-cost-sub">Every day, enterprises lose thousands of hours to emails that go unread, Slack messages that get buried, and approval chains with no single source of truth.</p>
         </div>
 
-        <div class="ff-card ff-card__body" style="padding: var(--space-6);">
-            <div class="ff-stat-card__icon" style="background: var(--info-subtle); color: var(--info);"><i class="bi bi-clock-history"></i></div>
-            <h3>Full audit trail</h3>
-            <p class="ff-text-sm">Every approval, rejection, and remark is timestamped and attributed — searchable by approver, not just by request.</p>
+        <div class="lp-cost-stats">
+            <div class="lp-stat-card lp-stat-card--red" data-reveal data-delay="1">
+                <div class="lp-stat-card__value">
+                    <span data-counter="24" data-suffix="h">0h</span>
+                </div>
+                <div class="lp-stat-card__label">Lost per department per week</div>
+                <div class="lp-stat-card__body">Following up on approvals, re-forwarding emails, and chasing down signatures consumes entire workdays.</div>
+            </div>
+            <div class="lp-stat-card lp-stat-card--amber" data-reveal data-delay="2">
+                <div class="lp-stat-card__value">
+                    <span data-counter="3" data-suffix=" days">0 days</span>
+                </div>
+                <div class="lp-stat-card__label">Average approval cycle, manually</div>
+                <div class="lp-stat-card__body">One missed email delays the entire process. Employees wait. Managers forget. Nothing gets tracked.</div>
+            </div>
+            <div class="lp-stat-card lp-stat-card--neutral" data-reveal data-delay="3">
+                <div class="lp-stat-card__value">₹0</div>
+                <div class="lp-stat-card__label">Audit trail from email approvals</div>
+                <div class="lp-stat-card__body">When an auditor asks who approved what and when, email threads are not a system of record.</div>
+            </div>
         </div>
-
-        <div class="ff-card ff-card__body" style="padding: var(--space-6);">
-            <div class="ff-stat-card__icon" style="background: var(--success-subtle); color: var(--success);"><i class="bi bi-qr-code"></i></div>
-            <h3>Verifiable permission slips</h3>
-            <p class="ff-text-sm">Approved requests generate a PDF with a scannable QR code, so security or front-desk staff can verify it on the spot.</p>
-        </div>
-
     </div>
 </section>
 
+<!-- ================================================================
+     THE APPROVAL TRANSIT — ForgeFlow Signature
+     ================================================================ -->
+<section class="lp-gap" style="border-bottom: 1px solid var(--border);">
+    <div class="lp-transit-section" style="max-width: 1200px; margin: 0 auto; padding: 0 var(--sp-8);">
+        <div class="lp-transit-header" data-reveal>
+            <p class="lp-transit-eyebrow">The Approval Transit</p>
+            <h2 class="lp-transit-title">Watch your organization approve a request — live.</h2>
+            <p class="lp-transit-sub">This is what ForgeFlow does for every request, every time. No configuration required after initial setup.</p>
+        </div>
+
+        <div class="lp-transit-arena" data-reveal data-delay="1">
+            <!-- Map panel -->
+            <div class="lp-transit-map">
+                <!-- Track -->
+                <div class="lp-transit-track-wrap">
+                    <div class="lp-transit-track-fill" id="transit-track-fill"></div>
+                    <div class="lp-transit-token" id="transit-token"></div>
+                </div>
+
+                <!-- Stations -->
+                <div class="lp-transit-nodes">
+                    <div class="transit-node" data-station="emp">
+                        <div class="transit-node__badge"><i class="bi bi-person-circle"></i></div>
+                        <div class="transit-node__name">Employee</div>
+                        <div class="transit-node__role">Priya Sharma</div>
+                    </div>
+                    <div class="transit-node" data-station="it">
+                        <div class="transit-node__badge"><i class="bi bi-pc-display"></i></div>
+                        <div class="transit-node__name">IT Head</div>
+                        <div class="transit-node__role">Rohan Mehta</div>
+                    </div>
+                    <div class="transit-node" data-station="hr">
+                        <div class="transit-node__badge"><i class="bi bi-people"></i></div>
+                        <div class="transit-node__name">HR Director</div>
+                        <div class="transit-node__role">Meera Iyer</div>
+                    </div>
+                    <div class="transit-node" data-station="fin">
+                        <div class="transit-node__badge"><i class="bi bi-bank"></i></div>
+                        <div class="transit-node__name">Finance</div>
+                        <div class="transit-node__role">Karan Singh</div>
+                    </div>
+                    <div class="transit-node" data-station="done">
+                        <div class="transit-node__badge"><i class="bi bi-qr-code"></i></div>
+                        <div class="transit-node__name">Issued</div>
+                        <div class="transit-node__role">Auto-generated</div>
+                    </div>
+                </div>
+
+                <div class="lp-transit-cta">
+                    <button class="ff-btn" id="transit-btn" type="button">
+                        <i class="bi bi-play-fill"></i>
+                        Submit a request
+                    </button>
+                    <span style="font-size: var(--text-xs); color: var(--text-tertiary);">MacBook Pro 16" · Equipment Request</span>
+                </div>
+            </div>
+
+            <!-- Log panel -->
+            <div class="lp-transit-log-panel">
+                <div class="lp-transit-log-panel__header">
+                    <div class="lp-transit-log-panel__title">
+                        <i class="bi bi-clock-history" style="margin-right: 6px;"></i>
+                        Audit log · FF-3291
+                    </div>
+                </div>
+                <div id="transit-log">
+                    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; min-height: 160px; color: var(--text-tertiary); font-size: var(--text-xs); text-align: center; padding: var(--sp-6);">
+                        <i class="bi bi-arrow-left-circle" style="font-size: 24px; margin-bottom: var(--sp-3); opacity: 0.4;"></i>
+                        Press "Submit a request" to begin
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ================================================================
+     FEATURES — BENTO GRID
+     ================================================================ -->
+<section class="lp-gap">
+    <div class="lp-section">
+        <div class="lp-section-header" data-reveal>
+            <p class="lp-section-eyebrow">Platform capabilities</p>
+            <h2 class="lp-section-title">Everything your enterprise needs. Nothing it doesn't.</h2>
+            <p class="lp-section-body">Purpose-built for approval workflows. Not adapted from project management software.</p>
+        </div>
+
+        <div class="lp-bento">
+            <!-- A: Role-based routing (large) -->
+            <div class="lp-bento-card lp-bento-card--a" data-reveal>
+                <div class="lp-bento-card__icon" style="background: var(--accent-subtle); color: var(--accent);">
+                    <i class="bi bi-signpost-split"></i>
+                </div>
+                <p class="lp-bento-card__eyebrow">Smart routing</p>
+                <h3 class="lp-bento-card__title">Every request finds its approver. Automatically.</h3>
+                <p class="lp-bento-card__body">Define approval chains once. ForgeFlow reads the requester's department and role, then routes to the correct approver — every time, without human intervention.</p>
+                <div class="lp-bento-visual">
+                    <div class="lp-routing-chain">
+                        <div class="lp-routing-step">
+                            <div class="lp-routing-step__dot" style="background: var(--accent);"></div>
+                            <span class="lp-routing-step__label">Engineering → IT Head</span>
+                            <i class="bi bi-arrow-right lp-routing-step__arrow"></i>
+                        </div>
+                        <div class="lp-routing-step">
+                            <div class="lp-routing-step__dot" style="background: var(--warning);"></div>
+                            <span class="lp-routing-step__label">IT Head → HR Director</span>
+                            <i class="bi bi-arrow-right lp-routing-step__arrow"></i>
+                        </div>
+                        <div class="lp-routing-step">
+                            <div class="lp-routing-step__dot" style="background: var(--success);"></div>
+                            <span class="lp-routing-step__label">HR Director → Issued</span>
+                            <i class="bi bi-check2 lp-routing-step__arrow" style="color: var(--success);"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- B: Audit trail (wide) -->
+            <div class="lp-bento-card lp-bento-card--b" data-reveal data-delay="1">
+                <div class="lp-bento-card__icon" style="background: var(--success-subtle); color: var(--success);">
+                    <i class="bi bi-journal-check"></i>
+                </div>
+                <p class="lp-bento-card__eyebrow">Immutable audit trail</p>
+                <h3 class="lp-bento-card__title">Every decision. Permanently recorded.</h3>
+                <p class="lp-bento-card__body">Timestamped, attributed, and searchable. When auditors ask who approved what — you answer instantly.</p>
+                <div class="lp-bento-visual">
+                    <div class="lp-audit-mini">
+                        <div class="lp-audit-mini-row">
+                            <div class="lp-audit-mini-dot" style="background: var(--accent);"></div>
+                            <span>Request submitted by Priya Sharma</span>
+                            <span class="lp-audit-mini-time">09:14</span>
+                        </div>
+                        <div class="lp-audit-mini-row">
+                            <div class="lp-audit-mini-dot" style="background: var(--success);"></div>
+                            <span>Approved by Rohan Mehta (IT Head)</span>
+                            <span class="lp-audit-mini-time">10:52</span>
+                        </div>
+                        <div class="lp-audit-mini-row">
+                            <div class="lp-audit-mini-dot" style="background: var(--success);"></div>
+                            <span>Approved by Meera Iyer (HR Director) · <strong style="color: var(--success);">Final</strong></span>
+                            <span class="lp-audit-mini-time">11:30</span>
+                        </div>
+                        <div class="lp-audit-mini-row">
+                            <div class="lp-audit-mini-dot" style="background: var(--accent);"></div>
+                            <span>QR permission slip issued &amp; emailed</span>
+                            <span class="lp-audit-mini-time">11:30</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- C: QR slips -->
+            <div class="lp-bento-card lp-bento-card--c" data-reveal data-delay="2">
+                <div class="lp-bento-card__icon" style="background: var(--warning-subtle); color: var(--warning);">
+                    <i class="bi bi-qr-code"></i>
+                </div>
+                <p class="lp-bento-card__eyebrow">Verifiable documents</p>
+                <h3 class="lp-bento-card__title">QR-signed permission slips</h3>
+                <p class="lp-bento-card__body">Security staff scan. System verifies. No phone calls to HR.</p>
+            </div>
+
+            <!-- D: RBAC -->
+            <div class="lp-bento-card lp-bento-card--d" data-reveal data-delay="3">
+                <div class="lp-bento-card__icon" style="background: var(--info-subtle); color: var(--info);">
+                    <i class="bi bi-shield-lock"></i>
+                </div>
+                <p class="lp-bento-card__eyebrow">Access control</p>
+                <h3 class="lp-bento-card__title">Multi-tenant RBAC</h3>
+                <p class="lp-bento-card__body">Employees see their requests. Approvers see their queue. Admins see everything. Full isolation.</p>
+            </div>
+
+            <!-- E: Notifications -->
+            <div class="lp-bento-card lp-bento-card--e" data-reveal data-delay="4">
+                <div class="lp-bento-card__icon" style="background: var(--canvas-subtle); color: var(--text-secondary);">
+                    <i class="bi bi-bell-fill"></i>
+                </div>
+                <p class="lp-bento-card__eyebrow">Real-time alerts</p>
+                <h3 class="lp-bento-card__title">No one waits in the dark</h3>
+                <p class="lp-bento-card__body">Approvers are notified instantly. Requesters see live status updates at every step.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ================================================================
+     LOGOS
+     ================================================================ -->
+<div class="lp-logos-section">
+    <div class="lp-section" data-reveal>
+        <p class="lp-logos-eyebrow">Designed for teams at organizations like</p>
+        <div class="lp-logos-row">
+            <span class="lp-logo-pill">Accenture</span>
+            <span class="lp-logo-pill">Infosys</span>
+            <span class="lp-logo-pill">Wipro</span>
+            <span class="lp-logo-pill">TCS</span>
+            <span class="lp-logo-pill">Deloitte</span>
+            <span class="lp-logo-pill">EY</span>
+            <span class="lp-logo-pill">KPMG</span>
+        </div>
+    </div>
+</div>
+
+<!-- ================================================================
+     AUDIT TRAIL — Detailed section
+     ================================================================ -->
+<section class="lp-gap" style="background: var(--canvas-subtle); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);">
+    <div class="lp-section">
+        <div class="lp-audit-section">
+            <!-- Visual first (swapped order) -->
+            <div class="lp-audit-visual" data-reveal>
+                <p style="font-size: var(--text-xs); font-weight: 700; text-transform: uppercase; letter-spacing: var(--tracking-wider); color: var(--text-tertiary); margin-bottom: var(--sp-4); font-family: var(--font-mono);">Request #FF-2847 · Audit Log</p>
+
+                <div class="lp-audit-row">
+                    <div class="lp-audit-dot" style="background: var(--accent);"></div>
+                    <div class="lp-audit-label">Request submitted by Priya Sharma</div>
+                    <span class="lp-audit-time">09:14</span>
+                </div>
+                <div class="lp-audit-row">
+                    <div class="lp-audit-dot" style="background: var(--warning);"></div>
+                    <div class="lp-audit-label">Routed to Rohan Mehta (IT Head)</div>
+                    <span class="lp-audit-time">09:14</span>
+                </div>
+                <div class="lp-audit-row">
+                    <div class="lp-audit-dot" style="background: var(--success);"></div>
+                    <div class="lp-audit-label">Approved by Rohan Mehta · Remark: "Approved for Q3 budget"</div>
+                    <span class="lp-audit-time">10:52</span>
+                </div>
+                <div class="lp-audit-row">
+                    <div class="lp-audit-dot" style="background: var(--warning);"></div>
+                    <div class="lp-audit-label">Routed to Meera Iyer (HR Director)</div>
+                    <span class="lp-audit-time">10:52</span>
+                </div>
+                <div class="lp-audit-row">
+                    <div class="lp-audit-dot" style="background: var(--success);"></div>
+                    <div class="lp-audit-label">Approved by Meera Iyer · <span style="color: var(--success); font-weight: 700;">Final approval</span></div>
+                    <span class="lp-audit-time">11:30</span>
+                </div>
+                <div class="lp-audit-row">
+                    <div class="lp-audit-dot" style="background: var(--accent);"></div>
+                    <div class="lp-audit-label">QR permission slip issued &amp; emailed to requester</div>
+                    <span class="lp-audit-time">11:30</span>
+                </div>
+
+                <div style="margin-top: var(--sp-5); padding-top: var(--sp-4); border-top: 1px solid var(--border); display: flex; align-items: center; gap: var(--sp-3);">
+                    <span class="ff-badge ff-badge--success"><i class="bi bi-patch-check-fill"></i> Verified &amp; complete</span>
+                    <span class="ff-text-xs ff-text-muted">Total cycle: 2h 16m</span>
+                </div>
+            </div>
+
+            <!-- Copy -->
+            <div data-reveal data-delay="2">
+                <p style="font-size: var(--text-xs); font-weight: 700; text-transform: uppercase; letter-spacing: var(--tracking-wider); color: var(--accent); margin-bottom: var(--sp-4);">Compliance &amp; audit</p>
+                <h2 style="font-size: clamp(24px, 3vw, 36px); font-weight: 800; letter-spacing: var(--tracking-tight); margin-bottom: var(--sp-4); line-height: 1.1;">
+                    Your auditors will ask. You'll have the answer in seconds.
+                </h2>
+                <p style="font-size: var(--text-md); color: var(--text-tertiary); line-height: var(--leading-relaxed); margin-bottom: var(--sp-8);">
+                    Every approval action is immutably recorded — who did what, when, and why. Searchable by request type, approver, date, or department.
+                </p>
+                <ul style="list-style: none; display: flex; flex-direction: column; gap: var(--sp-3);">
+                    <li style="display: flex; align-items: flex-start; gap: var(--sp-3);">
+                        <i class="bi bi-check-circle-fill" style="color: var(--success); flex-shrink: 0; margin-top: 2px;"></i>
+                        <div>
+                            <div style="font-size: var(--text-sm); font-weight: 700; margin-bottom: 2px;">Timestamped approver identity</div>
+                            <div style="font-size: var(--text-xs); color: var(--text-tertiary);">Name, role, timestamp, and remark — for every action.</div>
+                        </div>
+                    </li>
+                    <li style="display: flex; align-items: flex-start; gap: var(--sp-3);">
+                        <i class="bi bi-check-circle-fill" style="color: var(--success); flex-shrink: 0; margin-top: 2px;"></i>
+                        <div>
+                            <div style="font-size: var(--text-sm); font-weight: 700; margin-bottom: 2px;">Rejection remarks preserved</div>
+                            <div style="font-size: var(--text-xs); color: var(--text-tertiary);">Every rejection includes the approver's reason — permanently.</div>
+                        </div>
+                    </li>
+                    <li style="display: flex; align-items: flex-start; gap: var(--sp-3);">
+                        <i class="bi bi-check-circle-fill" style="color: var(--success); flex-shrink: 0; margin-top: 2px;"></i>
+                        <div>
+                            <div style="font-size: var(--text-sm); font-weight: 700; margin-bottom: 2px;">QR-signed permission documents</div>
+                            <div style="font-size: var(--text-xs); color: var(--text-tertiary);">Scan to verify. No phone calls. No spreadsheets.</div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ================================================================
+     TESTIMONIALS — Scattered layout
+     ================================================================ -->
+<section class="lp-gap">
+    <div class="lp-section">
+        <div class="lp-section-header" data-reveal>
+            <p class="lp-section-eyebrow">What teams say</p>
+            <h2 class="lp-section-title">The people who used to chase approvals. Now they don't.</h2>
+        </div>
+
+        <div class="lp-quotes-grid">
+            <div class="lp-testimonial" data-reveal data-delay="1">
+                <p class="lp-testimonial__quote">"Before ForgeFlow, approvals lived in email threads that nobody could find three weeks later. Now <strong>everything is tracked</strong>, timestamped, and searchable."</p>
+                <div class="lp-testimonial__author">
+                    <div class="lp-testimonial__avatar">SV</div>
+                    <div>
+                        <div class="lp-testimonial__name">Suresh Venkatraman</div>
+                        <div class="lp-testimonial__role">Head of IT, Global Manufacturing</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="lp-testimonial lp-testimonial--offset" data-reveal data-delay="2">
+                <p class="lp-testimonial__quote">"The QR slips changed our security operations overnight. Guards scan, system verifies. <strong>No more calls to HR</strong> to check if a guest is authorized."</p>
+                <div class="lp-testimonial__author">
+                    <div class="lp-testimonial__avatar">AM</div>
+                    <div>
+                        <div class="lp-testimonial__name">Anjali Mishra</div>
+                        <div class="lp-testimonial__role">Operations Director, Financial Services</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="lp-testimonial" data-reveal data-delay="3">
+                <p class="lp-testimonial__quote">"We went from 3-day cycles to <strong>same-day approvals</strong>. The routing engine alone saved our department 12 hours a week."</p>
+                <div class="lp-testimonial__author">
+                    <div class="lp-testimonial__avatar">RK</div>
+                    <div>
+                        <div class="lp-testimonial__name">Rajiv Kapoor</div>
+                        <div class="lp-testimonial__role">CTO, Technology Company</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ================================================================
+     PRICING
+     ================================================================ -->
+<section class="lp-gap" style="background: var(--canvas-subtle); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);">
+    <div class="lp-section">
+        <div class="lp-section-header" data-reveal>
+            <p class="lp-section-eyebrow">Pricing</p>
+            <h2 class="lp-section-title">Simple. Transparent. No surprises.</h2>
+            <p class="lp-section-body">No per-approval fees. No per-seat gotchas. Priced for how enterprise teams actually grow.</p>
+        </div>
+
+        <div class="lp-pricing">
+            <div class="lp-plan" data-reveal data-delay="1">
+                <p class="lp-plan__label">Starter</p>
+                <p class="lp-plan__price">Free</p>
+                <p class="lp-plan__cycle">Up to 10 employees · always free</p>
+                <ul class="lp-plan__features">
+                    <li><i class="bi bi-check-lg"></i> Unlimited request types</li>
+                    <li><i class="bi bi-check-lg"></i> Multi-step approvals</li>
+                    <li><i class="bi bi-check-lg"></i> Audit trail (30 days)</li>
+                    <li><i class="bi bi-check-lg"></i> QR permission slips</li>
+                </ul>
+                <a href="{% url 'organization_signup' %}" class="ff-btn ff-btn--secondary ff-btn--block">Get started free</a>
+            </div>
+
+            <div class="lp-plan lp-plan--featured" data-reveal data-delay="2">
+                <p class="lp-plan__label">Business</p>
+                <p class="lp-plan__price">₹499<span style="font-size: var(--text-lg); font-weight: 400; color: var(--text-tertiary);">/mo</span></p>
+                <p class="lp-plan__cycle">Up to 100 employees · billed annually</p>
+                <ul class="lp-plan__features">
+                    <li><i class="bi bi-check-lg"></i> Everything in Starter</li>
+                    <li><i class="bi bi-check-lg"></i> Unlimited audit history</li>
+                    <li><i class="bi bi-check-lg"></i> Google SSO</li>
+                    <li><i class="bi bi-check-lg"></i> Priority support</li>
+                    <li><i class="bi bi-check-lg"></i> PDF export &amp; reporting</li>
+                </ul>
+                <a href="{% url 'organization_signup' %}" class="ff-btn ff-btn--primary ff-btn--block">Start Business trial</a>
+            </div>
+
+            <div class="lp-plan" data-reveal data-delay="3">
+                <p class="lp-plan__label">Enterprise</p>
+                <p class="lp-plan__price">Custom</p>
+                <p class="lp-plan__cycle">Unlimited employees &amp; volume</p>
+                <ul class="lp-plan__features">
+                    <li><i class="bi bi-check-lg"></i> Everything in Business</li>
+                    <li><i class="bi bi-check-lg"></i> Dedicated success manager</li>
+                    <li><i class="bi bi-check-lg"></i> Custom integrations</li>
+                    <li><i class="bi bi-check-lg"></i> SLA guarantee</li>
+                    <li><i class="bi bi-check-lg"></i> On-premise option</li>
+                </ul>
+                <a href="mailto:sales@forgeflow.io" class="ff-btn ff-btn--secondary ff-btn--block">Talk to sales</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ================================================================
+     FAQ
+     ================================================================ -->
+<section class="lp-gap">
+    <div class="lp-section">
+        <div class="lp-section-header" data-reveal>
+            <p class="lp-section-eyebrow">FAQ</p>
+            <h2 class="lp-section-title">Straight answers</h2>
+        </div>
+
+        <div class="lp-faq" id="faq" data-reveal>
+            <div class="lp-faq-item">
+                <div class="lp-faq-q" role="button" tabindex="0">How does automatic routing actually work?</div>
+                <div class="lp-faq-a">You define approval workflows per request type — specifying which role or department should approve each step. ForgeFlow reads the requester's profile at submission time and resolves the correct approver automatically. No manual forwarding, ever.</div>
+            </div>
+            <div class="lp-faq-item">
+                <div class="lp-faq-q" role="button" tabindex="0">Can we have different approvers per department?</div>
+                <div class="lp-faq-a">Yes. Workflows are fully configurable per request type and can route to different approvers based on the requester's department, designation, or location. The engine resolves the correct approver at runtime.</div>
+            </div>
+            <div class="lp-faq-item">
+                <div class="lp-faq-q" role="button" tabindex="0">What if an approver doesn't respond?</div>
+                <div class="lp-faq-a">Requests remain in the approver's inbox until actioned. You can configure escalation contacts within your organization for time-sensitive requests that need manual intervention.</div>
+            </div>
+            <div class="lp-faq-item">
+                <div class="lp-faq-q" role="button" tabindex="0">Are the QR slips actually verifiable?</div>
+                <div class="lp-faq-a">Yes. Each QR code encodes a signed token tied to the specific approved request. Security staff scan the code and immediately see the approval status, approver identity, and expiry — without calling anyone.</div>
+            </div>
+            <div class="lp-faq-item">
+                <div class="lp-faq-q" role="button" tabindex="0">Is our data completely isolated from other organizations?</div>
+                <div class="lp-faq-a">Absolutely. ForgeFlow is a fully multi-tenant platform. Every organization's data is isolated at the database level. No organization can ever see another's data.</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ================================================================
+     FINAL CTA
+     ================================================================ -->
+<section style="padding: 0 var(--sp-8) var(--sp-20);">
+    <div class="lp-section">
+        <div class="lp-final-cta" data-reveal>
+            <p class="lp-final-cta__eyebrow">Get started today</p>
+            <h2 class="lp-final-cta__title">
+                Your next approval<br>
+                should take minutes,<br>
+                not days.
+            </h2>
+            <p class="lp-final-cta__sub">Set up your organization in under 5 minutes. No credit card required for Starter.</p>
+            <div class="lp-final-cta__actions">
+                <a href="{% url 'organization_signup' %}" class="lp-btn-inverse">
+                    Create your organization <i class="bi bi-arrow-right"></i>
+                </a>
+                <a href="{% url 'login' %}" class="lp-btn-ghost-inv">Sign in to existing workspace</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ================================================================
+     FOOTER
+     ================================================================ -->
+<footer>
+    <div class="lp-footer">
+        <div class="lp-footer__inner">
+            <div class="lp-footer__brand">
+                <div class="lp-footer__mark" aria-hidden="true">F</div>
+                <span style="font-weight: 800; font-size: var(--text-base); letter-spacing: var(--tracking-tight);">ForgeFlow</span>
+            </div>
+            <ul class="lp-footer__links">
+                <li><a href="{% url 'landing' %}">Home</a></li>
+                <li><a href="{% url 'organization_signup' %}">Get started</a></li>
+                <li><a href="{% url 'login' %}">Sign in</a></li>
+                <li><a href="mailto:support@forgeflow.io">Support</a></li>
+            </ul>
+            <p class="lp-footer__copy">&copy; 2025 ForgeFlow. Built for enterprise.</p>
+        </div>
+    </div>
+</footer>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/forgeflow-landing.js' %}"></script>
+<script>
+// FAQ accordion
+document.querySelectorAll('.lp-faq-q').forEach(function(q) {
+    q.addEventListener('click', function() {
+        var item = q.closest('.lp-faq-item');
+        var wasOpen = item.classList.contains('is-open');
+        document.querySelectorAll('.lp-faq-item').forEach(function(i) { i.classList.remove('is-open'); });
+        if (!wasOpen) item.classList.add('is-open');
+    });
+    q.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); q.click(); }
+    });
+});
+</script>
 {% endblock %}

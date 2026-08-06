@@ -88,6 +88,12 @@ urlpatterns = [
     ),
 
     path(
+        "request-types/<int:pk>/summary/",
+        views.request_type_summary,
+        name="request-type-summary",
+    ),
+
+    path(
         "request-types/<int:pk>/publish/",
         views.request_type_publish,
         name="request-type-publish",

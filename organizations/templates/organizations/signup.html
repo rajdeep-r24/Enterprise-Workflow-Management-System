@@ -1,88 +1,160 @@
 {% extends "public_base.html" %}
+{% load static %}
 
-{% block title %}Create Organization{% endblock %}
+{% block title %}Create Organization — ForgeFlow{% endblock %}
+{% block meta_description %}Set up your organization on ForgeFlow and start managing enterprise workflows.{% endblock %}
+
+{% block extra_head %}
+<style>
+.signup-wrap {
+    min-height: calc(100vh - 64px);
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: var(--sp-10) var(--sp-6) var(--sp-16);
+}
+
+.signup-card {
+    width: 100%;
+    max-width: 520px;
+}
+
+.auth-logo {
+    display: flex; align-items: center; gap: var(--sp-3);
+    margin-bottom: var(--sp-8);
+}
+.auth-logo__mark {
+    width: 40px; height: 40px;
+    border-radius: var(--r-md);
+    background: linear-gradient(135deg, var(--accent) 0%, #5F3DC4 100%);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-weight: 800; font-size: 18px;
+    box-shadow: 0 4px 14px var(--accent-glow);
+}
+
+.step-indicator {
+    display: flex; align-items: center; gap: var(--sp-2);
+    margin-bottom: var(--sp-6);
+}
+.step-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--accent);
+}
+.step-dot--inactive { background: var(--border-strong); }
+.step-label {
+    font-size: var(--text-xs); color: var(--text-tertiary);
+    font-weight: 600; letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+}
+
+.ff-field-group { display: flex; gap: var(--sp-4); }
+.ff-field-group .ff-field { flex: 1; min-width: 0; }
+
+.field-error {
+    font-size: var(--text-xs);
+    color: var(--danger-text);
+    margin-top: var(--sp-1);
+    font-weight: 500;
+}
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="pf-center-wrap" style="padding: var(--space-8) 0;">
-    <div class="ff-card" style="width: 100%; max-width: 480px;">
-        <div class="ff-card__body" style="padding: var(--space-8);">
+<div class="signup-wrap">
+    <div class="signup-card">
+        <div class="auth-logo">
+            <div class="auth-logo__mark">F</div>
+            <span style="font-weight: 800; font-size: var(--text-md); letter-spacing: var(--tracking-tight);">ForgeFlow</span>
+        </div>
 
-            <div style="text-align: center; margin-bottom: var(--space-6);">
-                <div class="pf-nav__brand-mark" style="margin: 0 auto var(--space-4); width: 44px; height: 44px; font-size: 18px;">F</div>
-                <h2 style="margin-bottom: var(--space-1);">Create an Organization</h2>
-                <p class="ff-text-muted ff-text-sm" style="margin: 0;">Get started with ForgeFlow</p>
+        <div class="step-indicator">
+            <div class="step-dot"></div>
+            <div class="step-dot step-dot--inactive"></div>
+            <div class="step-dot step-dot--inactive"></div>
+            <span class="step-label" style="margin-left: var(--sp-1);">Step 1 of 3 — Organization setup</span>
+        </div>
+
+        <h1 style="font-size: var(--text-2xl); font-weight: 800; letter-spacing: var(--tracking-tight); margin-bottom: var(--sp-1);">Create your organization</h1>
+        <p class="ff-text-sm ff-text-muted" style="margin-bottom: var(--sp-8);">You'll be the administrator. Invite your team after setup.</p>
+
+        <form method="post" novalidate>
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+            <div class="ff-alert ff-alert--error" role="alert">
+                <i class="bi bi-exclamation-circle" aria-hidden="true"></i>
+                <span>{{ form.non_field_errors|striptags }}</span>
+            </div>
+            {% endif %}
+
+            <!-- Organization name -->
+            <div class="ff-field">
+                <label class="ff-label" for="{{ form.organization_name.id_for_label }}">Organization name</label>
+                {{ form.organization_name }}
+                {% if form.organization_name.errors %}
+                <div class="field-error">{{ form.organization_name.errors.0 }}</div>
+                {% endif %}
             </div>
 
-            <form method="post">
-                {% csrf_token %}
-
-                {% if form.non_field_errors %}
-                <div class="ff-alert ff-alert--error" style="margin-bottom: var(--space-4);">
-                    <i class="bi bi-exclamation-triangle"></i>
-                    <span>{{ form.non_field_errors|striptags }}</span>
+            <!-- Name row -->
+            <div class="ff-field-group">
+                <div class="ff-field">
+                    <label class="ff-label" for="{{ form.first_name.id_for_label }}">First name</label>
+                    {{ form.first_name }}
+                    {% if form.first_name.errors %}
+                    <div class="field-error">{{ form.first_name.errors.0 }}</div>
+                    {% endif %}
                 </div>
+                <div class="ff-field">
+                    <label class="ff-label" for="{{ form.last_name.id_for_label }}">Last name</label>
+                    {{ form.last_name }}
+                    {% if form.last_name.errors %}
+                    <div class="field-error">{{ form.last_name.errors.0 }}</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Work email -->
+            <div class="ff-field">
+                <label class="ff-label" for="{{ form.email.id_for_label }}">Work email</label>
+                {{ form.email }}
+                {% if form.email.errors %}
+                <div class="field-error">{{ form.email.errors.0 }}</div>
                 {% endif %}
+            </div>
 
-                <div class="ff-field">
-                    <label class="ff-label" for="{{ form.organization_name.id_for_label }}">Organization Name</label>
-                    {{ form.organization_name }}
-                    {% if form.organization_name.errors %}
-                    <div style="color: #dc3545; font-size: 0.85em; margin-top: 4px;">{{ form.organization_name.errors.0 }}</div>
-                    {% endif %}
-                </div>
-
-                <div style="display: flex; gap: var(--space-4);">
-                    <div class="ff-field" style="flex: 1;">
-                        <label class="ff-label" for="{{ form.first_name.id_for_label }}">First Name</label>
-                        {{ form.first_name }}
-                        {% if form.first_name.errors %}
-                        <div style="color: #dc3545; font-size: 0.85em; margin-top: 4px;">{{ form.first_name.errors.0 }}</div>
-                        {% endif %}
-                    </div>
-                    <div class="ff-field" style="flex: 1;">
-                        <label class="ff-label" for="{{ form.last_name.id_for_label }}">Last Name</label>
-                        {{ form.last_name }}
-                        {% if form.last_name.errors %}
-                        <div style="color: #dc3545; font-size: 0.85em; margin-top: 4px;">{{ form.last_name.errors.0 }}</div>
-                        {% endif %}
-                    </div>
-                </div>
-
-                <div class="ff-field">
-                    <label class="ff-label" for="{{ form.email.id_for_label }}">Work Email</label>
-                    {{ form.email }}
-                    {% if form.email.errors %}
-                    <div style="color: #dc3545; font-size: 0.85em; margin-top: 4px;">{{ form.email.errors.0 }}</div>
-                    {% endif %}
-                </div>
-
+            <!-- Password -->
+            <div class="ff-field-group">
                 <div class="ff-field">
                     <label class="ff-label" for="{{ form.password.id_for_label }}">Password</label>
                     {{ form.password }}
                     {% if form.password.errors %}
-                    <div style="color: #dc3545; font-size: 0.85em; margin-top: 4px;">{{ form.password.errors.0 }}</div>
+                    <div class="field-error">{{ form.password.errors.0 }}</div>
                     {% endif %}
                 </div>
-
                 <div class="ff-field">
-                    <label class="ff-label" for="{{ form.confirm_password.id_for_label }}">Confirm Password</label>
+                    <label class="ff-label" for="{{ form.confirm_password.id_for_label }}">Confirm password</label>
                     {{ form.confirm_password }}
                     {% if form.confirm_password.errors %}
-                    <div style="color: #dc3545; font-size: 0.85em; margin-top: 4px;">{{ form.confirm_password.errors.0 }}</div>
+                    <div class="field-error">{{ form.confirm_password.errors.0 }}</div>
                     {% endif %}
                 </div>
-
-                <button type="submit" class="ff-btn ff-btn--primary ff-btn--block ff-btn--lg" style="margin-top: var(--space-4);">
-                    Create Organization
-                </button>
-            </form>
-
-            <div style="text-align: center; margin-top: var(--space-6);">
-                <span class="ff-text-muted ff-text-sm">Already have an account?</span>
-                <a href="{% url 'login' %}" class="ff-text-sm">Sign in</a>
             </div>
 
-        </div>
+            <button type="submit" class="ff-btn ff-btn--primary ff-btn--block ff-btn--lg" style="margin-top: var(--sp-4);">
+                Create organization
+                <i class="bi bi-arrow-right" aria-hidden="true"></i>
+            </button>
+        </form>
+
+        <p class="ff-text-xs ff-text-muted ff-text-center" style="margin-top: var(--sp-6);">
+            Already have an account?
+            <a href="{% url 'login' %}" class="ff-link">Sign in</a>
+        </p>
+
+        <p class="ff-text-xs ff-text-muted ff-text-center" style="margin-top: var(--sp-4); line-height: var(--leading-relaxed);">
+            By continuing, you agree to ForgeFlow's Terms of Service and Privacy Policy.
+        </p>
     </div>
 </div>
 {% endblock %}

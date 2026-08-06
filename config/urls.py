@@ -32,6 +32,7 @@ urlpatterns = [
     path("", include("organizations.urls")),
     path("", include("forms_engine.urls")),
     path("notifications/", include("notifications.urls", namespace="notifications")),
+    path("api/", include("api.urls")),
 ]
 
 if settings.DEBUG:

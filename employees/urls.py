@@ -27,6 +27,13 @@ urlpatterns = [
     ),
 
     path(
+    "employees/create/success/",
+    views.employee_create_success,
+    name="employee-create-success",
+    ),
+
+
+    path(
     "employees/<int:pk>/edit/",
     views.employee_update,
     name="employee-update",

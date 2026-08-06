@@ -39,6 +39,10 @@ class User(AbstractUser):
         default=False
     )
 
+    requires_password_change = models.BooleanField(
+        default=False
+    )
+
     created_at = models.DateTimeField(
         auto_now_add=True
     )

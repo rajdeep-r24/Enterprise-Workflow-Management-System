@@ -129,6 +129,8 @@ class DynamicForm(forms.Form):
                 )
 
 class RequestTypeForm(forms.ModelForm):
+    code = forms.CharField(required=False)
+
     class Meta:
         from .models import FormDefinition
         model = FormDefinition
@@ -144,7 +146,9 @@ class RequestTypeForm(forms.ModelForm):
     def clean_code(self):
         code = self.cleaned_data.get("code")
         if not code:
-            return code
+            from api.services.code_generation import CodeGenerationService
+            name = self.cleaned_data.get("name", "")
+            code = CodeGenerationService.generate("requesttype", name, self.tenant)
             
         from .models import FormDefinition
         qs = FormDefinition.objects.filter(organization=self.tenant, code=code)
@@ -158,6 +162,10 @@ class RequestTypeForm(forms.ModelForm):
         return code
 
 class FormFieldForm(forms.ModelForm):
+    field_name = forms.SlugField(required=False)
+    order = forms.IntegerField(required=False)
+    options = forms.CharField(required=False, widget=forms.Textarea(attrs={"rows": 3}))
+
     class Meta:
         from .models import FormField
         model = FormField
@@ -173,16 +181,22 @@ class FormFieldForm(forms.ModelForm):
         ]
         widgets = {
             "help_text": forms.Textarea(attrs={"rows": 2}),
-            "options": forms.Textarea(attrs={"rows": 3}),
         }
         help_texts = {
-            "options": "For select fields, enter options as a JSON array of strings (e.g., [\"Option 1\", \"Option 2\"]). Leave blank for other field types.",
-            "field_name": "A unique identifier for this field (e.g., 'first_name'). Only lowercase letters, numbers, and underscores.",
+            "options": "Enter options separated by commas (e.g., Dell, HP, Lenovo). Leave blank for non-select fields.",
         }
 
     def __init__(self, *args, **kwargs):
         self.form_definition = kwargs.pop("form_definition", None)
         super().__init__(*args, **kwargs)
+        
+        if not self.instance.pk:
+            self.initial['is_required'] = True
+            
+        if self.instance.pk and self.instance.options:
+            if isinstance(self.instance.options, list):
+                self.initial['options'] = ", ".join(self.instance.options)
+                
         for field_name, field in self.fields.items():
             if isinstance(field.widget, forms.CheckboxInput):
                 field.widget.attrs['class'] = 'form-check-input'
@@ -192,7 +206,9 @@ class FormFieldForm(forms.ModelForm):
     def clean_field_name(self):
         field_name = self.cleaned_data.get("field_name")
         if not field_name:
-            return field_name
+            from django.utils.text import slugify
+            label = self.cleaned_data.get("label", "")
+            field_name = slugify(label).replace("-", "_")
             
         from .models import FormField
         qs = FormField.objects.filter(form=self.form_definition, field_name=field_name)
@@ -205,7 +221,28 @@ class FormFieldForm(forms.ModelForm):
             
         return field_name
 
+    def clean_options(self):
+        options_text = self.cleaned_data.get("options")
+        if options_text:
+            import re
+            parts = re.split(r'[,\n]', options_text)
+            return [p.strip() for p in parts if p.strip()]
+        return []
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        if not instance.order:
+            from django.db import models
+            from .models import FormField
+            max_order = FormField.objects.filter(form=self.form_definition).aggregate(models.Max('order'))['order__max']
+            instance.order = (max_order or 0) + 1
+        if commit:
+            instance.save()
+        return instance
+
 class WorkflowStepForm(forms.ModelForm):
+    step_order = forms.IntegerField(required=False)
+
     class Meta:
         from workflow.models import WorkflowStepDefinition
         model = WorkflowStepDefinition
@@ -222,6 +259,9 @@ class WorkflowStepForm(forms.ModelForm):
         self.workflow_version = kwargs.pop("workflow_version", None)
         self.tenant = kwargs.pop("tenant", None)
         super().__init__(*args, **kwargs)
+        
+        if not self.instance.pk:
+            self.initial['approver_type'] = 'MANAGER'
         
         for field_name, field in self.fields.items():
             if isinstance(field.widget, forms.CheckboxInput):
@@ -249,8 +289,12 @@ class WorkflowStepForm(forms.ModelForm):
         
     def save(self, commit=True):
         instance = super().save(commit=False)
-        # Always set step_type to APPROVAL
         instance.step_type = "APPROVAL"
+        if not instance.step_order:
+            from django.db import models
+            from workflow.models import WorkflowStepDefinition
+            max_order = WorkflowStepDefinition.objects.filter(workflow_version=self.workflow_version).aggregate(models.Max('step_order'))['step_order__max']
+            instance.step_order = (max_order or 0) + 1
         if commit:
             instance.save()
         return instance

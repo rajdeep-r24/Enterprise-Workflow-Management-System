@@ -5,9 +5,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}ForgeFlow{% endblock %}</title>
+    <meta name="description" content="{% block meta_description %}ForgeFlow — Enterprise approval workflows for modern organizations.{% endblock %}">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=DM+Mono:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css" rel="stylesheet">
     <link href="{% static 'css/design-system.css' %}" rel="stylesheet">
 
@@ -17,40 +18,46 @@
             if (t) document.documentElement.setAttribute("data-theme", t);
         })();
     </script>
+
     <style>
-        .pf-nav {
+        .pf-header {
+            position: sticky; top: 0; z-index: 40;
+            background: color-mix(in srgb, var(--surface) 88%, transparent);
+            border-bottom: 1px solid var(--border);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        .pf-header__inner {
             display: flex; align-items: center; justify-content: space-between;
-            padding: var(--space-5) var(--space-8);
-            max-width: 1200px; margin: 0 auto;
+            padding: 0 var(--sp-8); height: 64px;
+            max-width: 1280px; margin: 0 auto;
         }
-        .pf-nav__brand { display: flex; align-items: center; gap: var(--space-2); font-weight: 700; font-size: 16px; color: var(--text-primary); }
-        .pf-nav__brand-mark {
-            width: 30px; height: 30px; border-radius: var(--radius-sm);
-            background: linear-gradient(135deg, var(--primary), var(--primary-hover));
-            display: flex; align-items: center; justify-content: center;
-            color: #fff; font-weight: 700; font-size: 14px;
-        }
-        .pf-center-wrap { min-height: calc(100vh - 76px); display: flex; align-items: center; justify-content: center; padding: var(--space-6); }
     </style>
+
     {% block extra_head %}{% endblock %}
 </head>
 <body>
 
-<nav class="pf-nav">
-    <a href="{% url 'landing' %}" class="pf-nav__brand">
-        <span class="pf-nav__brand-mark">F</span>
-        ForgeFlow
-    </a>
-    <button class="ff-icon-btn" data-theme-toggle title="Toggle theme">
-        <i class="bi bi-moon-stars"></i>
-    </button>
-</nav>
+<header class="pf-header" role="banner">
+    <div class="pf-header__inner">
+        <a href="{% url 'landing' %}" class="pf-nav__brand">
+            <span class="pf-nav__brand-mark" aria-hidden="true">F</span>
+            <span>ForgeFlow</span>
+        </a>
+        <div class="ff-flex ff-items-center ff-gap-3">
+            <button class="ff-icon-btn" data-theme-toggle aria-label="Toggle dark mode" title="Toggle theme">
+                <i class="bi bi-moon-stars" aria-hidden="true"></i>
+            </button>
+            {% block nav_actions %}{% endblock %}
+        </div>
+    </div>
+</header>
 
 {% if messages %}
-<div style="max-width: 480px; margin: var(--space-6) auto 0;">
+<div style="max-width: 520px; margin: var(--sp-6) auto 0; padding: 0 var(--sp-4);">
     {% for message in messages %}
-    <div class="ff-alert ff-alert--{{ message.tags|default:'info' }}">
-        <i class="bi bi-info-circle"></i>
+    <div class="ff-alert ff-alert--{{ message.tags|default:'info' }}" role="alert">
+        <i class="bi bi-info-circle" aria-hidden="true"></i>
         <span>{{ message }}</span>
     </div>
     {% endfor %}
@@ -60,15 +67,6 @@
 {% block content %}{% endblock %}
 
 <script src="{% static 'js/app-shell.js' %}"></script>
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
-        document.querySelectorAll('.ff-field input, .ff-field select, .ff-field textarea').forEach(function(el) {
-            if (el.type !== 'checkbox' && el.type !== 'radio' && el.type !== 'file') {
-                el.classList.add('ff-input');
-            }
-        });
-    });
-</script>
 {% block extra_js %}{% endblock %}
 </body>
 </html>

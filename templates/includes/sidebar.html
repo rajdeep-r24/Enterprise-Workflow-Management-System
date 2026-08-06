@@ -1,64 +1,109 @@
 <div class="ff-sidebar__brand">
-    <div class="ff-sidebar__brand-mark">F</div>
+    <div class="ff-sidebar__brand-mark" aria-hidden="true">F</div>
     <span class="ff-sidebar__brand-text">ForgeFlow</span>
 </div>
 
-<nav class="ff-nav">
+<nav class="ff-nav" aria-label="Application navigation">
 
-    <div class="ff-nav__section-title">Overview</div>
-    <a href="{% url 'dashboard' %}" class="ff-nav__item {% if request.resolver_match.url_name == 'dashboard' %}is-active{% endif %}" title="Dashboard">
-        <i class="bi bi-grid-1x2"></i><span class="ff-nav__label">Dashboard</span>
+    <div class="ff-nav__section-label">Overview</div>
+    <a href="{% url 'dashboard' %}"
+       class="ff-nav__item {% if request.resolver_match.url_name == 'dashboard' %}is-active{% endif %}"
+       title="Dashboard"
+       {% if request.resolver_match.url_name == 'dashboard' %}aria-current="page"{% endif %}>
+        <i class="bi bi-grid-1x2" aria-hidden="true"></i>
+        <span class="ff-nav__label">Dashboard</span>
     </a>
 
-    <div class="ff-nav__section-title">Requests</div>
-    <a href="{% url 'new-request' %}" class="ff-nav__item {% if request.resolver_match.url_name == 'new-request' %}is-active{% endif %}" title="New Request">
-        <i class="bi bi-plus-circle"></i><span class="ff-nav__label">New Request</span>
+    <div class="ff-nav__section-label">Requests</div>
+    <a href="{% url 'new-request' %}"
+       class="ff-nav__item {% if request.resolver_match.url_name == 'new-request' %}is-active{% endif %}"
+       title="New Request"
+       {% if request.resolver_match.url_name == 'new-request' %}aria-current="page"{% endif %}>
+        <i class="bi bi-plus-circle" aria-hidden="true"></i>
+        <span class="ff-nav__label">New Request</span>
     </a>
-    <a href="{% url 'my-requests' %}" class="ff-nav__item {% if request.resolver_match.url_name == 'my-requests' %}is-active{% endif %}" title="My Requests">
-        <i class="bi bi-file-earmark-text"></i><span class="ff-nav__label">My Requests</span>
+    <a href="{% url 'my-requests' %}"
+       class="ff-nav__item {% if request.resolver_match.url_name == 'my-requests' %}is-active{% endif %}"
+       title="My Requests"
+       {% if request.resolver_match.url_name == 'my-requests' %}aria-current="page"{% endif %}>
+        <i class="bi bi-file-earmark-text" aria-hidden="true"></i>
+        <span class="ff-nav__label">My Requests</span>
     </a>
 
     {% if user_can_approve %}
-    <div class="ff-nav__section-title">Approvals</div>
-    <a href="{% url 'approval-inbox' %}" class="ff-nav__item {% if request.resolver_match.url_name == 'approval-inbox' %}is-active{% endif %}" title="Pending Approvals">
-        <i class="bi bi-check2-square"></i><span class="ff-nav__label">Pending Approvals</span>
+    <div class="ff-nav__section-label">Approvals</div>
+    <a href="{% url 'approval-inbox' %}"
+       class="ff-nav__item {% if request.resolver_match.url_name == 'approval-inbox' %}is-active{% endif %}"
+       title="Pending Approvals"
+       {% if request.resolver_match.url_name == 'approval-inbox' %}aria-current="page"{% endif %}>
+        <i class="bi bi-check2-square" aria-hidden="true"></i>
+        <span class="ff-nav__label">Pending Approvals</span>
     </a>
-    <a href="{% url 'approval-history' %}" class="ff-nav__item {% if request.resolver_match.url_name == 'approval-history' %}is-active{% endif %}" title="Approval History">
-        <i class="bi bi-clock-history"></i><span class="ff-nav__label">Approval History</span>
+    <a href="{% url 'approval-history' %}"
+       class="ff-nav__item {% if request.resolver_match.url_name == 'approval-history' %}is-active{% endif %}"
+       title="Approval History"
+       {% if request.resolver_match.url_name == 'approval-history' %}aria-current="page"{% endif %}>
+        <i class="bi bi-clock-history" aria-hidden="true"></i>
+        <span class="ff-nav__label">Approval History</span>
     </a>
     {% endif %}
 
     {% if user_can_view_employees %}
-    <div class="ff-nav__section-title">Administration</div>
-    <a href="{% url 'employee-list' %}" class="ff-nav__item {% if request.resolver_match.url_name == 'employee-list' %}is-active{% endif %}" title="Employees">
-        <i class="bi bi-people"></i><span class="ff-nav__label">Employees</span>
+    <div class="ff-nav__section-label">Administration</div>
+    <a href="{% url 'employee-list' %}"
+       class="ff-nav__item {% if request.resolver_match.url_name == 'employee-list' %}is-active{% endif %}"
+       title="Employees"
+       {% if request.resolver_match.url_name == 'employee-list' %}aria-current="page"{% endif %}>
+        <i class="bi bi-people" aria-hidden="true"></i>
+        <span class="ff-nav__label">Employees</span>
     </a>
     {% endif %}
 
     {% if employee_role == 'ORG_ADMIN' %}
-    <div class="ff-nav__section-title">Organization Setup</div>
-    <a href="{% url 'request-type-list' %}" class="ff-nav__item {% if request.resolver_match.url_name == 'request-type-list' %}is-active{% endif %}" title="Request Types">
-        <i class="bi bi-file-earmark-code"></i><span class="ff-nav__label">Request Types</span>
+    <div class="ff-nav__section-label">Organization</div>
+    <a href="{% url 'request-type-list' %}"
+       class="ff-nav__item {% if request.resolver_match.url_name == 'request-type-list' %}is-active{% endif %}"
+       title="Request Types"
+       {% if request.resolver_match.url_name == 'request-type-list' %}aria-current="page"{% endif %}>
+        <i class="bi bi-file-earmark-code" aria-hidden="true"></i>
+        <span class="ff-nav__label">Request Types</span>
     </a>
-    <a href="{% url 'department-list' %}" class="ff-nav__item {% if request.resolver_match.url_name == 'department-list' %}is-active{% endif %}" title="Departments">
-        <i class="bi bi-diagram-3"></i><span class="ff-nav__label">Departments</span>
+    <a href="{% url 'department-list' %}"
+       class="ff-nav__item {% if request.resolver_match.url_name == 'department-list' %}is-active{% endif %}"
+       title="Departments"
+       {% if request.resolver_match.url_name == 'department-list' %}aria-current="page"{% endif %}>
+        <i class="bi bi-diagram-3" aria-hidden="true"></i>
+        <span class="ff-nav__label">Departments</span>
     </a>
-    <a href="{% url 'designation-list' %}" class="ff-nav__item {% if request.resolver_match.url_name == 'designation-list' %}is-active{% endif %}" title="Designations">
-        <i class="bi bi-award"></i><span class="ff-nav__label">Designations</span>
+    <a href="{% url 'designation-list' %}"
+       class="ff-nav__item {% if request.resolver_match.url_name == 'designation-list' %}is-active{% endif %}"
+       title="Designations"
+       {% if request.resolver_match.url_name == 'designation-list' %}aria-current="page"{% endif %}>
+        <i class="bi bi-award" aria-hidden="true"></i>
+        <span class="ff-nav__label">Designations</span>
     </a>
-    <a href="{% url 'location-list' %}" class="ff-nav__item {% if request.resolver_match.url_name == 'location-list' %}is-active{% endif %}" title="Locations">
-        <i class="bi bi-geo-alt"></i><span class="ff-nav__label">Locations</span>
+    <a href="{% url 'location-list' %}"
+       class="ff-nav__item {% if request.resolver_match.url_name == 'location-list' %}is-active{% endif %}"
+       title="Locations"
+       {% if request.resolver_match.url_name == 'location-list' %}aria-current="page"{% endif %}>
+        <i class="bi bi-geo-alt" aria-hidden="true"></i>
+        <span class="ff-nav__label">Locations</span>
     </a>
     {% endif %}
 
-    <div class="ff-nav__section-title">Account</div>
-    <a href="{% url 'employee-profile' %}" class="ff-nav__item {% if request.resolver_match.url_name == 'employee-profile' %}is-active{% endif %}" title="Profile">
-        <i class="bi bi-person"></i><span class="ff-nav__label">Profile</span>
+    <div class="ff-nav__section-label">Account</div>
+    <a href="{% url 'employee-profile' %}"
+       class="ff-nav__item {% if request.resolver_match.url_name == 'employee-profile' %}is-active{% endif %}"
+       title="Profile"
+       {% if request.resolver_match.url_name == 'employee-profile' %}aria-current="page"{% endif %}>
+        <i class="bi bi-person" aria-hidden="true"></i>
+        <span class="ff-nav__label">Profile</span>
     </a>
     <form method="post" action="{% url 'logout' %}" style="margin: 0; padding: 0;">
         {% csrf_token %}
-        <button type="submit" class="ff-nav__item ff-nav__item--danger" title="Logout">
-            <i class="bi bi-box-arrow-right"></i><span class="ff-nav__label">Logout</span>
+        <button type="submit" class="ff-nav__item ff-nav__item--danger" title="Sign out">
+            <i class="bi bi-box-arrow-right" aria-hidden="true"></i>
+            <span class="ff-nav__label">Sign out</span>
         </button>
     </form>
 

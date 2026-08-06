@@ -1,18 +1,71 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}{{ title }}{% endblock %}
+{% block topbar_title %}{{ title }}{% endblock %}
 
 {% block content %}
-<h2 class="mb-4">{{ title }}</h2>
+{% include "forms_engine/request_type_progress.html" with current_step=1 %}
 
-<div class="card">
-    <div class="card-body">
+<div class="ff-flex ff-justify-between ff-items-center ff-mb-6">
+    <div>
+        <h2 class="ff-mb-2">{{ title }}</h2>
+    </div>
+</div>
+
+<div class="ff-card shadow-sm" style="max-width: 600px;">
+    <div class="ff-card__body">
         <form method="post">
             {% csrf_token %}
-            {{ form.as_p }}
-            <button class="btn btn-primary">Save Request Type</button>
-            <a href="{% url 'request-type-list' %}" class="btn btn-secondary">Cancel</a>
+            
+            <div class="ff-field">
+                <label class="ff-label" for="{{ form.name.id_for_label }}">Request Type Name</label>
+                {{ form.name }}
+                {% if form.name.errors %}
+                    {% for error in form.name.errors %}
+                        <div class="ff-error-text">{{ error }}</div>
+                    {% endfor %}
+                {% endif %}
+            </div>
+            
+            <details class="ff-mb-4" style="background: var(--surface-hover); padding: var(--sp-3); border-radius: var(--r-md); border: 1px solid var(--border);">
+                <summary class="ff-font-medium ff-text-secondary" style="cursor: pointer;">▼ Advanced Settings</summary>
+                <div style="margin-top: var(--sp-4);">
+                    <div class="ff-field">
+                        <label class="ff-label" for="{{ form.code.id_for_label }}">{{ form.code.label }}</label>
+                        {{ form.code }}
+                        <div class="ff-help">Auto-generated if left blank.</div>
+                        {% if form.code.errors %}
+                            {% for error in form.code.errors %}
+                                <div class="ff-error-text">{{ error }}</div>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                    
+                    <div class="ff-field">
+                        <label class="ff-label" for="{{ form.description.id_for_label }}">{{ form.description.label }}</label>
+                        {{ form.description }}
+                        {% if form.description.errors %}
+                            {% for error in form.description.errors %}
+                                <div class="ff-error-text">{{ error }}</div>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                </div>
+            </details>
+
+            <div class="ff-flex ff-gap-3" style="margin-top: var(--space-6);">
+                <button type="submit" class="ff-btn ff-btn--primary">Save & Continue</button>
+                <a href="{% url 'request-type-list' %}" class="ff-btn ff-btn--ghost">Cancel</a>
+            </div>
         </form>
     </div>
 </div>
+
+<script src="{% static 'js/auto-code-generator.js' %}"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        new AutoCodeGenerator('requesttype');
+    });
+</script>
 {% endblock %}

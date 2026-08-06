@@ -1,54 +1,104 @@
 {% extends "base.html" %}
 
 {% block title %}{{ title }}{% endblock %}
+{% block topbar_title %}Request Type Fields{% endblock %}
 
 {% block content %}
+{% include "forms_engine/request_type_progress.html" with current_step=2 %}
 
-<div class="row justify-content-center">
-    <div class="col-md-8">
-        <div class="card shadow-sm">
-            <div class="card-header bg-primary text-white">
-                <h4 class="mb-0">{{ title }} - {{ request_type.name }}</h4>
-            </div>
-            <div class="card-body">
-                <form method="post">
-                    {% csrf_token %}
-                    
-                    {% for field in form %}
-                        <div class="mb-3">
-                            {% if field.name == 'is_required' %}
-                                <div class="form-check">
-                                    {{ field }}
-                                    <label for="{{ field.id_for_label }}" class="form-check-label fw-bold">
-                                        {{ field.label }}
-                                    </label>
-                                </div>
-                            {% else %}
-                                <label for="{{ field.id_for_label }}" class="form-label fw-bold">
-                                    {{ field.label }}
-                                    {% if field.field.required %}
-                                        <span class="text-danger">*</span>
-                                    {% endif %}
-                                </label>
-                                {{ field }}
-                            {% endif %}
-                            {% if field.help_text %}
-                                <div class="form-text">{{ field.help_text }}</div>
-                            {% endif %}
-                            {% for error in field.errors %}
-                                <div class="invalid-feedback d-block">{{ error }}</div>
-                            {% endfor %}
-                        </div>
-                    {% endfor %}
-                    
-                    <div class="d-flex justify-content-end mt-4">
-                        <a href="{% url 'request-type-fields' request_type.pk %}" class="btn btn-outline-secondary me-2">Cancel</a>
-                        <button type="submit" class="btn btn-primary">Save Field</button>
-                    </div>
-                </form>
-            </div>
-        </div>
+<div class="ff-flex ff-justify-between ff-items-center ff-mb-6">
+    <div>
+        <h2 class="ff-mb-2">{{ title }}</h2>
+        <p class="ff-text-secondary mb-0">For {{ request_type.name }}</p>
     </div>
 </div>
+
+<div class="ff-card shadow-sm" style="max-width: 600px;">
+    <div class="ff-card__body">
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="ff-field">
+                <label class="ff-label" for="{{ form.label.id_for_label }}">Field Label</label>
+                {{ form.label }}
+                {% if form.label.errors %}
+                    {% for error in form.label.errors %}
+                        <div class="ff-error-text">{{ error }}</div>
+                    {% endfor %}
+                {% endif %}
+            </div>
+            
+            <div class="ff-grid ff-grid--2 ff-gap-4">
+                <div class="ff-field">
+                    <label class="ff-label" for="{{ form.field_type.id_for_label }}">Field Type</label>
+                    {{ form.field_type }}
+                </div>
+                
+                <div class="ff-field" style="display: flex; align-items: flex-end; padding-bottom: 8px;">
+                    <label class="ff-flex ff-items-center ff-gap-2" style="cursor: pointer; margin: 0;">
+                        {{ form.is_required }}
+                        <span class="ff-font-medium">Required Field</span>
+                    </label>
+                </div>
+            </div>
+            
+            <div class="ff-field" id="options-container" style="display: none;">
+                <label class="ff-label" for="{{ form.options.id_for_label }}">Dropdown Options</label>
+                {{ form.options }}
+                <div class="ff-help">{{ form.options.help_text }}</div>
+            </div>
+            
+            <details class="ff-mb-4" style="background: var(--surface-hover); padding: var(--sp-3); border-radius: var(--r-md); border: 1px solid var(--border);">
+                <summary class="ff-font-medium ff-text-secondary" style="cursor: pointer;">▼ Advanced Settings</summary>
+                <div style="margin-top: var(--sp-4);">
+                    <div class="ff-field">
+                        <label class="ff-label" for="{{ form.field_name.id_for_label }}">{{ form.field_name.label }}</label>
+                        {{ form.field_name }}
+                        <div class="ff-help">Auto-generated if left blank.</div>
+                    </div>
+                    
+                    <div class="ff-field">
+                        <label class="ff-label" for="{{ form.order.id_for_label }}">Display Order</label>
+                        {{ form.order }}
+                        <div class="ff-help">Auto-assigned if left blank.</div>
+                    </div>
+                    
+                    <div class="ff-field">
+                        <label class="ff-label" for="{{ form.placeholder.id_for_label }}">{{ form.placeholder.label }}</label>
+                        {{ form.placeholder }}
+                    </div>
+                    
+                    <div class="ff-field">
+                        <label class="ff-label" for="{{ form.help_text.id_for_label }}">{{ form.help_text.label }}</label>
+                        {{ form.help_text }}
+                    </div>
+                </div>
+            </details>
+
+            <div class="ff-flex ff-gap-3" style="margin-top: var(--space-6);">
+                <button type="submit" class="ff-btn ff-btn--primary">Save Field</button>
+                <a href="{% url 'request-type-fields' request_type.pk %}" class="ff-btn ff-btn--ghost">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const typeSelect = document.getElementById("{{ form.field_type.id_for_label }}");
+        const optionsContainer = document.getElementById("options-container");
+        
+        function toggleOptions() {
+            if (typeSelect.value === 'select') {
+                optionsContainer.style.display = 'block';
+            } else {
+                optionsContainer.style.display = 'none';
+            }
+        }
+        
+        typeSelect.addEventListener("change", toggleOptions);
+        toggleOptions();
+    });
+</script>
 
 {% endblock %}

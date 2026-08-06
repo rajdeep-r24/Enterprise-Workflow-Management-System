@@ -4,6 +4,7 @@
 {% block topbar_title %}Request Type Fields{% endblock %}
 
 {% block content %}
+{% include "forms_engine/request_type_progress.html" with current_step=2 %}
 
 <div class="ff-flex ff-justify-between ff-items-center ff-mb-6">
     <div>
@@ -11,10 +12,13 @@
         <p class="ff-text-secondary mb-0">Configure the form fields for this request type.</p>
     </div>
     <div class="ff-flex ff-gap-2">
-        <a href="{% url 'request-type-list' %}" class="ff-btn ff-btn--secondary">Back to List</a>
+        <a href="{% url 'request-type-list' %}" class="ff-btn ff-btn--ghost">Back to List</a>
         {% if not request_type.is_published %}
-        <a href="{% url 'request-type-field-add' request_type.pk %}" class="ff-btn ff-btn--primary">
+        <a href="{% url 'request-type-field-add' request_type.pk %}" class="ff-btn ff-btn--secondary">
             <i class="bi bi-plus"></i> Add Field
+        </a>
+        <a href="{% url 'request-type-steps' request_type.pk %}" class="ff-btn ff-btn--primary">
+            Continue to Workflow
         </a>
         {% endif %}
     </div>
