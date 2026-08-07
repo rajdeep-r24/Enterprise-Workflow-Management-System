@@ -71,7 +71,18 @@ class WorkflowService:
         # FIND NEXT STEP
         # ------------------------------------------
 
+        from ..models.workflow import WorkflowStepDefinition
+
         next_step = step_instance.step_definition.next_step
+        if not next_step:
+            next_step = (
+                WorkflowStepDefinition.objects.filter(
+                    workflow_version=step_instance.step_definition.workflow_version,
+                    step_order__gt=step_instance.step_definition.step_order,
+                )
+                .order_by("step_order")
+                .first()
+            )
 
         # ==========================================
         # NEXT APPROVAL STEP EXISTS
@@ -153,43 +164,41 @@ class WorkflowService:
             )
 
             # Get related submission
-            submission = FormSubmission.objects.get(
+            submission = FormSubmission.objects.filter(
                 workflow_instance=workflow
-            )
+            ).first()
 
-            submission.status = "APPROVED"
+            if submission:
+                submission.status = "APPROVED"
 
-            # --------------------------------------
-            # GENERATE VERIFICATION CREDENTIALS
-            # --------------------------------------
+                # --------------------------------------
+                # GENERATE VERIFICATION CREDENTIALS
+                # --------------------------------------
 
-            # Human-readable permission ID
-            if not submission.permission_id:
+                # Human-readable permission ID
+                if not submission.permission_id:
+                    submission.permission_id = (
+                        f"LP-"
+                        f"{timezone.now().year}-"
+                        f"{submission.pk:06d}"
+                    )
 
-                submission.permission_id = (
-                    f"LP-"
-                    f"{timezone.now().year}-"
-                    f"{submission.pk:06d}"
+                # Secure unpredictable verification token
+                if not submission.verification_token:
+                    submission.verification_token = uuid.uuid4()
+
+                # Record when permission was officially issued
+                if not submission.issued_at:
+                    submission.issued_at = timezone.now()
+
+                submission.save(
+                    update_fields=[
+                        "status",
+                        "permission_id",
+                        "verification_token",
+                        "issued_at",
+                    ]
                 )
-
-            # Secure unpredictable verification token
-            if not submission.verification_token:
-
-                submission.verification_token = uuid.uuid4()
-
-            # Record when permission was officially issued
-            if not submission.issued_at:
-
-                submission.issued_at = timezone.now()
-
-            submission.save(
-                update_fields=[
-                    "status",
-                    "permission_id",
-                    "verification_token",
-                    "issued_at",
-                ]
-            )
 
             # Record completion only after final approval
             WorkflowEvent.objects.create(

@@ -113,9 +113,19 @@ def generate_permission_pdf(submission):
         return step.assigned_to.get_full_name() or step.assigned_to.email
 
     def approver_role(step):
-        if not step or not step.step_definition:
+        if not step:
             return "Approver"
-        return step.step_definition.name or step.step_definition.role_code or "Approver"
+        if step.assigned_to:
+            employee = Employee.objects.filter(user=step.assigned_to).first()
+            if employee and employee.role:
+                return employee.role.display_name
+        if step.step_definition:
+            if step.step_definition.role_code:
+                from rbac.models import Role
+                return Role.get_display_name(step.step_definition.role_code)
+            if step.step_definition.name:
+                return step.step_definition.name
+        return "Approver"
 
     def approval_time(step):
         if not step or not step.action_at:

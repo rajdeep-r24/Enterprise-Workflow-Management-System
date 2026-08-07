@@ -37,10 +37,28 @@
     </div>
 </div>
 
-<script src="{% static 'js/auto-code-generator.js' %}"></script>
+<script src="{% static 'js/auto-code-generator.js' %}?v=2"></script>
 <script>
     document.addEventListener("DOMContentLoaded", function() {
         new AutoCodeGenerator('location');
+        
+        const locTypeField = document.getElementById('id_location_type');
+        const customTypeField = document.getElementById('id_custom_location_type');
+        
+        if (locTypeField && customTypeField) {
+            const customTypeWrapper = customTypeField.closest('.ff-field');
+            
+            function toggleCustomField() {
+                if (locTypeField.value === 'OTHER') {
+                    customTypeWrapper.style.display = 'block';
+                } else {
+                    customTypeWrapper.style.display = 'none';
+                }
+            }
+            
+            locTypeField.addEventListener('change', toggleCustomField);
+            toggleCustomField(); // Initialize on load
+        }
     });
 </script>
 {% endblock %}

@@ -30,6 +30,7 @@
                     <tr>
                         <th>Code</th>
                         <th>Name</th>
+                        <th>Role</th>
                         <th>Department</th>
                         <th>Designation</th>
                         <th>Status</th>
@@ -44,6 +45,9 @@
                             <a href="{% url 'employee-detail' employee.id %}" style="color: inherit;">
                                 {{ employee.user.get_full_name }}
                             </a>
+                        </td>
+                        <td>
+                            <span class="ff-badge ff-badge--info">{{ employee.role.display_name }}</span>
                         </td>
                         <td>{{ employee.department }}</td>
                         <td>{{ employee.designation }}</td>
@@ -70,7 +74,7 @@
                     </tr>
                 {% empty %}
                     <tr>
-                        <td colspan="6">
+                        <td colspan="7">
                             <div class="ff-table__empty">
                                 <i class="bi bi-people" style="font-size: 24px; color: var(--text-muted); display: block; margin-bottom: 8px;"></i>
                                 No employees found.

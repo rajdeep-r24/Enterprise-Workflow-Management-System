@@ -50,11 +50,11 @@ class ForgeFlowWorkflowIntegrationTests(TestCase):
             code="ENG",
         )
 
-        self.role_employee = Role.objects.create(name="Employee", code="EMPLOYEE")
-        self.role_it_head = Role.objects.create(name="IT Head", code="IT_HEAD")
-        self.role_hr_head = Role.objects.create(name="HR Head", code="HR_HEAD")
-        self.role_unit_head = Role.objects.create(name="Unit Head", code="UNIT_HEAD")
-        self.role_manager = Role.objects.create(name="Manager", code="MANAGER")
+        self.role_employee, _ = Role.objects.get_or_create(code="EMPLOYEE", defaults={"name": "Employee"})
+        self.role_it_head, _ = Role.objects.get_or_create(code="IT_HEAD", defaults={"name": "IT Head"})
+        self.role_hr_head, _ = Role.objects.get_or_create(code="HR_HEAD", defaults={"name": "HR Head"})
+        self.role_unit_head, _ = Role.objects.get_or_create(code="UNIT_HEAD", defaults={"name": "Unit Head"})
+        self.role_manager, _ = Role.objects.get_or_create(code="MANAGER", defaults={"name": "Manager"})
 
         self.requester_user = User.objects.create_user(
             username="requester",
@@ -652,7 +652,7 @@ class RequestTypeFieldManagementTests(TestCase):
         self.designation = Designation.objects.create(name="Engineer", code="ENGR", organization=self.organization)
         self.location = Location.objects.create(name="Headquarters", code="HQ", organization=self.organization)
         
-        self.role_org_admin = Role.objects.create(name="Org Admin", code="ORG_ADMIN")
+        self.role_org_admin, _ = Role.objects.get_or_create(code="ORG_ADMIN", defaults={"name": "Org Admin"})
         
         self.admin_user = User.objects.create_user(username="admin", email="admin@acme.test", password="testpass123")
         self.admin_employee = Employee.objects.create(

@@ -8,7 +8,7 @@
 <div class="ff-mb-6">
     <h1>Welcome back, {{ request.user.first_name }}</h1>
     <p class="ff-flex ff-items-center ff-gap-2" style="margin: 0;">
-        <span class="ff-badge ff-badge--info">{{ role|default:"USER" }}</span>
+        <span class="ff-badge ff-badge--info">{{ role|role_display|default:"User" }}</span>
         <span class="ff-text-muted ff-text-sm">{{ request.user.email }}</span>
     </p>
 </div>

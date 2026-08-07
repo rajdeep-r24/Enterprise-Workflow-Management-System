@@ -14,7 +14,7 @@ class DepartmentTests(TestCase):
         self.user1 = User.objects.create_user(username="u1@example.com", email="u1@example.com", password="pwd")
         self.user2 = User.objects.create_user(username="u2@example.com", email="u2@example.com", password="pwd")
         
-        role = Role.objects.create(name="Admin", code="ADMIN")
+        role, _ = Role.objects.get_or_create(code="ADMIN", defaults={"name": "Admin"})
         
         self.dept1 = Department.objects.create(organization=self.org1, name="HR", code="HR")
         self.dept2 = Department.objects.create(organization=self.org2, name="IT", code="IT")

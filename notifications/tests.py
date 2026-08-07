@@ -45,9 +45,9 @@ class NotificationLifecycleTests(TestCase):
             code="ENG",
         )
 
-        self.role_employee = Role.objects.create(name="Employee", code="EMPLOYEE")
-        self.role_it_head = Role.objects.create(name="IT Head", code="IT_HEAD")
-        self.role_hr_head = Role.objects.create(name="HR Head", code="HR_HEAD")
+        self.role_employee, _ = Role.objects.get_or_create(code="EMPLOYEE", defaults={"name": "Employee"})
+        self.role_it_head, _ = Role.objects.get_or_create(code="IT_HEAD", defaults={"name": "IT Head"})
+        self.role_hr_head, _ = Role.objects.get_or_create(code="HR_HEAD", defaults={"name": "HR Head"})
 
         self.requester_user = User.objects.create_user(
             username="requester",

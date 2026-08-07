@@ -53,7 +53,7 @@
                         <td style="font-weight: 500;">{{ step.name }}</td>
                         <td>
                             {% if step.approver_type == 'ROLE' %}
-                                <span class="ff-badge ff-badge--info">Role: {{ step.role_code }}</span>
+                                <span class="ff-badge ff-badge--info">Role: {{ step.role_code|role_display }}</span>
                             {% elif step.approver_type == 'SPECIFIC_USER' %}
                                 <span class="ff-badge ff-badge--neutral">User: {{ step.specific_approver.email }}</span>
                             {% else %}

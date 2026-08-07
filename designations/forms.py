@@ -9,6 +9,21 @@ class DesignationForm(forms.ModelForm):
         widgets = {
             "description": forms.Textarea(attrs={"rows": 3}),
         }
+        labels = {
+            "level": "Hierarchy Level"
+        }
+        from django.utils.safestring import mark_safe
+        help_texts = {
+            "level": mark_safe(
+                "Hierarchy determines approval and reporting order.<br><br>"
+                "Lower number = higher authority.<br><br>"
+                "Examples:<br>"
+                "1 = CEO<br>"
+                "2 = Director<br>"
+                "3 = Manager<br>"
+                "4 = Executive"
+            )
+        }
 
     def __init__(self, *args, **kwargs):
         self.tenant = kwargs.pop("tenant", None)

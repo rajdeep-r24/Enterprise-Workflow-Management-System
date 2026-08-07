@@ -32,6 +32,15 @@ urlpatterns = [
     ),
 
     path(
+        "accounts/password-change/",
+        views.CustomPasswordChangeView.as_view(),
+        name="password_change",
+    ),
+    path(
+        "password-change/",
+        views.CustomPasswordChangeView.as_view(),
+    ),
+    path(
         "password-reset/",
         public_access(auth_views.PasswordResetView.as_view(
             template_name="accounts/password_reset.html",

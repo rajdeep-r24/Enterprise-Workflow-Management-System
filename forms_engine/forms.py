@@ -278,8 +278,8 @@ class WorkflowStepForm(forms.ModelForm):
             
         # Make role_code a choice field using existing roles
         from rbac.models import Role
-        roles = Role.objects.filter(is_active=True).values_list('code', 'name')
-        choices = [('', '---------')] + list(roles)
+        roles = Role.objects.filter(is_active=True)
+        choices = [('', '---------')] + [(r.code, r.display_name) for r in roles]
         self.fields['role_code'] = forms.ChoiceField(
             choices=choices,
             required=False,

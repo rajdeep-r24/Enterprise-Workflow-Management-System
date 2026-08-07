@@ -46,9 +46,9 @@ class WorkflowServiceApproveTests(TestCase):
             organization=self.org, name="Engineer", code="ENG",
         )
 
-        self.role_employee = Role.objects.create(name="Employee", code="EMPLOYEE")
-        self.role_it_head = Role.objects.create(name="IT Head", code="IT_HEAD")
-        self.role_hr_head = Role.objects.create(name="HR Head", code="HR_HEAD")
+        self.role_employee, _ = Role.objects.get_or_create(code="EMPLOYEE", defaults={"name": "Employee"})
+        self.role_it_head, _ = Role.objects.get_or_create(code="IT_HEAD", defaults={"name": "IT Head"})
+        self.role_hr_head, _ = Role.objects.get_or_create(code="HR_HEAD", defaults={"name": "HR Head"})
 
         # The requester submitting the form
         self.requester_user = User.objects.create_user(
@@ -299,9 +299,9 @@ class ApproverResolverTests(TestCase):
             name="Engineer",
             code="ENG",
         )
-        self.role_employee = Role.objects.create(name="Employee", code="EMPLOYEE")
-        self.role_it_head = Role.objects.create(name="IT Head", code="IT_HEAD")
-        self.role_manager = Role.objects.create(name="Manager", code="MANAGER")
+        self.role_employee, _ = Role.objects.get_or_create(code="EMPLOYEE", defaults={"name": "Employee"})
+        self.role_it_head, _ = Role.objects.get_or_create(code="IT_HEAD", defaults={"name": "IT Head"})
+        self.role_manager, _ = Role.objects.get_or_create(code="MANAGER", defaults={"name": "Manager"})
 
     def _create_employee(self, user, organization, employee_code):
         return Employee.objects.create(

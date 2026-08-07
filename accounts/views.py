@@ -1,18 +1,40 @@
-from django.contrib.auth.views import LoginView
+from django.contrib.auth.views import LoginView, PasswordChangeView
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib import messages
 from django.urls import reverse_lazy
-
+from django.shortcuts import redirect
+from django.contrib.auth import login as auth_login
 from .forms import LoginForm
 
-from django.contrib.auth import logout
-from django.shortcuts import redirect
 
 class CustomLoginView(LoginView):
     template_name = "accounts/login.html"
     authentication_form = LoginForm
     redirect_authenticated_user = True
 
+    def form_valid(self, form):
+        user = form.get_user()
+        if user and getattr(user, "requires_password_change", False):
+            auth_login(self.request, user)
+            return redirect("password_change")
+        return super().form_valid(form)
+
     def get_success_url(self):
         return reverse_lazy("dashboard")
+
+
+class CustomPasswordChangeView(LoginRequiredMixin, PasswordChangeView):
+    template_name = "accounts/password_change.html"
+    success_url = reverse_lazy("dashboard")
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        if getattr(self.request.user, "requires_password_change", False):
+            self.request.user.requires_password_change = False
+            self.request.user.save(update_fields=["requires_password_change"])
+        messages.success(self.request, "Your password has been changed successfully.")
+        return response
+
 
 from django.views.decorators.http import require_POST
 

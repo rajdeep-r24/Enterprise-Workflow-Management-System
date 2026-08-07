@@ -79,7 +79,8 @@ class AutoCodeGenerator {
 
         try {
             // Include CSRF token
-            const csrfToken = this.getCookie('csrftoken');
+            const csrfToken = this.getCsrfToken();
+            console.log("CSRF Token before fetch:", csrfToken, "Length:", csrfToken ? csrfToken.length : 0);
             
             const response = await fetch("/api/code-suggestion/", {
                 method: "POST",
@@ -107,18 +108,11 @@ class AutoCodeGenerator {
         }
     }
 
-    getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
-            }
+    getCsrfToken() {
+        const csrfInput = document.querySelector('[name=csrfmiddlewaretoken]');
+        if (csrfInput) {
+            return csrfInput.value;
         }
-        return cookieValue;
+        return "";
     }
 }

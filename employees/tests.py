@@ -45,7 +45,7 @@ class EmployeeProfileViewTests(TestCase):
             name="Engineer",
             code="ENGR",
         )
-        role = Role.objects.create(name="Employee", code="EMPLOYEE")
+        role, _ = Role.objects.get_or_create(code="EMPLOYEE", defaults={"name": "Employee"})
         Employee.objects.create(
             user=self.user,
             organization=organization,
@@ -86,7 +86,7 @@ class EmployeeCodeGenerationTests(TestCase):
         self.loc2 = Location.objects.create(organization=self.org2, name="Loc 2", code="L2", location_type="HQ", address="123", city="BLR", state="KA", country="India")
         self.desg2 = Designation.objects.create(organization=self.org2, name="Desg 2", code="DS2")
         
-        self.role = Role.objects.create(name="Employee", code="EMPLOYEE")
+        self.role, _ = Role.objects.get_or_create(code="EMPLOYEE", defaults={"name": "Employee"})
         
     def _create_employee_via_form(self, org, email, first_name="John", last_name="Doe"):
         from employees.forms import EmployeeRegistrationForm

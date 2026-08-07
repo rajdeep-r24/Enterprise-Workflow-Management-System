@@ -26,8 +26,7 @@ class Location(models.Model):
     code = models.CharField(max_length=20)
 
     location_type = models.CharField(
-        max_length=20,
-        choices=LOCATION_TYPES
+        max_length=100
     )
 
     address = models.TextField()
@@ -50,3 +49,7 @@ class Location(models.Model):
 
     def __str__(self):
         return self.name
+        
+    def get_location_type_display(self):
+        types_dict = dict(self.LOCATION_TYPES)
+        return types_dict.get(self.location_type, self.location_type)

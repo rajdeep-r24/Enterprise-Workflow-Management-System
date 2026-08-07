@@ -20,8 +20,8 @@ class MultiTenantTestCase(TestCase):
         self.des_a = Designation.objects.create(organization=self.org_a, name="Eng A", code="ENGA")
         
         self.user_a = User.objects.create_user(username="usera", email="usera@orga.test", password="password")
-        self.role_emp = Role.objects.create(name="Employee", code="EMPLOYEE")
-        self.role_mgr = Role.objects.create(name="Manager", code="MANAGER")
+        self.role_emp, _ = Role.objects.get_or_create(code="EMPLOYEE", defaults={"name": "Employee"})
+        self.role_mgr, _ = Role.objects.get_or_create(code="MANAGER", defaults={"name": "Manager"})
         
         self.emp_a = Employee.objects.create(
             user=self.user_a, organization=self.org_a, department=self.dept_a,

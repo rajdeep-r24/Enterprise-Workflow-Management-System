@@ -84,6 +84,9 @@ TEMPLATES = [
                 'employees.context_processors.role_context',
                 'notifications.context_processors.unread_notifications',
             ],
+            'builtins': [
+                'rbac.templatetags.rbac_tags',
+            ],
         },
     },
 ]

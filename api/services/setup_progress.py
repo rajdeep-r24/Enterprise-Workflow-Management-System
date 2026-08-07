@@ -90,17 +90,11 @@ class SetupProgressService:
         percentage = int((completed_count / total_steps) * 100) if total_steps > 0 else 100
         is_complete = completed_count == total_steps
         
-        # Determine if we should show the success card or hide entirely.
-        # We auto-hide the success card if the organization is older than 7 days.
         show_success_card = False
         hide_entirely = False
         
         if is_complete:
-            org_age_days = (timezone.now() - tenant.created_at).days
-            if org_age_days <= 7:
-                show_success_card = True
-            else:
-                hide_entirely = True
+            hide_entirely = True
                 
         return {
             "steps": evaluated_steps,
