@@ -4,52 +4,70 @@
 {% block topbar_title %}Edit Employee{% endblock %}
 
 {% block content %}
-<div class="ff-flex ff-justify-between ff-items-center ff-mb-6">
+
+<div class="ff-flex ff-justify-between ff-items-center ff-mb-6" style="gap:var(--sp-4);flex-wrap:wrap;">
     <div>
-        <h2 class="ff-mb-2">Edit Employee</h2>
+        <h1 class="ff-page-header__title">Edit Employee</h1>
+        <p class="ff-page-header__sub">Update {{ employee.user.get_full_name }}'s information</p>
+    </div>
+    <div class="ff-flex ff-gap-2">
+        <a href="{% url 'employee-detail' employee.id %}" class="ff-btn ff-btn--ghost">
+            <i class="bi bi-eye"></i> View Profile
+        </a>
+        <a href="{% url 'employee-list' %}" class="ff-btn ff-btn--ghost">
+            <i class="bi bi-arrow-left"></i> Back
+        </a>
     </div>
 </div>
 
-<div class="ff-card shadow-sm" style="max-width: 800px;">
+<div class="ff-card" style="max-width:720px;">
+    <div class="ff-card__header">
+        <div>
+            <div class="ff-card__title"><i class="bi bi-person-gear" style="color:var(--accent);margin-right:var(--sp-2);"></i> Edit Employee Details</div>
+            <div class="ff-card__subtitle">Code: {{ employee.employee_code }}</div>
+        </div>
+    </div>
     <div class="ff-card__body">
-        <form method="post">
+        <form method="post" novalidate>
             {% csrf_token %}
 
-            <h4 class="ff-mb-4" style="color: var(--primary);">Personal Information</h4>
+            {% if user_form.non_field_errors or employee_form.non_field_errors %}
+            <div class="ff-alert ff-alert--error ff-mb-4" role="alert">
+                <i class="bi bi-exclamation-circle"></i>
+                <span>Please fix the errors below and try again.</span>
+            </div>
+            {% endif %}
+
+            <div class="ff-form-section">Personal Information</div>
+
             {% for field in user_form %}
-                <div class="ff-field">
-                    <label class="ff-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
-                    {{ field }}
-                    {% if field.help_text %}
-                        <div class="ff-help">{{ field.help_text }}</div>
-                    {% endif %}
-                    {% for error in field.errors %}
-                        <div class="ff-error-text">{{ error }}</div>
-                    {% endfor %}
-                </div>
+            <div class="ff-field">
+                <label class="ff-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% if field.help_text %}<div class="ff-help">{{ field.help_text }}</div>{% endif %}
+                {% for error in field.errors %}<div class="ff-error-text"><i class="bi bi-exclamation-circle"></i> {{ error }}</div>{% endfor %}
+            </div>
             {% endfor %}
 
-            <hr style="border: 0; border-top: 1px solid var(--border); margin: var(--space-6) 0;">
+            <div class="ff-form-section">Employment Details</div>
 
-            <h4 class="ff-mb-4" style="color: var(--primary);">Employment Information</h4>
             {% for field in employee_form %}
-                <div class="ff-field">
-                    <label class="ff-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
-                    {{ field }}
-                    {% if field.help_text %}
-                        <div class="ff-help">{{ field.help_text }}</div>
-                    {% endif %}
-                    {% for error in field.errors %}
-                        <div class="ff-error-text">{{ error }}</div>
-                    {% endfor %}
-                </div>
+            <div class="ff-field">
+                <label class="ff-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% if field.help_text %}<div class="ff-help">{{ field.help_text }}</div>{% endif %}
+                {% for error in field.errors %}<div class="ff-error-text"><i class="bi bi-exclamation-circle"></i> {{ error }}</div>{% endfor %}
+            </div>
             {% endfor %}
 
-            <div class="ff-flex ff-gap-3" style="margin-top: var(--space-6);">
-                <button type="submit" class="ff-btn ff-btn--primary">Update Employee</button>
+            <div class="ff-flex ff-gap-3" style="margin-top:var(--sp-6);padding-top:var(--sp-5);border-top:1px solid var(--border);">
+                <button type="submit" class="ff-btn ff-btn--primary">
+                    <i class="bi bi-check2"></i> Update Employee
+                </button>
                 <a href="{% url 'employee-detail' employee.id %}" class="ff-btn ff-btn--secondary">Cancel</a>
             </div>
         </form>
     </div>
 </div>
+
 {% endblock %}

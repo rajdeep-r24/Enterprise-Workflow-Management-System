@@ -1,23 +1,32 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}My Requests{% endblock %}
 {% block topbar_title %}My Requests{% endblock %}
 
+{% block extra_head %}
+<style>
+.mr-row-link { display:table-row; color:inherit; text-decoration:none; }
+.mr-name     { font-weight:600; color:var(--text-primary); transition:color var(--dur-fast); }
+.ff-table tbody tr:hover .mr-name { color:var(--accent); }
+</style>
+{% endblock %}
+
 {% block content %}
 
-<div class="ff-flex ff-justify-between ff-items-center ff-mb-6">
+<div class="ff-flex ff-justify-between ff-items-center ff-mb-6" style="gap:var(--sp-4);flex-wrap:wrap;">
     <div>
-        <h2 class="ff-mb-2">My Requests</h2>
-        <p class="ff-text-secondary mb-0">Track the status of your submitted requests.</p>
+        <h1 class="ff-page-header__title">My Requests</h1>
+        <p class="ff-page-header__sub">Track the status of your submitted requests</p>
     </div>
     <a href="{% url 'new-request' %}" class="ff-btn ff-btn--primary">
-        <i class="bi bi-plus"></i> New Request
+        <i class="bi bi-plus-circle"></i> New Request
     </a>
 </div>
 
-<div class="ff-card shadow-sm">
-    <div class="ff-card__body p-0">
-        <div class="ff-table-wrap">
+<div class="ff-card">
+    <div class="ff-card__body" style="padding:0;">
+        <div class="ff-table-wrap" style="border:none;border-radius:var(--r-xl);box-shadow:none;">
             <table class="ff-table">
                 <thead>
                     <tr>
@@ -25,50 +34,62 @@
                         <th>Status</th>
                         <th>Current Step</th>
                         <th>Submitted</th>
-                        <th>Action</th>
+                        <th style="width:100px;text-align:right;">Action</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for submission in submissions %}
-                        <tr>
-                            <td style="font-weight: 500;">{{ submission.form.name }}</td>
-                            <td>
-                                {% if submission.status == 'APPROVED' %}
-                                    <span class="ff-badge ff-badge--success"><span class="ff-badge__dot"></span> Approved</span>
-                                {% elif submission.status == 'REJECTED' %}
-                                    <span class="ff-badge ff-badge--danger"><span class="ff-badge__dot"></span> Rejected</span>
-                                {% elif submission.status == 'SUBMITTED' %}
-                                    <span class="ff-badge ff-badge--info"><span class="ff-badge__dot"></span> Submitted</span>
-                                {% elif submission.status == 'IN_PROGRESS' %}
-                                    <span class="ff-badge ff-badge--warning"><span class="ff-badge__dot"></span> In Progress</span>
-                                {% else %}
-                                    <span class="ff-badge ff-badge--neutral"><span class="ff-badge__dot"></span> {{ submission.status }}</span>
-                                {% endif %}
-                            </td>
-                            <td>
+                    <tr>
+                        <td>
+                            <div class="mr-name">{{ submission.form.name }}</div>
+                            <div style="font-size:var(--text-xs);color:var(--text-tertiary);margin-top:2px;">ID #{{ submission.pk }}</div>
+                        </td>
+                        <td>
+                            {% if submission.status == 'APPROVED' %}
+                                <span class="ff-badge ff-badge--success"><span class="ff-badge__dot"></span> Approved</span>
+                            {% elif submission.status == 'REJECTED' %}
+                                <span class="ff-badge ff-badge--danger"><span class="ff-badge__dot"></span> Rejected</span>
+                            {% elif submission.status == 'IN_PROGRESS' %}
+                                <span class="ff-badge ff-badge--warning"><span class="ff-badge__dot ff-badge__dot--pulse"></span> In Progress</span>
+                            {% elif submission.status == 'SUBMITTED' %}
+                                <span class="ff-badge ff-badge--info"><span class="ff-badge__dot"></span> Submitted</span>
+                            {% else %}
+                                <span class="ff-badge ff-badge--neutral"><span class="ff-badge__dot"></span> {{ submission.status }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span style="font-size:var(--text-sm);color:var(--text-secondary);">
                                 {% if submission.workflow_instance.current_step %}
                                     {{ submission.workflow_instance.current_step.name }}
                                 {% else %}
-                                    Completed
+                                    <span class="ff-text-muted">—</span>
                                 {% endif %}
-                            </td>
-                            <td>{{ submission.created_at|date:"M d, Y h:i A" }}</td>
-                            <td>
-                                <a class="ff-btn ff-btn--sm ff-btn--secondary" href="{% url 'request-detail' submission.id %}">
-                                    View
-                                </a>
-                            </td>
-                        </tr>
+                            </span>
+                        </td>
+                        <td>
+                            <span style="font-size:var(--text-sm);color:var(--text-secondary);font-variant-numeric:tabular-nums;">
+                                {{ submission.created_at|date:"M d, Y" }}
+                            </span>
+                        </td>
+                        <td style="text-align:right;">
+                            <a class="ff-btn ff-btn--sm ff-btn--secondary" href="{% url 'request-detail' submission.id %}">
+                                View <i class="bi bi-arrow-right"></i>
+                            </a>
+                        </td>
+                    </tr>
                     {% empty %}
-                        <tr>
-                            <td colspan="5">
-                                <div class="ff-table__empty">
-                                    <i class="bi bi-file-earmark-text" style="font-size: 24px; color: var(--text-muted); display: block; margin-bottom: 8px;"></i>
-                                    <h4 class="ff-text-secondary ff-mb-2">No Requests Found</h4>
-                                    <p class="ff-text-muted mb-0">You haven't submitted any requests yet.</p>
-                                </div>
-                            </td>
-                        </tr>
+                    <tr>
+                        <td colspan="5">
+                            <div class="ff-empty">
+                                <div class="ff-empty__icon"><i class="bi bi-file-earmark-text"></i></div>
+                                <div class="ff-empty__title">No requests yet</div>
+                                <p class="ff-empty__body">You haven't submitted any requests yet. Start by creating your first request.</p>
+                                <a href="{% url 'new-request' %}" class="ff-btn ff-btn--primary ff-btn--sm">
+                                    <i class="bi bi-plus-circle"></i> Submit a Request
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
                     {% endfor %}
                 </tbody>
             </table>

@@ -1,146 +1,371 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}Dashboard{% endblock %}
 {% block topbar_title %}Dashboard{% endblock %}
 
+{% block extra_head %}
+<style>
+/* ── Dashboard-specific styles ── */
+.dash-greeting-wrap {
+    margin-bottom: var(--sp-6);
+    animation: ff-page-enter var(--dur-slower) var(--ease-out-expo) both;
+}
+.dash-greeting__eyebrow {
+    display: inline-flex; align-items: center; gap: var(--sp-2);
+    font-size: var(--text-xs); font-weight: 700; text-transform: uppercase;
+    letter-spacing: var(--tracking-wider); color: var(--text-tertiary);
+    margin-bottom: var(--sp-2);
+}
+.dash-greeting__time-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--success);
+    box-shadow: 0 0 0 3px rgba(5,150,105,.15);
+    animation: ff-dot-pulse 2s ease-in-out infinite;
+}
+.dash-greeting__title {
+    font-size: clamp(20px,2.5vw,28px);
+    font-weight: 800;
+    letter-spacing: var(--tracking-tighter);
+    color: var(--text-primary);
+    line-height: 1.1;
+    margin-bottom: var(--sp-2);
+}
+.dash-greeting__sub {
+    display: flex; align-items: center; gap: var(--sp-2);
+    font-size: var(--text-sm); color: var(--text-tertiary);
+}
+
+/* Quick actions bar */
+.dash-actions {
+    display: flex; align-items: center; gap: var(--sp-3); flex-wrap: wrap;
+    margin-bottom: var(--sp-6);
+}
+
+/* Setup wizard card — premium treatment */
+.dash-wizard {
+    background: var(--surface);
+    border: 1px solid var(--accent-subtle-border);
+    border-radius: var(--r-2xl);
+    box-shadow: var(--shadow-accent);
+    overflow: hidden;
+    margin-bottom: var(--sp-6);
+    position: relative;
+}
+.dash-wizard::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, var(--accent) 0%, #7C3AED 50%, #EC4899 100%);
+}
+.dash-wizard__header {
+    padding: var(--sp-5) var(--sp-6);
+    display: flex; align-items: center; gap: var(--sp-4); flex-wrap: wrap;
+    border-bottom: 1px solid var(--border);
+}
+.dash-wizard__icon {
+    width: 44px; height: 44px;
+    border-radius: var(--r-lg);
+    background: linear-gradient(135deg, var(--accent-subtle) 0%, var(--accent-subtle-border) 100%);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; color: var(--accent); flex-shrink: 0;
+}
+.dash-wizard__title { font-size: var(--text-lg); font-weight: 700; letter-spacing: var(--tracking-tight); }
+.dash-wizard__sub   { font-size: var(--text-xs); color: var(--text-tertiary); margin-top: 2px; }
+.dash-wizard__body  { padding: var(--sp-5) var(--sp-6); }
+
+/* Progress bar */
+.dash-progress-wrap { margin-bottom: var(--sp-5); }
+.dash-progress-meta { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--sp-2); }
+.dash-progress-meta span { font-size: var(--text-xs); font-weight: 600; color: var(--text-tertiary); }
+.dash-progress-meta strong { font-size: var(--text-xs); font-weight: 700; color: var(--accent); }
+.dash-progress-track {
+    height: 6px; background: var(--neutral); border-radius: var(--r-full);
+    overflow: hidden;
+}
+.dash-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent) 0%, #7C3AED 100%);
+    border-radius: var(--r-full);
+    transition: width 600ms var(--ease-out-expo);
+}
+
+/* Setup step row */
+.dash-step {
+    display: flex; align-items: center; gap: var(--sp-4);
+    padding: var(--sp-4);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    margin-bottom: var(--sp-3);
+    background: var(--surface);
+    transition: border-color var(--dur-base), box-shadow var(--dur-base), transform var(--dur-base) var(--ease-standard);
+}
+.dash-step:last-child { margin-bottom: 0; }
+.dash-step:not(.dash-step--done):hover {
+    border-color: var(--accent-subtle-border);
+    box-shadow: 0 0 0 3px var(--accent-subtle);
+    transform: translateX(2px);
+}
+.dash-step--done { background: var(--canvas-subtle); opacity: 0.75; }
+.dash-step__check {
+    width: 30px; height: 30px; flex-shrink: 0;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px;
+}
+.dash-step__check--done { background: var(--success-subtle); color: var(--success); border: 1.5px solid var(--success-border); }
+.dash-step__check--todo { background: var(--neutral); color: var(--text-tertiary); border: 1.5px solid var(--border-strong); }
+.dash-step__body { flex: 1; min-width: 0; }
+.dash-step__title { font-size: var(--text-sm); font-weight: 600; color: var(--text-primary); margin-bottom: 2px; }
+.dash-step__desc  { font-size: var(--text-xs); color: var(--text-tertiary); line-height: var(--leading-relaxed); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* Stat cards enhancement */
+.dash-stats { margin-bottom: var(--sp-6); }
+</style>
+{% endblock %}
+
 {% block content %}
 
-<div class="ff-mb-6">
-    <h1>Welcome back, {{ request.user.first_name }}</h1>
-    <p class="ff-flex ff-items-center ff-gap-2" style="margin: 0;">
-        <span class="ff-badge ff-badge--info">{{ role|role_display|default:"User" }}</span>
-        <span class="ff-text-muted ff-text-sm">{{ request.user.email }}</span>
-    </p>
-</div>
+<div class="ff-stagger">
 
-{% if role == "HR_HEAD" or role == "ADMIN" or role == "ORG_ADMIN" or role == "SUPER_ADMIN" %}
-
-{% if setup_progress and not setup_progress.hide_entirely %}
-<div class="ff-card shadow-sm ff-mb-6" style="border-top: 4px solid var(--primary);">
-    <div class="ff-card__body">
-        <h2 style="margin-bottom: var(--sp-2);">Welcome to ForgeFlow 👋</h2>
-        <p class="ff-text-secondary ff-mb-6">Let's get your organization ready.</p>
-        
-        {% if setup_progress.show_success_card %}
-        <div class="ff-alert ff-alert--success">
-            <i class="bi bi-check-circle-fill"></i>
-            <div class="ff-alert__content">
-                <strong style="display: block; margin-bottom: 4px;">🎉 Your organization is ready.</strong>
-                <span>You have successfully completed all setup steps. This message will automatically hide after a few days.</span>
-            </div>
-        </div>
-        {% else %}
-        
-        <div class="ff-flex ff-justify-between ff-items-center ff-mb-3">
-            <span class="ff-text-sm ff-font-medium ff-text-secondary">Estimated setup time: 5 minutes</span>
-            <span class="ff-text-sm ff-font-medium ff-text-secondary">Progress: {{ setup_progress.completed_count }} / {{ setup_progress.total_steps }} completed</span>
-        </div>
-        
-        <div style="height: 8px; background: var(--border); border-radius: var(--r-full); overflow: hidden; margin-bottom: var(--sp-6);">
-            <div style="width: {{ setup_progress.percentage }}%; background: var(--primary); height: 100%; transition: width 0.3s ease;"></div>
-        </div>
-        
-        <div class="ff-flex ff-flex-col ff-gap-4">
-            {% for step in setup_progress.steps %}
-            <div style="border: 1px solid var(--border); border-radius: var(--r-md); padding: var(--sp-4); {% if step.is_completed %}background: var(--surface); opacity: 0.8;{% else %}background: var(--canvas-subtle);{% endif %}">
-                <div class="ff-flex ff-justify-between ff-items-center">
-                    <div>
-                        <h4 class="ff-font-semibold" style="margin: 0 0 var(--sp-1) 0; font-size: 16px;">
-                            {% if step.is_completed %}
-                                <i class="bi bi-check-circle-fill ff-text-success" style="margin-right: 4px;"></i>
-                            {% endif %}
-                            Step {{ forloop.counter }}: {{ step.title }}
-                        </h4>
-                        <p class="ff-text-sm ff-text-secondary" style="margin: 0; max-width: 500px;">{{ step.description }}</p>
-                    </div>
-                    <div style="flex-shrink: 0; margin-left: var(--sp-4);">
-                        {% if step.is_completed %}
-                            <span class="ff-badge ff-badge--success"><i class="bi bi-check2"></i> Created</span>
-                        {% else %}
-                            <a href="{% url step.action_url_name %}" class="ff-btn ff-btn--primary ff-btn--sm">{{ step.action_label }}</a>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-        
-        {% endif %}
+<!-- ═══ Greeting ═══ -->
+<div class="dash-greeting-wrap">
+    <div class="dash-greeting__eyebrow">
+        <span class="dash-greeting__time-dot"></span>
+        <span id="dash-time-label">Good morning</span>
+    </div>
+    <h1 class="dash-greeting__title">
+        Welcome back{% if request.user.first_name %}, {{ request.user.first_name }}{% endif %} 👋
+    </h1>
+    <div class="dash-greeting__sub">
+        <span class="ff-badge ff-badge--accent">{{ role|role_display|default:"User" }}</span>
+        <span>{{ request.user.email }}</span>
     </div>
 </div>
+
+<!-- ═══ Setup Wizard (ORG_ADMIN / HR_HEAD / ADMIN) ═══ -->
+{% if role == "HR_HEAD" or role == "ADMIN" or role == "ORG_ADMIN" or role == "SUPER_ADMIN" %}
+{% if setup_progress and not setup_progress.hide_entirely %}
+
+<div class="dash-wizard">
+
+    {% if setup_progress.show_success_card %}
+    <div class="dash-wizard__header">
+        <div class="dash-wizard__icon" style="background:var(--success-subtle);color:var(--success);">
+            <i class="bi bi-check2-circle"></i>
+        </div>
+        <div>
+            <div class="dash-wizard__title">Organization is ready 🎉</div>
+            <div class="dash-wizard__sub">All setup steps have been completed successfully.</div>
+        </div>
+    </div>
+    {% else %}
+
+    <div class="dash-wizard__header">
+        <div class="dash-wizard__icon"><i class="bi bi-stars"></i></div>
+        <div style="flex:1;min-width:0;">
+            <div class="dash-wizard__title">Complete your setup</div>
+            <div class="dash-wizard__sub">Estimated time: ~5 minutes</div>
+        </div>
+        <span class="ff-badge ff-badge--accent" style="font-size:var(--text-sm);padding:6px 14px;">
+            {{ setup_progress.percentage }}%
+        </span>
+    </div>
+
+    <div class="dash-wizard__body">
+        <!-- Progress bar -->
+        <div class="dash-progress-wrap">
+            <div class="dash-progress-meta">
+                <span>{{ setup_progress.completed_count }} of {{ setup_progress.total_steps }} steps complete</span>
+                <strong>{{ setup_progress.percentage }}% done</strong>
+            </div>
+            <div class="dash-progress-track">
+                <div class="dash-progress-fill" style="width:{{ setup_progress.percentage }}%;"></div>
+            </div>
+        </div>
+
+        <!-- Steps -->
+        {% for step in setup_progress.steps %}
+        <div class="dash-step {% if step.is_completed %}dash-step--done{% endif %}">
+            <div class="dash-step__check {% if step.is_completed %}dash-step__check--done{% else %}dash-step__check--todo{% endif %}">
+                {% if step.is_completed %}
+                    <i class="bi bi-check-lg"></i>
+                {% else %}
+                    {{ forloop.counter }}
+                {% endif %}
+            </div>
+            <div class="dash-step__body">
+                <div class="dash-step__title">{{ step.title }}</div>
+                <div class="dash-step__desc">{{ step.description }}</div>
+            </div>
+            <div style="flex-shrink:0;">
+                {% if step.is_completed %}
+                    <span class="ff-badge ff-badge--success"><i class="bi bi-check2"></i> Done</span>
+                {% else %}
+                    <a href="{% url step.action_url_name %}" class="ff-btn ff-btn--primary ff-btn--sm">
+                        {{ step.action_label }} <i class="bi bi-arrow-right"></i>
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+
+    </div><!-- /.dash-wizard__body -->
+    {% endif %}
+
+</div><!-- /.dash-wizard -->
 {% endif %}
 
-<div class="ff-grid ff-grid--4 ff-mb-6">
+
+<!-- ── Stats grid ── -->
+<div class="ff-grid ff-grid--4 dash-stats ff-stagger">
     <div class="ff-stat-card">
-        <div class="ff-stat-card__icon" style="background: var(--primary-subtle); color: var(--primary);"><i class="bi bi-people"></i></div>
+        <div class="ff-stat-card__icon" style="background:var(--accent-subtle);color:var(--accent);">
+            <i class="bi bi-people"></i>
+        </div>
         <div class="ff-stat-card__label">Total Employees</div>
         <div class="ff-stat-card__value">{{ total_employees }}</div>
+        <div class="ff-stat-card__meta">Across all departments</div>
     </div>
+
     <a href="{% url 'approval-inbox' %}" class="ff-stat-card">
-        <div class="ff-stat-card__icon" style="background: var(--warning-subtle); color: var(--warning);"><i class="bi bi-hourglass-split"></i></div>
-        <div class="ff-stat-card__label">Pending Requests</div>
+        <div class="ff-stat-card__icon" style="background:var(--warning-subtle);color:var(--warning);">
+            <i class="bi bi-hourglass-split"></i>
+        </div>
+        <div class="ff-stat-card__label">Pending Approvals</div>
         <div class="ff-stat-card__value">{{ pending_requests }}</div>
+        <div class="ff-stat-card__meta">Awaiting your action</div>
     </a>
+
     <div class="ff-stat-card">
-        <div class="ff-stat-card__icon" style="background: var(--success-subtle); color: var(--success);"><i class="bi bi-check-circle"></i></div>
-        <div class="ff-stat-card__label">Approved Requests</div>
+        <div class="ff-stat-card__icon" style="background:var(--success-subtle);color:var(--success);">
+            <i class="bi bi-check-circle"></i>
+        </div>
+        <div class="ff-stat-card__label">Approved</div>
         <div class="ff-stat-card__value">{{ approved_requests }}</div>
+        <div class="ff-stat-card__meta">Total approved requests</div>
     </div>
+
     <div class="ff-stat-card">
-        <div class="ff-stat-card__icon" style="background: var(--danger-subtle); color: var(--danger);"><i class="bi bi-x-circle"></i></div>
-        <div class="ff-stat-card__label">Rejected Requests</div>
+        <div class="ff-stat-card__icon" style="background:var(--danger-subtle);color:var(--danger);">
+            <i class="bi bi-x-circle"></i>
+        </div>
+        <div class="ff-stat-card__label">Rejected</div>
         <div class="ff-stat-card__value">{{ rejected_requests }}</div>
+        <div class="ff-stat-card__meta">Total rejected requests</div>
     </div>
 </div>
 
-<div class="ff-flex ff-gap-3">
-    <a href="{% url 'new-request' %}" class="ff-btn ff-btn--primary"><i class="bi bi-plus-circle"></i> New Request</a>
-    <a href="{% url 'approval-inbox' %}" class="ff-btn ff-btn--secondary"><i class="bi bi-check2-square"></i> Pending Approvals</a>
-    <a href="{% url 'approval-history' %}" class="ff-btn ff-btn--secondary"><i class="bi bi-clock-history"></i> Approval History</a>
+<!-- ── Quick actions ── -->
+<div class="dash-actions">
+    <a href="{% url 'new-request' %}" class="ff-btn ff-btn--primary">
+        <i class="bi bi-plus-circle"></i> New Request
+    </a>
+    <a href="{% url 'approval-inbox' %}" class="ff-btn ff-btn--secondary">
+        <i class="bi bi-check2-square"></i> Pending Approvals
+    </a>
+    <a href="{% url 'approval-history' %}" class="ff-btn ff-btn--secondary">
+        <i class="bi bi-clock-history"></i> History
+    </a>
     <a href="{% url 'my-requests' %}" class="ff-btn ff-btn--ghost">All Requests</a>
 </div>
 
 {% elif role == "MANAGER" or role == "IT_HEAD" or role == "UNIT_HEAD" %}
 
-<div class="ff-grid ff-grid--3 ff-mb-6">
+<!-- ── Manager / Approver view ── -->
+<div class="ff-grid ff-grid--3 dash-stats ff-stagger">
     <a href="{% url 'approval-inbox' %}" class="ff-stat-card">
-        <div class="ff-stat-card__icon" style="background: var(--warning-subtle); color: var(--warning);"><i class="bi bi-hourglass-split"></i></div>
+        <div class="ff-stat-card__icon" style="background:var(--warning-subtle);color:var(--warning);">
+            <i class="bi bi-hourglass-split"></i>
+        </div>
         <div class="ff-stat-card__label">Pending Approvals</div>
         <div class="ff-stat-card__value">{{ my_pending_approvals }}</div>
+        <div class="ff-stat-card__meta">Requests needing your review</div>
     </a>
     <a href="{% url 'my-requests' %}" class="ff-stat-card">
-        <div class="ff-stat-card__icon" style="background: var(--primary-subtle); color: var(--primary);"><i class="bi bi-file-earmark-text"></i></div>
+        <div class="ff-stat-card__icon" style="background:var(--accent-subtle);color:var(--accent);">
+            <i class="bi bi-file-earmark-text"></i>
+        </div>
         <div class="ff-stat-card__label">My Requests</div>
         <div class="ff-stat-card__value">{{ my_requests }}</div>
+        <div class="ff-stat-card__meta">Submitted by you</div>
     </a>
     <a href="{% url 'approval-history' %}" class="ff-stat-card">
-        <div class="ff-stat-card__icon" style="background: var(--info-subtle); color: var(--info);"><i class="bi bi-clock-history"></i></div>
+        <div class="ff-stat-card__icon" style="background:var(--info-subtle);color:var(--info);">
+            <i class="bi bi-clock-history"></i>
+        </div>
         <div class="ff-stat-card__label">Approval History</div>
         <div class="ff-stat-card__value"><i class="bi bi-arrow-right"></i></div>
+        <div class="ff-stat-card__meta">Review past decisions</div>
     </a>
 </div>
 
-<div class="ff-flex ff-gap-3">
-    <a href="{% url 'new-request' %}" class="ff-btn ff-btn--primary"><i class="bi bi-plus-circle"></i> New Request</a>
-    <a href="{% url 'approval-inbox' %}" class="ff-btn ff-btn--secondary"><i class="bi bi-check2-square"></i> Pending Approvals</a>
+<div class="dash-actions">
+    <a href="{% url 'new-request' %}" class="ff-btn ff-btn--primary">
+        <i class="bi bi-plus-circle"></i> New Request
+    </a>
+    <a href="{% url 'approval-inbox' %}" class="ff-btn ff-btn--secondary">
+        <i class="bi bi-check2-square"></i> Pending Approvals
+    </a>
     <a href="{% url 'my-requests' %}" class="ff-btn ff-btn--ghost">My Requests</a>
 </div>
 
 {% else %}
 
-<div class="ff-grid ff-grid--3 ff-mb-6">
+<!-- ── Employee view ── -->
+<div class="ff-grid ff-grid--3 dash-stats ff-stagger">
     <a href="{% url 'my-requests' %}" class="ff-stat-card">
-        <div class="ff-stat-card__icon" style="background: var(--primary-subtle); color: var(--primary);"><i class="bi bi-file-earmark-text"></i></div>
+        <div class="ff-stat-card__icon" style="background:var(--accent-subtle);color:var(--accent);">
+            <i class="bi bi-file-earmark-text"></i>
+        </div>
         <div class="ff-stat-card__label">My Requests</div>
         <div class="ff-stat-card__value">{{ my_requests }}</div>
+        <div class="ff-stat-card__meta">All your submitted requests</div>
     </a>
+
+    <div class="ff-stat-card">
+        <div class="ff-stat-card__icon" style="background:var(--warning-subtle);color:var(--warning);">
+            <i class="bi bi-clock"></i>
+        </div>
+        <div class="ff-stat-card__label">Pending</div>
+        <div class="ff-stat-card__value">—</div>
+        <div class="ff-stat-card__meta">Awaiting approval</div>
+    </div>
+
+    <div class="ff-stat-card" style="background:linear-gradient(135deg,var(--accent-subtle) 0%,var(--canvas-subtle) 100%);border-color:var(--accent-subtle-border);">
+        <div class="ff-stat-card__icon" style="background:var(--accent);color:#fff;">
+            <i class="bi bi-plus-circle"></i>
+        </div>
+        <div class="ff-stat-card__label">Quick Action</div>
+        <div style="margin-top:var(--sp-3);">
+            <a href="{% url 'new-request' %}" class="ff-btn ff-btn--primary ff-btn--sm">
+                <i class="bi bi-plus-circle"></i> Submit New Request
+            </a>
+        </div>
+    </div>
 </div>
 
-<div class="ff-flex ff-gap-3">
-    <a href="{% url 'new-request' %}" class="ff-btn ff-btn--primary"><i class="bi bi-plus-circle"></i> New Request</a>
-    <a href="{% url 'my-requests' %}" class="ff-btn ff-btn--ghost">My Requests</a>
+<div class="dash-actions">
+    <a href="{% url 'new-request' %}" class="ff-btn ff-btn--primary">
+        <i class="bi bi-plus-circle"></i> New Request
+    </a>
+    <a href="{% url 'my-requests' %}" class="ff-btn ff-btn--ghost">View All Requests</a>
 </div>
 
 {% endif %}
 
+</div><!-- /.ff-stagger -->
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Dynamic greeting based on local time
+(function () {
+    var el = document.getElementById('dash-time-label');
+    if (!el) return;
+    var h = new Date().getHours();
+    if      (h < 12) el.textContent = 'Good morning';
+    else if (h < 17) el.textContent = 'Good afternoon';
+    else             el.textContent = 'Good evening';
+})();
+</script>
 {% endblock %}

@@ -1,566 +1,405 @@
 {% extends "base.html" %}
+{% load static %}
 
-{% block title %}
-Request Details
+{% block title %}{{ submission.form.name }} · Request Details{% endblock %}
+{% block topbar_title %}Request Details{% endblock %}
+
+{% block extra_head %}
+<style>
+.rd-layout { display: grid; grid-template-columns: 1fr 340px; gap: var(--sp-6); align-items: start; }
+@media (max-width: 1024px) { .rd-layout { grid-template-columns: 1fr; } }
+
+/* Field table */
+.rd-field-row { display: flex; gap: var(--sp-4); padding: var(--sp-3-5) 0; border-bottom: 1px solid var(--border); align-items: baseline; }
+.rd-field-row:last-child { border-bottom: none; }
+.rd-field-label { font-size: var(--text-xs); font-weight: 700; text-transform: uppercase; letter-spacing: var(--tracking-wider); color: var(--text-tertiary); width: 38%; flex-shrink: 0; padding-top: 2px; }
+.rd-field-value { font-size: var(--text-sm); color: var(--text-primary); font-weight: 500; flex: 1; word-break: break-word; }
+
+/* Status hero bar */
+.rd-status-bar { display: flex; align-items: center; gap: var(--sp-4); padding: var(--sp-4) var(--sp-5); border-radius: var(--r-lg); border: 1px solid; margin-bottom: var(--sp-5); }
+.rd-status-bar--approved { background: var(--success-subtle); border-color: var(--success-border); }
+.rd-status-bar--pending   { background: var(--warning-subtle); border-color: var(--warning-border); }
+.rd-status-bar--rejected  { background: var(--danger-subtle);  border-color: var(--danger-border); }
+.rd-status-bar--info      { background: var(--info-subtle);    border-color: var(--info-border); }
+
+/* Timeline */
+.rd-timeline { list-style: none; padding: 0; }
+.rd-tl-item  { position: relative; padding-left: var(--sp-8); padding-bottom: var(--sp-5); }
+.rd-tl-item:last-child { padding-bottom: 0; }
+.rd-tl-item::before { content:""; position:absolute; left:10px; top:24px; bottom:0; width:1px; background:var(--border); }
+.rd-tl-item:last-child::before { display:none; }
+.rd-tl-dot  { position:absolute; left:0; top:0; width:22px; height:22px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:9px; border:2px solid var(--surface); }
+.rd-tl-dot--submit  { background:var(--accent-subtle);  color:var(--accent);  box-shadow:0 0 0 1.5px var(--accent-subtle-border); }
+.rd-tl-dot--approve { background:var(--success-subtle); color:var(--success); box-shadow:0 0 0 1.5px var(--success-border); }
+.rd-tl-dot--reject  { background:var(--danger-subtle);  color:var(--danger);  box-shadow:0 0 0 1.5px var(--danger-border); }
+.rd-tl-dot--pending { background:var(--warning-subtle); color:var(--warning); box-shadow:0 0 0 1.5px var(--warning-border); animation:ff-pulse-ring 2s ease-in-out infinite; }
+.rd-tl-dot--default { background:var(--neutral);        color:var(--text-tertiary); box-shadow:0 0 0 1.5px var(--border-strong); }
+.rd-tl-title   { font-size:var(--text-sm); font-weight:600; color:var(--text-primary); }
+.rd-tl-actor   { font-size:var(--text-xs); color:var(--text-tertiary); margin-top:1px; }
+.rd-tl-time    { font-size:var(--text-xs); color:var(--text-disabled); margin-top:1px; font-variant-numeric:tabular-nums; }
+.rd-tl-remarks { margin-top:var(--sp-2); font-size:var(--text-xs); color:var(--text-secondary); background:var(--canvas-subtle); border-radius:var(--r-md); padding:var(--sp-2) var(--sp-3); border-left:2px solid var(--border-strong); line-height:var(--leading-relaxed); }
+
+/* Approval action */
+.rd-action-card { background: linear-gradient(135deg, var(--accent-subtle) 0%, var(--canvas-subtle) 100%); border: 1px solid var(--accent-subtle-border); border-radius: var(--r-xl); padding: var(--sp-5); margin-top: var(--sp-4); }
+.rd-action-btns { display: flex; gap: var(--sp-3); }
+
+/* Revoked badge */
+.rd-revoked { display:inline-flex; align-items:center; gap:var(--sp-2); background:var(--danger-subtle); color:var(--danger-text); border:1px solid var(--danger-border); border-radius:var(--r-md); padding:var(--sp-2) var(--sp-3); font-size:var(--text-xs); font-weight:600; }
+</style>
 {% endblock %}
 
 {% block content %}
 
-<div class="row">
-
-    <div class="col-lg-8">
-
-        <div class="card shadow-sm mb-4">
-
-            <div class="card-header">
-
-                <h3>{{ submission.form.name }}</h3>
-
-            </div>
-
-            <div class="card-body">
-
-                <table class="table">
-
-                    <tbody>
-
-                    {% for item in values %}
-
-                    <tr>
-
-                        <th width="35%">
-
-                            {{ item.field.label }}
-
-                        </th>
-
-                        <td>
-
-                            {{ item.value }}
-
-                        </td>
-
-                    </tr>
-
-                    {% endfor %}
-
-                    </tbody>
-
-                </table>
-
-                <hr>
-
-                {% if submission.attachments.exists %}
-                <div class="mb-4">
-                    <h5 class="mb-3">Attachments</h5>
-                    <ul class="list-group">
-                        {% for attachment in submission.attachments.all %}
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                            <div>
-                                <strong>{{ attachment.original_filename }}</strong><br>
-                                <small class="text-muted">Uploaded by {{ attachment.uploaded_by.get_full_name|default:attachment.uploaded_by.email }} on {{ attachment.uploaded_at|date:"M d, Y H:i" }}</small>
-                            </div>
-                            <a href="{% url 'download-attachment' attachment.pk %}" class="btn btn-sm btn-outline-primary" target="_blank">
-                                Download
-                            </a>
-                        </li>
-                        {% endfor %}
-                    </ul>
-                </div>
-                <hr>
-                {% endif %}
-
-                <p>
-
-                    <strong>Status :</strong>
-
-                    <span class="badge bg-primary">
-
-                        {{ submission.status }}
-
-                    </span>
-
-                </p>
-
-                <p>
-
-                    <strong>Current Step :</strong>
-
-                    {{ submission.workflow_instance.current_step.name|default:"Completed" }}
-
-                </p>
-
-                {% if submission.status == "APPROVED" %}
-
-                <div class="mt-4">
-
-                    <a
-                        href="{% url 'permission-pdf' submission.pk %}"
-                        target="_blank"
-                        class="btn btn-primary">
-
-                        Print Permission
-
-                    </a>
-
-                </div>
-
-                {% endif %}
-
-            </div>
-
+<!-- Page header -->
+<div class="ff-flex ff-items-center ff-justify-between ff-mb-6" style="gap:var(--sp-4);flex-wrap:wrap;">
+    <div>
+        <div style="display:flex;align-items:center;gap:var(--sp-2);margin-bottom:var(--sp-2);">
+            <a href="{% url 'my-requests' %}" style="font-size:var(--text-xs);color:var(--text-tertiary);font-weight:500;display:inline-flex;align-items:center;gap:4px;text-decoration:none;transition:color var(--dur-base);" onmouseover="this.style.color='var(--text-primary)'" onmouseout="this.style.color='var(--text-tertiary)'">
+                <i class="bi bi-arrow-left"></i> My Requests
+            </a>
+            <span style="color:var(--border-strong);">/</span>
+            <span style="font-size:var(--text-xs);color:var(--text-secondary);font-weight:500;">{{ submission.form.name }}</span>
         </div>
-
+        <h1 class="ff-page-header__title">{{ submission.form.name }}</h1>
+        <p class="ff-page-header__sub">Submitted {{ submission.created_at|date:"F j, Y" }} · ID #{{ submission.pk }}</p>
     </div>
-
-    <div class="col-lg-4">
-
-        <div class="card shadow-sm">
-
-            <div class="card-header">
-
-                <h5>Workflow Timeline</h5>
-
-            </div>
-
-            <div class="card-body">
-
-                {% for event in events %}
-
-                    <div class="border-start border-3 border-primary ps-3 mb-4">
-
-                        <strong>
-
-                            {{ event.get_event_type_display }}
-
-                        </strong> 
-
-                        <br>
-
-                        {% if event.performed_by %}
-
-                            {{ event.performed_by.get_full_name }}
-
-                            <br>
-
-                        {% endif %}
-
-                        <small class="text-muted">
-
-                            {{ event.created_at }}
-
-                        </small>
-
-                        {% if event.remarks %}
-
-                            <br>
-
-                            <small>
-
-                                {{ event.remarks }}
-
-                            </small>
-
-                        {% endif %}
-
-                    </div>
-
-                {% empty %}
-
-                    <p class="text-muted">
-
-                        No activity available.
-
-                    </p>
-
-                {% endfor %}
-
-            </div>
-
-        </div>
-
+    <div style="display:flex;align-items:center;gap:var(--sp-3);flex-wrap:wrap;">
+        {% if submission.status == "APPROVED" and not submission.is_revoked %}
+        <a href="{% url 'permission-pdf' submission.pk %}" target="_blank" class="ff-btn ff-btn--success">
+            <i class="bi bi-file-pdf"></i> Download PDF
+        </a>
+        {% endif %}
     </div>
-
 </div>
 
-{% if can_take_action %}
+<div class="rd-layout">
 
-<hr>
+    <!-- ═══ Left: Main content ═══ -->
+    <div>
 
-<div class="card shadow-sm mt-4">
-
-    <div class="card-header">
-        <h5>Approval Action</h5>
-    </div>
-
-    <div class="card-body">
-
-        <button
-            class="btn btn-success me-2"
-            data-bs-toggle="modal"
-            data-bs-target="#approveModal">
-
-            Approve
-
-        </button>
-
-        <button
-            class="btn btn-danger"
-            data-bs-toggle="modal"
-            data-bs-target="#rejectModal">
-
-            Reject
-
-        </button>
-
-    </div>
-
-</div>
-
-<div class="modal fade" id="approveModal">
-
-<div class="modal-dialog">
-
-<div class="modal-content">
-
-<form method="post"
-action="{% url 'approve-request' current_step.pk %}">
-
-{% csrf_token %}
-
-<div class="modal-header">
-
-<h5 class="modal-title">
-
-Confirm Approval
-
-</h5>
-
-<button
-type="button"
-class="btn-close"
-data-bs-dismiss="modal">
-
-</button>
-
-</div>
-
-<div class="modal-body">
-
-<p>
-
-Are you sure you want to approve this request?
-
-</p>
-
-<label class="form-label">
-
-Remarks
-
-</label>
-
-<textarea
-name="remarks"
-class="form-control"
-rows="4"></textarea>
-
-<div class="mt-3">
-
-    <label class="form-label">
-        Confirm Password
-    </label>
-
-    <input
-        type="password"
-        name="password"
-        class="form-control"
-        required></div>
-
-</div>
-
-<div class="modal-footer">
-
-<button
-type="button"
-class="btn btn-secondary"
-data-bs-dismiss="modal">
-
-Cancel
-
-</button>
-
-<button
-type="submit"
-class="btn btn-success">
-
-Approve
-
-</button>
-
-</div>
-
-</form>
-
-</div>
-
-</div>
-
-</div>
-
-<div class="modal fade" id="rejectModal">
-
-<div class="modal-dialog">
-
-<div class="modal-content">
-
-<form method="post"
-action="{% url 'reject-request' current_step.pk %}">
-
-{% csrf_token %}
-
-<div class="modal-header">
-
-<h5 class="modal-title">
-
-Confirm Rejection
-
-</h5>
-
-<button
-type="button"
-class="btn-close"
-data-bs-dismiss="modal">
-
-</button>
-
-</div>
-
-<div class="modal-body">
-
-<p>
-
-Are you sure you want to reject this request?
-
-</p>
-
-<label class="form-label">
-
-Reason <span class="text-danger">*</span>
-
-</label>
-
-<textarea
-name="remarks"
-required
-class="form-control"
-rows="4"></textarea>
-
-<div class="mt-3">
-
-    <label class="form-label">
-        Confirm Password
-    </label>
-
-    <input
-        type="password"
-        name="password"
-        class="form-control"
-        required></div>
-
-</div>
-
-<div class="modal-footer">
-
-<button
-type="button"
-class="btn btn-secondary"
-data-bs-dismiss="modal">
-
-Cancel
-
-</button>
-
-<button
-type="submit"
-class="btn btn-danger">
-
-Reject
-
-</button>
-
-</div>
-
-</form>
-
-</div>
-
-</div>
-
-</div>
-
-{% endif %}
-
-{% if can_revoke %}
-
-<div class="card shadow-sm mt-4 border-danger">
-
-    <div class="card-header">
-        <h5 class="text-danger mb-0">
-            Permission Control
-        </h5>
-    </div>
-
-    <div class="card-body">
-
+        <!-- Status bar -->
         {% if submission.is_revoked %}
-
-            <div class="alert alert-danger mb-0">
-
-                <strong>Permission Revoked</strong>
-
-                {% if submission.revoked_at %}
-                    <br>
-                    Revoked at:
-                    {{ submission.revoked_at }}
-                {% endif %}
-
-                {% if submission.revocation_reason %}
-                    <br>
-                    Reason:
-                    {{ submission.revocation_reason }}
-                {% endif %}
-
-                {% if submission.revoked_by %}
-                    <br>
-                    Revoked by:
-                    {{ submission.revoked_by.get_full_name|default:submission.revoked_by.email }}
-                {% endif %}
-
+        <div class="rd-status-bar rd-status-bar--rejected">
+            <i class="bi bi-slash-circle" style="font-size:20px;color:var(--danger);flex-shrink:0;"></i>
+            <div>
+                <div style="font-weight:700;font-size:var(--text-sm);color:var(--danger-text);">Permission Revoked</div>
+                {% if submission.revoked_at %}<div style="font-size:var(--text-xs);color:var(--danger-text);opacity:0.8;margin-top:2px;">Revoked {{ submission.revoked_at|date:"F j, Y H:i" }}{% if submission.revoked_by %} by {{ submission.revoked_by.get_full_name|default:submission.revoked_by.email }}{% endif %}</div>{% endif %}
+                {% if submission.revocation_reason %}<div style="font-size:var(--text-xs);color:var(--danger-text);opacity:0.75;margin-top:3px;">Reason: {{ submission.revocation_reason }}</div>{% endif %}
             </div>
-
+        </div>
+        {% elif submission.status == "APPROVED" %}
+        <div class="rd-status-bar rd-status-bar--approved">
+            <i class="bi bi-check-circle-fill" style="font-size:20px;color:var(--success);flex-shrink:0;"></i>
+            <div>
+                <div style="font-weight:700;font-size:var(--text-sm);color:var(--success-text);">Request Approved</div>
+                <div style="font-size:var(--text-xs);color:var(--success-text);opacity:0.8;margin-top:2px;">All steps complete · PDF permission slip is available</div>
+            </div>
+        </div>
+        {% elif submission.status == "REJECTED" %}
+        <div class="rd-status-bar rd-status-bar--rejected">
+            <i class="bi bi-x-circle-fill" style="font-size:20px;color:var(--danger);flex-shrink:0;"></i>
+            <div>
+                <div style="font-weight:700;font-size:var(--text-sm);color:var(--danger-text);">Request Rejected</div>
+                <div style="font-size:var(--text-xs);color:var(--danger-text);opacity:0.8;margin-top:2px;">This request has been declined by an approver.</div>
+            </div>
+        </div>
+        {% elif submission.status == "IN_PROGRESS" %}
+        <div class="rd-status-bar rd-status-bar--pending">
+            <i class="bi bi-hourglass-split" style="font-size:20px;color:var(--warning);flex-shrink:0;"></i>
+            <div>
+                <div style="font-weight:700;font-size:var(--text-sm);color:var(--warning-text);">In Progress</div>
+                <div style="font-size:var(--text-xs);color:var(--warning-text);opacity:0.8;margin-top:2px;">
+                    Currently at: <strong>{{ submission.workflow_instance.current_step.name|default:"—" }}</strong>
+                </div>
+            </div>
+        </div>
         {% else %}
-
-            <p>
-                This permission is currently active.
-                Revoking it will immediately invalidate
-                QR verification.
-            </p>
-
-            <button
-                type="button"
-                class="btn btn-danger"
-                data-bs-toggle="modal"
-                data-bs-target="#revokeModal">
-
-                Revoke Permission
-
-            </button>
-
+        <div class="rd-status-bar rd-status-bar--info">
+            <i class="bi bi-send" style="font-size:20px;color:var(--info);flex-shrink:0;"></i>
+            <div>
+                <div style="font-weight:700;font-size:var(--text-sm);color:var(--info-text);">Submitted</div>
+                <div style="font-size:var(--text-xs);color:var(--info-text);opacity:0.8;margin-top:2px;">Your request has been received and is awaiting processing.</div>
+            </div>
+        </div>
         {% endif %}
 
-    </div>
-
-</div>
-
-
-<div
-    class="modal fade"
-    id="revokeModal"
-    tabindex="-1">
-
-    <div class="modal-dialog">
-
-        <div class="modal-content">
-
-            <form
-                method="post"
-                action="{% url 'revoke-permission' submission.pk %}">
-
-                {% csrf_token %}
-
-                <div class="modal-header">
-
-                    <h5 class="modal-title">
-                        Confirm Permission Revocation
-                    </h5>
-
-                    <button
-                        type="button"
-                        class="btn-close"
-                        data-bs-dismiss="modal">
-                    </button>
-
+        <!-- Form fields -->
+        <div class="ff-card">
+            <div class="ff-card__header">
+                <div>
+                    <div class="ff-card__title">Submitted Data</div>
+                    <div class="ff-card__subtitle">{{ values|length }} field{{ values|length|pluralize }}</div>
                 </div>
-
-                <div class="modal-body">
-
-                    <div class="alert alert-warning">
-
-                        This action will immediately make
-                        the permission invalid during QR
-                        verification.
-
-                    </div>
-
-                    <div class="mb-3">
-
-                        <label class="form-label">
-                            Revocation Reason
-                        </label>
-
-                        <textarea
-                            name="reason"
-                            class="form-control"
-                            rows="4"
-                            required></textarea>
-
-                    </div>
-
-                    <div class="mb-3">
-
-                        <label class="form-label">
-                            Confirm Your Password
-                        </label>
-
-                        <input
-                            type="password"
-                            name="password"
-                            class="form-control"
-                            autocomplete="current-password"
-                            required>
-
-                    </div>
-
+                <span class="ff-badge {% if submission.status == 'APPROVED' %}ff-badge--success{% elif submission.status == 'REJECTED' %}ff-badge--danger{% elif submission.status == 'IN_PROGRESS' %}ff-badge--warning{% else %}ff-badge--info{% endif %}">
+                    <span class="ff-badge__dot"></span>
+                    {{ submission.get_status_display|default:submission.status }}
+                </span>
+            </div>
+            <div class="ff-card__body">
+                {% for item in values %}
+                <div class="rd-field-row">
+                    <span class="rd-field-label">{{ item.field.label }}</span>
+                    <span class="rd-field-value">{{ item.value|default:"—" }}</span>
                 </div>
-
-                <div class="modal-footer">
-
-                    <button
-                        type="button"
-                        class="btn btn-secondary"
-                        data-bs-dismiss="modal">
-
-                        Cancel
-
-                    </button>
-
-                    <button
-                        type="submit"
-                        class="btn btn-danger">
-
-                        Confirm Revocation
-
-                    </button>
-
+                {% empty %}
+                <div class="ff-empty" style="padding:var(--sp-8);">
+                    <div class="ff-empty__icon"><i class="bi bi-file-earmark"></i></div>
+                    <p class="ff-empty__body">No fields in this submission.</p>
                 </div>
-
-            </form>
-
+                {% endfor %}
+            </div>
         </div>
 
-    </div>
+        <!-- Attachments -->
+        {% if submission.attachments.exists %}
+        <div class="ff-card" style="margin-top:var(--sp-4);">
+            <div class="ff-card__header">
+                <div class="ff-card__title"><i class="bi bi-paperclip" style="margin-right:6px;"></i>Attachments</div>
+                <span class="ff-badge ff-badge--neutral">{{ submission.attachments.count }}</span>
+            </div>
+            <div class="ff-card__body" style="padding:0;">
+                {% for attachment in submission.attachments.all %}
+                <div style="display:flex;align-items:center;gap:var(--sp-4);padding:var(--sp-4) var(--sp-5);border-bottom:1px solid var(--border);">
+                    <div style="width:36px;height:36px;background:var(--info-subtle);color:var(--info);border-radius:var(--r-md);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">
+                        <i class="bi bi-file-earmark"></i>
+                    </div>
+                    <div style="flex:1;min-width:0;">
+                        <div style="font-size:var(--text-sm);font-weight:600;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ attachment.original_filename }}</div>
+                        <div style="font-size:var(--text-xs);color:var(--text-tertiary);margin-top:1px;">Uploaded by {{ attachment.uploaded_by.get_full_name|default:attachment.uploaded_by.email }} · {{ attachment.uploaded_at|date:"M d, Y H:i" }}</div>
+                    </div>
+                    <a href="{% url 'download-attachment' attachment.pk %}" target="_blank" class="ff-btn ff-btn--sm ff-btn--secondary">
+                        <i class="bi bi-download"></i> Download
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
 
+        <!-- Approval action -->
+        {% if can_take_action %}
+        <div class="rd-action-card">
+            <div style="display:flex;align-items:center;gap:var(--sp-3);margin-bottom:var(--sp-4);">
+                <div style="width:38px;height:38px;background:var(--accent);border-radius:var(--r-lg);display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px;flex-shrink:0;">
+                    <i class="bi bi-check2-square"></i>
+                </div>
+                <div>
+                    <div style="font-size:var(--text-base);font-weight:700;color:var(--text-primary);">Your Action Required</div>
+                    <div style="font-size:var(--text-xs);color:var(--text-tertiary);">You are an approver for step: <strong>{{ current_step.step_definition.name }}</strong></div>
+                </div>
+            </div>
+            <div class="rd-action-btns">
+                <button type="button" class="ff-btn ff-btn--success" data-bs-toggle="modal" data-bs-target="#approveModal" id="approve-btn">
+                    <i class="bi bi-check-circle"></i> Approve
+                </button>
+                <button type="button" class="ff-btn ff-btn--danger" data-bs-toggle="modal" data-bs-target="#rejectModal" id="reject-btn">
+                    <i class="bi bi-x-circle"></i> Reject
+                </button>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Revoke section -->
+        {% if can_revoke %}
+        <div class="ff-card" style="margin-top:var(--sp-4);border-color:var(--danger-border);">
+            <div class="ff-card__header" style="background:var(--danger-subtle);">
+                <div>
+                    <div class="ff-card__title" style="color:var(--danger-text);">Permission Control</div>
+                    <div class="ff-card__subtitle" style="color:var(--danger-text);opacity:0.75;">Revoking will immediately invalidate QR verification</div>
+                </div>
+                <i class="bi bi-shield-exclamation" style="font-size:22px;color:var(--danger);"></i>
+            </div>
+            <div class="ff-card__body">
+                {% if submission.is_revoked %}
+                <div class="rd-revoked">
+                    <i class="bi bi-slash-circle"></i>
+                    Permission is revoked
+                </div>
+                {% else %}
+                <p style="font-size:var(--text-sm);color:var(--text-secondary);margin-bottom:var(--sp-4);">
+                    This permission is currently <strong style="color:var(--success);">active</strong>. Revoking it will immediately invalidate QR verification.
+                </p>
+                <button type="button" class="ff-btn ff-btn--danger" data-bs-toggle="modal" data-bs-target="#revokeModal">
+                    <i class="bi bi-slash-circle"></i> Revoke Permission
+                </button>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+    </div><!-- /.left -->
+
+    <!-- ═══ Right: Timeline ═══ -->
+    <div>
+        <div class="ff-card" style="position:sticky;top:calc(var(--topbar-h) + var(--sp-4));">
+            <div class="ff-card__header">
+                <div class="ff-card__title">Workflow Timeline</div>
+                <span class="ff-badge ff-badge--neutral">{{ events|length }}</span>
+            </div>
+            <div class="ff-card__body">
+                {% if events %}
+                <ul class="rd-timeline">
+                    {% for event in events %}
+                    <li class="rd-tl-item">
+                        <div class="rd-tl-dot
+                            {% if 'SUBMIT' in event.event_type %}rd-tl-dot--submit
+                            {% elif 'APPROV' in event.event_type %}rd-tl-dot--approve
+                            {% elif 'REJECT' in event.event_type or 'REVOK' in event.event_type %}rd-tl-dot--reject
+                            {% elif 'PENDING' in event.event_type or 'ASSIGN' in event.event_type %}rd-tl-dot--pending
+                            {% else %}rd-tl-dot--default{% endif %}">
+                            <i class="bi
+                                {% if 'SUBMIT' in event.event_type %}bi-send
+                                {% elif 'APPROV' in event.event_type %}bi-check-lg
+                                {% elif 'REJECT' in event.event_type %}bi-x-lg
+                                {% elif 'REVOK' in event.event_type %}bi-slash-circle
+                                {% else %}bi-circle{% endif %}"></i>
+                        </div>
+                        <div class="rd-tl-title">{{ event.get_event_type_display }}</div>
+                        {% if event.performed_by %}
+                        <div class="rd-tl-actor"><i class="bi bi-person" style="font-size:10px;"></i> {{ event.performed_by.get_full_name|default:event.performed_by.email }}</div>
+                        {% endif %}
+                        <div class="rd-tl-time"><i class="bi bi-clock" style="font-size:10px;"></i> {{ event.created_at|date:"M d, Y H:i" }}</div>
+                        {% if event.remarks %}
+                        <div class="rd-tl-remarks">"{{ event.remarks }}"</div>
+                        {% endif %}
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <div class="ff-empty" style="padding:var(--sp-8);">
+                    <div class="ff-empty__icon" style="width:36px;height:36px;font-size:16px;"><i class="bi bi-clock-history"></i></div>
+                    <p class="ff-empty__body" style="font-size:var(--text-xs);">No activity recorded yet.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div><!-- /.right -->
+
+</div><!-- /.rd-layout -->
+
+<!-- ═══ Approve Modal ═══ -->
+{% if can_take_action %}
+<div class="modal fade" id="approveModal" tabindex="-1" aria-labelledby="approveMoal-title">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="background:var(--surface-overlay);border:1px solid var(--border);border-radius:var(--r-xl);box-shadow:var(--shadow-2xl);">
+            <form method="post" action="{% url 'approve-request' current_step.pk %}" id="approve-form">
+                {% csrf_token %}
+                <div class="modal-header" style="border-bottom:1px solid var(--border);padding:var(--sp-5) var(--sp-6);">
+                    <div style="display:flex;align-items:center;gap:var(--sp-3);">
+                        <div style="width:36px;height:36px;background:var(--success-subtle);color:var(--success);border-radius:var(--r-md);display:flex;align-items:center;justify-content:center;">
+                            <i class="bi bi-check-circle"></i>
+                        </div>
+                        <h5 class="modal-title" id="approveModal-title" style="font-weight:700;font-size:var(--text-md);margin:0;">Confirm Approval</h5>
+                    </div>
+                    <button type="button" class="ff-icon-btn" data-bs-dismiss="modal" aria-label="Close">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </div>
+                <div class="modal-body" style="padding:var(--sp-6);">
+                    <p style="font-size:var(--text-sm);color:var(--text-secondary);margin-bottom:var(--sp-5);">Approving will advance this request to the next step in the workflow.</p>
+                    <div class="ff-field">
+                        <label class="ff-label" for="approve-remarks">Remarks <span style="font-weight:400;color:var(--text-tertiary);">(optional)</span></label>
+                        <textarea id="approve-remarks" name="remarks" class="ff-input" rows="3" style="height:auto;min-height:80px;" placeholder="Add any notes or comments…"></textarea>
+                    </div>
+                    <div class="ff-field" style="margin-bottom:0;">
+                        <label class="ff-label ff-label--required" for="approve-password">Confirm Your Password</label>
+                        <div class="ff-input-wrap">
+                            <i class="bi bi-lock ff-input-wrap__icon"></i>
+                            <input type="password" id="approve-password" name="password" class="ff-input" placeholder="Enter your password" required autocomplete="current-password">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer" style="border-top:1px solid var(--border);padding:var(--sp-4) var(--sp-6);display:flex;gap:var(--sp-3);justify-content:flex-end;">
+                    <button type="button" class="ff-btn ff-btn--secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="ff-btn ff-btn--success"><i class="bi bi-check-circle"></i> Approve Request</button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
 
+<!-- ═══ Reject Modal ═══ -->
+<div class="modal fade" id="rejectModal" tabindex="-1" aria-labelledby="rejectModal-title">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="background:var(--surface-overlay);border:1px solid var(--border);border-radius:var(--r-xl);box-shadow:var(--shadow-2xl);">
+            <form method="post" action="{% url 'reject-request' current_step.pk %}" id="reject-form">
+                {% csrf_token %}
+                <div class="modal-header" style="border-bottom:1px solid var(--border);padding:var(--sp-5) var(--sp-6);">
+                    <div style="display:flex;align-items:center;gap:var(--sp-3);">
+                        <div style="width:36px;height:36px;background:var(--danger-subtle);color:var(--danger);border-radius:var(--r-md);display:flex;align-items:center;justify-content:center;">
+                            <i class="bi bi-x-circle"></i>
+                        </div>
+                        <h5 class="modal-title" id="rejectModal-title" style="font-weight:700;font-size:var(--text-md);margin:0;">Confirm Rejection</h5>
+                    </div>
+                    <button type="button" class="ff-icon-btn" data-bs-dismiss="modal" aria-label="Close">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </div>
+                <div class="modal-body" style="padding:var(--sp-6);">
+                    <div class="ff-alert ff-alert--warning" style="margin-bottom:var(--sp-5);">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        <span>This action cannot be undone. The requester will be notified.</span>
+                    </div>
+                    <div class="ff-field">
+                        <label class="ff-label ff-label--required" for="reject-remarks">Reason for Rejection</label>
+                        <textarea id="reject-remarks" name="remarks" class="ff-input" rows="3" style="height:auto;min-height:80px;" placeholder="Please provide a clear reason…" required></textarea>
+                    </div>
+                    <div class="ff-field" style="margin-bottom:0;">
+                        <label class="ff-label ff-label--required" for="reject-password">Confirm Your Password</label>
+                        <div class="ff-input-wrap">
+                            <i class="bi bi-lock ff-input-wrap__icon"></i>
+                            <input type="password" id="reject-password" name="password" class="ff-input" placeholder="Enter your password" required autocomplete="current-password">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer" style="border-top:1px solid var(--border);padding:var(--sp-4) var(--sp-6);display:flex;gap:var(--sp-3);justify-content:flex-end;">
+                    <button type="button" class="ff-btn ff-btn--secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="ff-btn ff-btn--danger"><i class="bi bi-x-circle"></i> Reject Request</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 {% endif %}
+
+<!-- ═══ Revoke Modal ═══ -->
+{% if can_revoke and not submission.is_revoked %}
+<div class="modal fade" id="revokeModal" tabindex="-1" aria-labelledby="revokeModal-title">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="background:var(--surface-overlay);border:1px solid var(--border);border-radius:var(--r-xl);box-shadow:var(--shadow-2xl);">
+            <form method="post" action="{% url 'revoke-permission' submission.pk %}">
+                {% csrf_token %}
+                <div class="modal-header" style="border-bottom:1px solid var(--border);padding:var(--sp-5) var(--sp-6);">
+                    <h5 class="modal-title" id="revokeModal-title" style="font-weight:700;font-size:var(--text-md);margin:0;color:var(--danger);">
+                        <i class="bi bi-slash-circle"></i> Confirm Revocation
+                    </h5>
+                    <button type="button" class="ff-icon-btn" data-bs-dismiss="modal" aria-label="Close"><i class="bi bi-x-lg"></i></button>
+                </div>
+                <div class="modal-body" style="padding:var(--sp-6);">
+                    <div class="ff-alert ff-alert--error" style="margin-bottom:var(--sp-5);">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        <span>This will immediately make the QR permission invalid. This action cannot be reversed.</span>
+                    </div>
+                    <div class="ff-field">
+                        <label class="ff-label ff-label--required" for="revoke-reason">Revocation Reason</label>
+                        <textarea id="revoke-reason" name="reason" class="ff-input" rows="3" style="height:auto;min-height:80px;" required placeholder="State why you are revoking this permission…"></textarea>
+                    </div>
+                    <div class="ff-field" style="margin-bottom:0;">
+                        <label class="ff-label ff-label--required" for="revoke-password">Confirm Your Password</label>
+                        <div class="ff-input-wrap">
+                            <i class="bi bi-lock ff-input-wrap__icon"></i>
+                            <input type="password" id="revoke-password" name="password" class="ff-input" required autocomplete="current-password">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer" style="border-top:1px solid var(--border);padding:var(--sp-4) var(--sp-6);display:flex;gap:var(--sp-3);justify-content:flex-end;">
+                    <button type="button" class="ff-btn ff-btn--secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="ff-btn ff-btn--danger"><i class="bi bi-slash-circle"></i> Confirm Revocation</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+
 {% endblock %}

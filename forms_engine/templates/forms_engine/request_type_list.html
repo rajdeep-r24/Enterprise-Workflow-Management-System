@@ -5,62 +5,75 @@
 
 {% block content %}
 
-<div class="ff-flex ff-justify-between ff-items-center ff-mb-6">
+<div class="ff-flex ff-justify-between ff-items-center ff-mb-6" style="gap:var(--sp-4);flex-wrap:wrap;">
     <div>
-        <h2 class="ff-mb-2">Request Types</h2>
-        <p class="ff-text-secondary mb-0">Manage the definitions for employee requests.</p>
+        <h1 class="ff-page-header__title">Request Types</h1>
+        <p class="ff-page-header__sub">Define and manage approval workflows for your organization</p>
     </div>
     <a href="{% url 'request-type-create' %}" class="ff-btn ff-btn--primary">
         <i class="bi bi-plus"></i> Create Request Type
     </a>
 </div>
 
-<div class="ff-card ff-mb-6">
-    <div class="ff-card__body p-0">
-        <div style="padding: var(--space-4); border-bottom: 1px solid var(--border);">
-            <form method="get" class="ff-flex ff-gap-3">
-                <input type="text" name="q" value="{{ query }}" class="ff-input" placeholder="Search request types..." style="max-width: 400px;">
-                <button type="submit" class="ff-btn ff-btn--secondary">Search</button>
-            </form>
-        </div>
+<div class="ff-card">
+    <div class="ff-card__header" style="border-bottom:1px solid var(--border);">
+        <form method="get" style="display:flex;gap:var(--sp-3);width:100%;max-width:480px;flex-wrap:wrap;">
+            <div class="ff-input-wrap" style="flex:1;min-width:200px;">
+                <i class="bi bi-search ff-input-wrap__icon"></i>
+                <input type="text" name="q" value="{{ query }}" class="ff-input ff-input--with-icon" placeholder="Search request types…" autocomplete="off">
+            </div>
+            <button type="submit" class="ff-btn ff-btn--secondary">Search</button>
+            {% if query %}<a href="{% url 'request-type-list' %}" class="ff-btn ff-btn--ghost">Clear</a>{% endif %}
+        </form>
+    </div>
 
-        <div class="ff-table-wrap">
+    <div class="ff-card__body" style="padding:0;">
+        <div class="ff-table-wrap" style="border:none;border-radius:0 0 var(--r-xl) var(--r-xl);box-shadow:none;">
             <table class="ff-table">
                 <thead>
                     <tr>
-                        <th>Code</th>
                         <th>Name</th>
+                        <th>Code</th>
                         <th>Version</th>
                         <th>Status</th>
-                        <th>Actions</th>
+                        <th style="text-align:right;">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                 {% for rt in page_obj %}
                     <tr>
-                        <td class="ff-mono">{{ rt.code }}</td>
-                        <td style="font-weight: 500;">{{ rt.name }}</td>
-                        <td>v{{ rt.version }}</td>
+                        <td>
+                            <div style="font-size:var(--text-sm);font-weight:600;color:var(--text-primary);">{{ rt.name }}</div>
+                            {% if rt.description %}<div style="font-size:var(--text-xs);color:var(--text-tertiary);margin-top:2px;">{{ rt.description|truncatechars:60 }}</div>{% endif %}
+                        </td>
+                        <td><code style="font-size:var(--text-xs);font-family:var(--font-mono);background:var(--canvas-subtle);padding:2px 6px;border-radius:4px;border:1px solid var(--border);">{{ rt.code }}</code></td>
+                        <td><span style="font-size:var(--text-sm);color:var(--text-tertiary);">v{{ rt.version }}</span></td>
                         <td>
                             {% if rt.is_published %}
-                                <span class="ff-badge ff-badge--success">
-                                    <span class="ff-badge__dot"></span> Published
-                                </span>
+                                <span class="ff-badge ff-badge--success"><span class="ff-badge__dot"></span> Published</span>
                             {% else %}
-                                <span class="ff-badge ff-badge--neutral">
-                                    <span class="ff-badge__dot"></span> Draft
-                                </span>
+                                <span class="ff-badge ff-badge--neutral"><span class="ff-badge__dot"></span> Draft</span>
                             {% endif %}
                         </td>
-                        <td>
-                            <div class="ff-flex ff-gap-2">
-                                <a href="{% url 'request-type-fields' rt.pk %}" class="ff-btn ff-btn--sm ff-btn--secondary">Fields</a>
-                                <a href="{% url 'request-type-steps' rt.pk %}" class="ff-btn ff-btn--sm ff-btn--secondary">Steps</a>
+                        <td style="text-align:right;">
+                            <div class="ff-flex ff-gap-2" style="justify-content:flex-end;flex-wrap:wrap;">
+                                <a href="{% url 'request-type-fields' rt.pk %}" class="ff-btn ff-btn--sm ff-btn--secondary" data-tooltip="Manage Fields">
+                                    <i class="bi bi-ui-checks"></i> Fields
+                                </a>
+                                <a href="{% url 'request-type-steps' rt.pk %}" class="ff-btn ff-btn--sm ff-btn--secondary" data-tooltip="Manage Workflow Steps">
+                                    <i class="bi bi-diagram-3"></i> Steps
+                                </a>
                                 {% if not rt.is_published %}
-                                    <form action="{% url 'request-type-publish' rt.pk %}" method="post" style="margin: 0;" onsubmit="return confirm('Are you sure you want to publish this Request Type? It cannot be unpublished and fields/steps cannot be modified once published.');">
-                                        {% csrf_token %}
-                                        <button type="submit" class="ff-btn ff-btn--sm ff-btn--primary">Publish</button>
-                                    </form>
+                                <form action="{% url 'request-type-publish' rt.pk %}" method="post" style="margin:0;" data-confirm="Publish '{{ rt.name }}'? Once published, fields and steps cannot be modified.">
+                                    {% csrf_token %}
+                                    <button type="submit" class="ff-btn ff-btn--sm ff-btn--primary">
+                                        <i class="bi bi-send-check"></i> Publish
+                                    </button>
+                                </form>
+                                {% else %}
+                                <span class="ff-btn ff-btn--sm ff-btn--ghost" style="cursor:default;opacity:0.5;" data-tooltip="Published request types cannot be unpublished">
+                                    <i class="bi bi-lock"></i> Locked
+                                </span>
                                 {% endif %}
                             </div>
                         </td>
@@ -68,9 +81,13 @@
                 {% empty %}
                     <tr>
                         <td colspan="5">
-                            <div class="ff-table__empty">
-                                <i class="bi bi-file-earmark-code" style="font-size: 24px; color: var(--text-muted); display: block; margin-bottom: 8px;"></i>
-                                No request types found.
+                            <div class="ff-empty">
+                                <div class="ff-empty__icon"><i class="bi bi-file-earmark-code"></i></div>
+                                <div class="ff-empty__title">No request types {% if query %}matching "{{ query }}"{% else %}yet{% endif %}</div>
+                                <p class="ff-empty__body">{% if query %}Try a different search term.{% else %}Create your first request type to start building approval workflows.{% endif %}</p>
+                                {% if not query %}
+                                <a href="{% url 'request-type-create' %}" class="ff-btn ff-btn--primary ff-btn--sm"><i class="bi bi-plus"></i> Create Request Type</a>
+                                {% endif %}
                             </div>
                         </td>
                     </tr>
@@ -82,15 +99,13 @@
 </div>
 
 {% if page_obj.has_other_pages %}
-<div class="ff-flex ff-gap-2">
+<div class="ff-flex ff-gap-2" style="margin-top:var(--sp-4);align-items:center;">
     {% if page_obj.has_previous %}
-        <a class="ff-btn ff-btn--sm ff-btn--secondary" href="?page={{ page_obj.previous_page_number }}{% if query %}&q={{ query }}{% endif %}">Previous</a>
+        <a class="ff-btn ff-btn--sm ff-btn--secondary" href="?page={{ page_obj.previous_page_number }}{% if query %}&q={{ query }}{% endif %}"><i class="bi bi-chevron-left"></i> Previous</a>
     {% endif %}
-    
-    <span class="ff-btn ff-btn--sm ff-btn--ghost" style="pointer-events: none;">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
-    
+    <span style="font-size:var(--text-sm);color:var(--text-tertiary);">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
     {% if page_obj.has_next %}
-        <a class="ff-btn ff-btn--sm ff-btn--secondary" href="?page={{ page_obj.next_page_number }}{% if query %}&q={{ query }}{% endif %}">Next</a>
+        <a class="ff-btn ff-btn--sm ff-btn--secondary" href="?page={{ page_obj.next_page_number }}{% if query %}&q={{ query }}{% endif %}">Next <i class="bi bi-chevron-right"></i></a>
     {% endif %}
 </div>
 {% endif %}

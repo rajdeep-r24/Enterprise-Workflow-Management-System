@@ -1,41 +1,146 @@
 {% extends "base.html" %}
+{% load static %}
 
-{% block title %}
-{{ form_definition.name }}
+{% block title %}{{ form_definition.name }}{% endblock %}
+{% block topbar_title %}{{ form_definition.name }}{% endblock %}
+
+{% block extra_head %}
+<style>
+/* Override Django form rendering */
+.ff-django-form p { margin: 0 0 var(--sp-5); }
+.ff-django-form label {
+    display: block;
+    font-size: var(--text-sm); font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--sp-1-5);
+    letter-spacing: -0.008em;
+}
+.ff-django-form input[type="text"],
+.ff-django-form input[type="email"],
+.ff-django-form input[type="number"],
+.ff-django-form input[type="date"],
+.ff-django-form input[type="time"],
+.ff-django-form input[type="url"],
+.ff-django-form input[type="tel"],
+.ff-django-form select,
+.ff-django-form textarea {
+    width: 100%; height: 38px; padding: 0 var(--sp-3);
+    font-size: var(--text-base); font-family: var(--font-sans);
+    color: var(--text-primary); background: var(--surface);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--r-md);
+    appearance: none; -webkit-appearance: none;
+    transition: border-color var(--dur-base), box-shadow var(--dur-base);
+    box-shadow: none;
+}
+.ff-django-form textarea { height: auto; min-height: 96px; padding: var(--sp-3); resize: vertical; }
+.ff-django-form input:focus,
+.ff-django-form select:focus,
+.ff-django-form textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: var(--focus-ring);
+}
+.ff-django-form .helptext,
+.ff-django-form small { font-size: var(--text-xs); color: var(--text-tertiary); margin-top: var(--sp-1); display: block; }
+.ff-django-form ul.errorlist { list-style: none; padding: 0; margin: var(--sp-1) 0 0; }
+.ff-django-form ul.errorlist li { font-size: var(--text-xs); color: var(--danger); font-weight: 500; }
+/* File input */
+.ff-django-form input[type="file"] {
+    height: auto; padding: var(--sp-2) var(--sp-3);
+    font-size: var(--text-sm); cursor: pointer;
+    border: 1px dashed var(--border-strong);
+    background: var(--canvas-subtle);
+    border-radius: var(--r-md);
+}
+.ff-django-form input[type="file"]:hover { border-color: var(--accent); }
+
+/* Required label star */
+.ff-django-form label span.required { color: var(--danger); font-weight: 400; margin-left: 2px; }
+</style>
 {% endblock %}
 
 {% block content %}
 
-<div class="card">
-
-    <div class="card-header">
-
-        <h3>{{ form_definition.name }}</h3>
-
-    </div>
-
-    <div class="card-body">
-
-        <form method="post" enctype="multipart/form-data">
-
-            {% csrf_token %}
-
-            {{ form.as_p }}
-
-            <div class="mb-3">
-                <label class="form-label fw-bold">Attachments (Optional)</label>
-                <input type="file" name="attachments" class="form-control" multiple accept=".pdf,.png,.jpg,.jpeg,.doc,.docx,.xls,.xlsx">
-                <small class="text-muted">Max size: 10MB per file. Allowed: PDF, PNG, JPG/JPEG, DOC/DOCX, XLS/XLSX</small>
-            </div>
-
-            <button class="btn btn-primary">
-                Submit
-            </button>
-
-        </form>
-
-    </div>
-
+<div class="ff-flex ff-items-center ff-mb-6" style="gap:var(--sp-2);">
+    <a href="{% url 'new-request' %}" style="font-size:var(--text-xs);color:var(--text-tertiary);font-weight:500;display:inline-flex;align-items:center;gap:4px;text-decoration:none;transition:color var(--dur-base);" onmouseover="this.style.color='var(--text-primary)'" onmouseout="this.style.color='var(--text-tertiary)'">
+        <i class="bi bi-arrow-left"></i> All Request Types
+    </a>
+    <span style="color:var(--border-strong);">/</span>
+    <span style="font-size:var(--text-xs);color:var(--text-secondary);font-weight:500;">{{ form_definition.name }}</span>
 </div>
 
+<div style="max-width:640px;margin:0 auto;">
+    <div class="ff-card">
+        <div class="ff-card__header">
+            <div>
+                <div class="ff-card__title">{{ form_definition.name }}</div>
+                {% if form_definition.description %}
+                <div class="ff-card__subtitle">{{ form_definition.description }}</div>
+                {% endif %}
+            </div>
+            <div style="width:42px;height:42px;background:var(--accent-subtle);color:var(--accent);border-radius:var(--r-lg);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">
+                <i class="bi bi-file-earmark-plus"></i>
+            </div>
+        </div>
+        <div class="ff-card__body">
+            <form method="post" enctype="multipart/form-data" class="ff-django-form" id="submit-form" novalidate>
+                {% csrf_token %}
+
+                {% if form.errors %}
+                <div class="ff-alert ff-alert--error" style="margin-bottom:var(--sp-5);">
+                    <i class="bi bi-exclamation-circle"></i>
+                    <span>Please correct the errors below before submitting.</span>
+                </div>
+                {% endif %}
+
+                {{ form.as_p }}
+
+                <div style="margin-top:var(--sp-5);padding-top:var(--sp-5);border-top:1px solid var(--border);">
+                    <label class="ff-label" style="margin-bottom:var(--sp-2);">
+                        Attachments
+                        <span style="font-weight:400;color:var(--text-tertiary);">(optional)</span>
+                    </label>
+                    <input type="file" name="attachments" multiple
+                           accept=".pdf,.png,.jpg,.jpeg,.doc,.docx,.xls,.xlsx"
+                           style="width:100%;height:auto;padding:var(--sp-3);font-size:var(--text-sm);border:1.5px dashed var(--border-strong);border-radius:var(--r-md);background:var(--canvas-subtle);cursor:pointer;transition:border-color var(--dur-base);font-family:var(--font-sans);"
+                           id="attachments-input">
+                    <div style="font-size:var(--text-xs);color:var(--text-tertiary);margin-top:var(--sp-2);">
+                        Max 10MB per file · PDF, PNG, JPG, DOC, DOCX, XLS, XLSX
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="ff-card__footer">
+            <a href="{% url 'new-request' %}" class="ff-btn ff-btn--secondary">Cancel</a>
+            <button type="submit" form="submit-form" class="ff-btn ff-btn--primary" id="submit-btn">
+                <i class="bi bi-send"></i> Submit Request
+            </button>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var input = document.getElementById('attachments-input');
+    if (input) {
+        input.addEventListener('change', function () {
+            var count = input.files ? input.files.length : 0;
+            if (count > 0) {
+                input.style.borderColor = 'var(--success)';
+                input.style.background = 'var(--success-subtle)';
+            } else {
+                input.style.borderColor = '';
+                input.style.background = '';
+            }
+        });
+        input.addEventListener('dragover', function (e) { e.preventDefault(); input.style.borderColor = 'var(--accent)'; });
+        input.addEventListener('dragleave', function () { input.style.borderColor = ''; });
+        input.addEventListener('drop', function (e) { e.preventDefault(); input.style.borderColor = 'var(--success)'; });
+    }
+});
+</script>
 {% endblock %}

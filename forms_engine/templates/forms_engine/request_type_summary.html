@@ -1,60 +1,95 @@
 {% extends "base.html" %}
 
-{% block title %}Publish Summary - {{ request_type.name }}{% endblock %}
+{% block title %}Publish Summary — {{ request_type.name }}{% endblock %}
 {% block topbar_title %}Publish Summary{% endblock %}
 
 {% block content %}
 {% include "forms_engine/request_type_progress.html" with current_step=4 %}
 
-<div class="ff-flex ff-justify-between ff-items-center ff-mb-6">
+<div class="ff-flex ff-justify-between ff-items-center ff-mb-6" style="gap:var(--sp-4);flex-wrap:wrap;">
     <div>
-        <h2 class="ff-mb-2">Request Type Summary</h2>
-        <p class="ff-text-secondary mb-0">Review the setup before publishing.</p>
+        <h1 class="ff-page-header__title">Review &amp; Publish</h1>
+        <p class="ff-page-header__sub">{{ request_type.name }} &mdash; Final step before going live</p>
     </div>
 </div>
 
-<div class="ff-card shadow-sm" style="max-width: 600px;">
+<div class="ff-card" style="max-width:580px;">
+    <div class="ff-card__header">
+        <div class="ff-card__title">
+            <i class="bi bi-check-all" style="color:var(--accent);margin-right:var(--sp-2);"></i>
+            Configuration Summary
+        </div>
+    </div>
     <div class="ff-card__body">
-        
-        <div class="ff-flex ff-flex-col ff-gap-4 ff-mb-6">
-            <div class="ff-flex ff-items-center ff-gap-3">
-                <i class="bi bi-check-circle-fill ff-text-success" style="font-size: 1.25rem;"></i>
-                <span class="ff-font-medium">Basic Information</span>
+
+        <!-- Checklist -->
+        <div style="display:flex;flex-direction:column;gap:var(--sp-3);margin-bottom:var(--sp-6);">
+            <div style="display:flex;align-items:center;gap:var(--sp-3);padding:var(--sp-3) var(--sp-4);background:var(--success-subtle);border:1px solid var(--success-border);border-radius:var(--r-lg);">
+                <i class="bi bi-check-circle-fill" style="color:var(--success);font-size:18px;flex-shrink:0;"></i>
+                <div>
+                    <div style="font-size:var(--text-sm);font-weight:600;color:var(--text-primary);">Basic Information</div>
+                    <div style="font-size:var(--text-xs);color:var(--text-tertiary);">Name, code and description configured</div>
+                </div>
             </div>
-            
-            <div class="ff-flex ff-items-center ff-gap-3">
-                <i class="bi bi-check-circle-fill ff-text-success" style="font-size: 1.25rem;"></i>
-                <span class="ff-font-medium">Fields ({{ fields_count }})</span>
+
+            <div style="display:flex;align-items:center;gap:var(--sp-3);padding:var(--sp-3) var(--sp-4);background:var(--success-subtle);border:1px solid var(--success-border);border-radius:var(--r-lg);">
+                <i class="bi bi-check-circle-fill" style="color:var(--success);font-size:18px;flex-shrink:0;"></i>
+                <div>
+                    <div style="font-size:var(--text-sm);font-weight:600;color:var(--text-primary);">Form Fields <span class="ff-badge ff-badge--success" style="margin-left:var(--sp-2);">{{ fields_count }}</span></div>
+                    <div style="font-size:var(--text-xs);color:var(--text-tertiary);">{{ fields_count }} field{{ fields_count|pluralize }} defined</div>
+                </div>
             </div>
-            
-            <div class="ff-flex ff-items-center ff-gap-3">
-                <i class="bi bi-check-circle-fill ff-text-success" style="font-size: 1.25rem;"></i>
-                <span class="ff-font-medium">Workflow Steps ({{ steps_count }})</span>
+
+            <div style="display:flex;align-items:center;gap:var(--sp-3);padding:var(--sp-3) var(--sp-4);background:var(--success-subtle);border:1px solid var(--success-border);border-radius:var(--r-lg);">
+                <i class="bi bi-check-circle-fill" style="color:var(--success);font-size:18px;flex-shrink:0;"></i>
+                <div>
+                    <div style="font-size:var(--text-sm);font-weight:600;color:var(--text-primary);">Approval Workflow <span class="ff-badge ff-badge--success" style="margin-left:var(--sp-2);">{{ steps_count }}</span></div>
+                    <div style="font-size:var(--text-xs);color:var(--text-tertiary);">{{ steps_count }} approval step{{ steps_count|pluralize }} configured</div>
+                </div>
             </div>
         </div>
 
-        <div class="ff-mb-6" style="padding-top: var(--sp-4); border-top: 1px solid var(--border);">
-            <div class="ff-text-sm ff-text-secondary ff-mb-1">Status</div>
+        <!-- Status -->
+        <div style="padding:var(--sp-4);background:var(--canvas-subtle);border-radius:var(--r-lg);border:1px solid var(--border);margin-bottom:var(--sp-5);display:flex;align-items:center;justify-content:space-between;">
             <div>
+                <div style="font-size:var(--text-xs);font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-tertiary);margin-bottom:var(--sp-1);">Current Status</div>
                 {% if request_type.is_published %}
-                    <span class="ff-badge ff-badge--success">Published</span>
+                    <span class="ff-badge ff-badge--success"><span class="ff-badge__dot"></span> Published &amp; Live</span>
                 {% else %}
-                    <span class="ff-badge ff-badge--neutral">Draft</span>
+                    <span class="ff-badge ff-badge--neutral"><span class="ff-badge__dot"></span> Draft</span>
                 {% endif %}
             </div>
+            {% if not request_type.is_published %}
+            <div style="font-size:var(--text-xs);color:var(--text-tertiary);text-align:right;">
+                Once published,<br>fields &amp; steps are locked
+            </div>
+            {% endif %}
         </div>
+
+        {% if not request_type.is_published %}
+        <div class="ff-alert ff-alert--warning" role="alert">
+            <i class="bi bi-exclamation-triangle"></i>
+            <span><strong>Heads up:</strong> Publishing is permanent. Once published, form fields and approval steps cannot be modified.</span>
+        </div>
+        {% endif %}
 
         <form method="post" action="{% url 'request-type-publish' request_type.pk %}">
             {% csrf_token %}
-            <div class="ff-flex ff-gap-3">
+            <div class="ff-flex ff-gap-3" style="margin-top:var(--sp-5);">
                 {% if not request_type.is_published %}
-                    <button type="submit" class="ff-btn ff-btn--primary">Save & Publish</button>
+                    <button type="submit" class="ff-btn ff-btn--primary">
+                        <i class="bi bi-send-check"></i> Publish Now
+                    </button>
+                {% else %}
+                    <div class="ff-btn ff-btn--secondary" style="cursor:default;opacity:0.6;">
+                        <i class="bi bi-lock"></i> Already Published
+                    </div>
                 {% endif %}
-                <a href="{% url 'request-type-steps' request_type.pk %}" class="ff-btn ff-btn--ghost">Back</a>
+                <a href="{% url 'request-type-steps' request_type.pk %}" class="ff-btn ff-btn--ghost">
+                    <i class="bi bi-arrow-left"></i> Back
+                </a>
             </div>
         </form>
-
     </div>
 </div>
-
 {% endblock %}

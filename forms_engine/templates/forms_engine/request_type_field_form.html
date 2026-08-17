@@ -1,73 +1,82 @@
 {% extends "base.html" %}
 
-{% block title %}{{ title }}{% endblock %}
+{% block title %}{{ title }} — {{ request_type.name }}{% endblock %}
 {% block topbar_title %}Request Type Fields{% endblock %}
 
 {% block content %}
 {% include "forms_engine/request_type_progress.html" with current_step=2 %}
 
-<div class="ff-flex ff-justify-between ff-items-center ff-mb-6">
+<div class="ff-flex ff-justify-between ff-items-center ff-mb-6" style="gap:var(--sp-4);flex-wrap:wrap;">
     <div>
-        <h2 class="ff-mb-2">{{ title }}</h2>
-        <p class="ff-text-secondary mb-0">For {{ request_type.name }}</p>
+        <h1 class="ff-page-header__title">{{ title }}</h1>
+        <p class="ff-page-header__sub">{{ request_type.name }}</p>
     </div>
+    <a href="{% url 'request-type-fields' request_type.pk %}" class="ff-btn ff-btn--ghost">
+        <i class="bi bi-arrow-left"></i> Back to Fields
+    </a>
 </div>
 
-<div class="ff-card shadow-sm" style="max-width: 600px;">
+<div class="ff-card" style="max-width:640px;">
+    <div class="ff-card__header">
+        <div class="ff-card__title"><i class="bi bi-ui-checks" style="color:var(--accent);margin-right:var(--sp-2);"></i> Field Configuration</div>
+    </div>
     <div class="ff-card__body">
-        <form method="post">
+        <form method="post" novalidate>
             {% csrf_token %}
-            
+
+            {% if form.non_field_errors %}
+            <div class="ff-alert ff-alert--error" role="alert">
+                <i class="bi bi-exclamation-circle"></i>
+                <span>{{ form.non_field_errors|striptags }}</span>
+            </div>
+            {% endif %}
+
             <div class="ff-field">
                 <label class="ff-label" for="{{ form.label.id_for_label }}">Field Label</label>
                 {{ form.label }}
-                {% if form.label.errors %}
-                    {% for error in form.label.errors %}
-                        <div class="ff-error-text">{{ error }}</div>
-                    {% endfor %}
-                {% endif %}
+                {% for error in form.label.errors %}<div class="ff-error-text"><i class="bi bi-exclamation-circle"></i> {{ error }}</div>{% endfor %}
             </div>
-            
-            <div class="ff-grid ff-grid--2 ff-gap-4">
+
+            <div class="ff-grid ff-grid--2" style="gap:var(--sp-4);">
                 <div class="ff-field">
                     <label class="ff-label" for="{{ form.field_type.id_for_label }}">Field Type</label>
                     {{ form.field_type }}
+                    {% for error in form.field_type.errors %}<div class="ff-error-text"><i class="bi bi-exclamation-circle"></i> {{ error }}</div>{% endfor %}
                 </div>
-                
-                <div class="ff-field" style="display: flex; align-items: flex-end; padding-bottom: 8px;">
-                    <label class="ff-flex ff-items-center ff-gap-2" style="cursor: pointer; margin: 0;">
+                <div class="ff-field" style="display:flex;align-items:flex-end;padding-bottom:10px;">
+                    <label style="display:flex;align-items:center;gap:var(--sp-2);cursor:pointer;font-size:var(--text-sm);font-weight:500;color:var(--text-primary);">
                         {{ form.is_required }}
-                        <span class="ff-font-medium">Required Field</span>
+                        <span>Required Field</span>
                     </label>
                 </div>
             </div>
-            
-            <div class="ff-field" id="options-container" style="display: none;">
+
+            <div class="ff-field" id="options-container" style="display:none;">
                 <label class="ff-label" for="{{ form.options.id_for_label }}">Dropdown Options</label>
                 {{ form.options }}
                 <div class="ff-help">{{ form.options.help_text }}</div>
             </div>
-            
-            <details class="ff-mb-4" style="background: var(--surface-hover); padding: var(--sp-3); border-radius: var(--r-md); border: 1px solid var(--border);">
-                <summary class="ff-font-medium ff-text-secondary" style="cursor: pointer;">▼ Advanced Settings</summary>
-                <div style="margin-top: var(--sp-4);">
+
+            <details class="ff-mb-4" style="background:var(--canvas-subtle);padding:var(--sp-4);border-radius:var(--r-lg);border:1px solid var(--border);">
+                <summary style="cursor:pointer;font-size:var(--text-sm);font-weight:600;color:var(--text-secondary);list-style:none;display:flex;align-items:center;gap:var(--sp-2);">
+                    <i class="bi bi-gear" style="color:var(--text-tertiary);"></i> Advanced Settings
+                    <i class="bi bi-chevron-down" style="margin-left:auto;font-size:10px;color:var(--text-tertiary);"></i>
+                </summary>
+                <div style="margin-top:var(--sp-4);">
                     <div class="ff-field">
                         <label class="ff-label" for="{{ form.field_name.id_for_label }}">{{ form.field_name.label }}</label>
                         {{ form.field_name }}
-                        <div class="ff-help">Auto-generated if left blank.</div>
+                        <div class="ff-help">Auto-generated from label if left blank.</div>
                     </div>
-                    
                     <div class="ff-field">
                         <label class="ff-label" for="{{ form.order.id_for_label }}">Display Order</label>
                         {{ form.order }}
                         <div class="ff-help">Auto-assigned if left blank.</div>
                     </div>
-                    
                     <div class="ff-field">
                         <label class="ff-label" for="{{ form.placeholder.id_for_label }}">{{ form.placeholder.label }}</label>
                         {{ form.placeholder }}
                     </div>
-                    
                     <div class="ff-field">
                         <label class="ff-label" for="{{ form.help_text.id_for_label }}">{{ form.help_text.label }}</label>
                         {{ form.help_text }}
@@ -75,30 +84,28 @@
                 </div>
             </details>
 
-            <div class="ff-flex ff-gap-3" style="margin-top: var(--space-6);">
-                <button type="submit" class="ff-btn ff-btn--primary">Save Field</button>
-                <a href="{% url 'request-type-fields' request_type.pk %}" class="ff-btn ff-btn--ghost">Cancel</a>
+            <div class="ff-flex ff-gap-3" style="margin-top:var(--sp-5);padding-top:var(--sp-5);border-top:1px solid var(--border);">
+                <button type="submit" class="ff-btn ff-btn--primary">
+                    <i class="bi bi-check2"></i> Save Field
+                </button>
+                <a href="{% url 'request-type-fields' request_type.pk %}" class="ff-btn ff-btn--secondary">Cancel</a>
             </div>
         </form>
     </div>
 </div>
+{% endblock %}
 
+{% block extra_js %}
 <script>
-    document.addEventListener("DOMContentLoaded", function() {
-        const typeSelect = document.getElementById("{{ form.field_type.id_for_label }}");
-        const optionsContainer = document.getElementById("options-container");
-        
-        function toggleOptions() {
-            if (typeSelect.value === 'select') {
-                optionsContainer.style.display = 'block';
-            } else {
-                optionsContainer.style.display = 'none';
-            }
-        }
-        
-        typeSelect.addEventListener("change", toggleOptions);
-        toggleOptions();
-    });
+document.addEventListener("DOMContentLoaded", function () {
+    var typeSelect = document.getElementById("{{ form.field_type.id_for_label }}");
+    var optionsContainer = document.getElementById("options-container");
+    if (!typeSelect || !optionsContainer) return;
+    function toggleOptions() {
+        optionsContainer.style.display = typeSelect.value === 'select' ? 'block' : 'none';
+    }
+    typeSelect.addEventListener("change", toggleOptions);
+    toggleOptions();
+});
 </script>
-
 {% endblock %}

@@ -1,48 +1,55 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}Departments{% endblock %}
 {% block topbar_title %}Departments{% endblock %}
 
 {% block content %}
 
-<div class="ff-flex ff-justify-between ff-items-center ff-mb-6">
+<div class="ff-flex ff-justify-between ff-items-center ff-mb-6" style="gap:var(--sp-4);flex-wrap:wrap;">
     <div>
-        <h2 class="ff-mb-2">Departments</h2>
-        <p class="ff-text-secondary mb-0">Manage organization departments and their details.</p>
+        <h1 class="ff-page-header__title">Departments</h1>
+        <p class="ff-page-header__sub">Manage organization departments and their details</p>
     </div>
     <a href="{% url 'department-create' %}" class="ff-btn ff-btn--primary">
         <i class="bi bi-plus"></i> Add Department
     </a>
 </div>
 
-<div class="ff-card shadow-sm ff-mb-6">
-    <div class="ff-card__body p-0">
-        <div style="padding: var(--space-4); border-bottom: 1px solid var(--border);">
-            <form method="get" class="ff-flex ff-gap-3">
-                <input type="text" name="q" value="{{ query }}" class="ff-input" placeholder="Search departments..." style="max-width: 400px;">
-                <button type="submit" class="ff-btn ff-btn--secondary">Search</button>
-            </form>
-        </div>
+<div class="ff-card">
+    <div class="ff-card__header" style="border-bottom:1px solid var(--border);">
+        <form method="get" style="display:flex;gap:var(--sp-3);width:100%;max-width:480px;flex-wrap:wrap;">
+            <div class="ff-input-wrap" style="flex:1;min-width:200px;">
+                <i class="bi bi-search ff-input-wrap__icon"></i>
+                <input type="text" name="q" value="{{ query }}" class="ff-input ff-input--with-icon" placeholder="Search departments…" id="dept-search" autocomplete="off">
+            </div>
+            <button type="submit" class="ff-btn ff-btn--secondary">Search</button>
+            {% if query %}<a href="{% url 'department-list' %}" class="ff-btn ff-btn--ghost">Clear</a>{% endif %}
+        </form>
+    </div>
 
-        <div class="ff-table-wrap">
+    <div class="ff-card__body" style="padding:0;">
+        <div class="ff-table-wrap" style="border:none;border-radius:0 0 var(--r-xl) var(--r-xl);box-shadow:none;">
             <table class="ff-table">
                 <thead>
                     <tr>
-                        <th>Code</th>
                         <th>Name</th>
+                        <th>Code</th>
                         <th>Email</th>
                         <th>Phone</th>
                         <th>Status</th>
-                        <th>Actions</th>
+                        <th style="width:140px;text-align:right;">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                 {% for department in page_obj %}
                     <tr>
-                        <td class="ff-mono">{{ department.code }}</td>
-                        <td style="font-weight: 500;">{{ department.name }}</td>
-                        <td>{{ department.email }}</td>
-                        <td>{{ department.phone }}</td>
+                        <td>
+                            <div style="font-size:var(--text-sm);font-weight:600;color:var(--text-primary);">{{ department.name }}</div>
+                        </td>
+                        <td><code style="font-size:var(--text-xs);font-family:var(--font-mono);background:var(--canvas-subtle);padding:2px 6px;border-radius:4px;border:1px solid var(--border);">{{ department.code }}</code></td>
+                        <td><span style="font-size:var(--text-sm);color:var(--text-secondary);">{{ department.email|default:"—" }}</span></td>
+                        <td><span style="font-size:var(--text-sm);color:var(--text-secondary);">{{ department.phone|default:"—" }}</span></td>
                         <td>
                             {% if department.is_active %}
                                 <span class="ff-badge ff-badge--success"><span class="ff-badge__dot"></span> Active</span>
@@ -50,11 +57,13 @@
                                 <span class="ff-badge ff-badge--danger"><span class="ff-badge__dot"></span> Inactive</span>
                             {% endif %}
                         </td>
-                        <td>
-                            <div class="ff-flex ff-gap-2">
+                        <td style="text-align:right;">
+                            <div class="ff-flex ff-gap-2" style="justify-content:flex-end;">
                                 <a href="{% url 'department-update' department.id %}" class="ff-btn ff-btn--sm ff-btn--secondary">Edit</a>
                                 {% if department.is_active %}
-                                <a href="{% url 'department-deactivate' department.id %}" class="ff-btn ff-btn--sm ff-btn--danger">Deactivate</a>
+                                <a href="{% url 'department-deactivate' department.id %}" class="ff-btn ff-btn--sm ff-btn--ghost" style="color:var(--danger);" data-tooltip="Deactivate">
+                                    <i class="bi bi-pause-circle"></i>
+                                </a>
                                 {% endif %}
                             </div>
                         </td>
@@ -62,9 +71,13 @@
                 {% empty %}
                     <tr>
                         <td colspan="6">
-                            <div class="ff-table__empty">
-                                <i class="bi bi-diagram-3" style="font-size: 24px; color: var(--text-muted); display: block; margin-bottom: 8px;"></i>
-                                No departments found.
+                            <div class="ff-empty">
+                                <div class="ff-empty__icon"><i class="bi bi-diagram-3"></i></div>
+                                <div class="ff-empty__title">No departments {% if query %}matching "{{ query }}"{% else %}yet{% endif %}</div>
+                                <p class="ff-empty__body">{% if query %}Try a different search term.{% else %}Create your first department to start organizing employees.{% endif %}</p>
+                                {% if not query %}
+                                <a href="{% url 'department-create' %}" class="ff-btn ff-btn--primary ff-btn--sm"><i class="bi bi-plus"></i> Add Department</a>
+                                {% endif %}
                             </div>
                         </td>
                     </tr>
@@ -76,15 +89,13 @@
 </div>
 
 {% if page_obj.has_other_pages %}
-<div class="ff-flex ff-gap-2">
+<div class="ff-flex ff-gap-2" style="margin-top:var(--sp-4);align-items:center;">
     {% if page_obj.has_previous %}
-        <a class="ff-btn ff-btn--sm ff-btn--secondary" href="?page={{ page_obj.previous_page_number }}{% if query %}&q={{ query }}{% endif %}">Previous</a>
+        <a class="ff-btn ff-btn--sm ff-btn--secondary" href="?page={{ page_obj.previous_page_number }}{% if query %}&q={{ query }}{% endif %}"><i class="bi bi-chevron-left"></i> Previous</a>
     {% endif %}
-    
-    <span class="ff-btn ff-btn--sm ff-btn--ghost" style="pointer-events: none;">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
-    
+    <span style="font-size:var(--text-sm);color:var(--text-tertiary);">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
     {% if page_obj.has_next %}
-        <a class="ff-btn ff-btn--sm ff-btn--secondary" href="?page={{ page_obj.next_page_number }}{% if query %}&q={{ query }}{% endif %}">Next</a>
+        <a class="ff-btn ff-btn--sm ff-btn--secondary" href="?page={{ page_obj.next_page_number }}{% if query %}&q={{ query }}{% endif %}">Next <i class="bi bi-chevron-right"></i></a>
     {% endif %}
 </div>
 {% endif %}

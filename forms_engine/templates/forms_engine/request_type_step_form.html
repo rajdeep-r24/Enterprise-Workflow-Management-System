@@ -1,121 +1,111 @@
 {% extends "base.html" %}
 
-{% block title %}{{ title }} - {{ request_type.name }}{% endblock %}
+{% block title %}{{ title }} — {{ request_type.name }}{% endblock %}
 {% block topbar_title %}Request Type Steps{% endblock %}
 
 {% block content %}
 {% include "forms_engine/request_type_progress.html" with current_step=3 %}
 
-<div class="ff-flex ff-justify-between ff-items-center ff-mb-6">
+<div class="ff-flex ff-justify-between ff-items-center ff-mb-6" style="gap:var(--sp-4);flex-wrap:wrap;">
     <div>
-        <h2 class="ff-mb-2">{{ title }}</h2>
-        <p class="ff-text-secondary mb-0">For {{ request_type.name }}</p>
+        <h1 class="ff-page-header__title">{{ title }}</h1>
+        <p class="ff-page-header__sub">{{ request_type.name }}</p>
     </div>
+    <a href="{% url 'request-type-steps' request_type.pk %}" class="ff-btn ff-btn--ghost">
+        <i class="bi bi-arrow-left"></i> Back to Steps
+    </a>
 </div>
 
-<div class="ff-card shadow-sm" style="max-width: 600px;">
+<div class="ff-card" style="max-width:640px;">
+    <div class="ff-card__header">
+        <div class="ff-card__title"><i class="bi bi-diagram-3" style="color:var(--accent);margin-right:var(--sp-2);"></i> Approval Step Configuration</div>
+    </div>
     <div class="ff-card__body">
-        <form method="post">
+        <form method="post" novalidate>
             {% csrf_token %}
-            
+
             {% if form.non_field_errors %}
-                <div class="ff-error-text ff-mb-4">
-                    {% for error in form.non_field_errors %}
-                        {{ error }}
-                    {% endfor %}
-                </div>
+            <div class="ff-alert ff-alert--error" role="alert">
+                <i class="bi bi-exclamation-circle"></i>
+                <span>{% for error in form.non_field_errors %}{{ error }}{% endfor %}</span>
+            </div>
             {% endif %}
-            
+
             <div class="ff-field">
                 <label class="ff-label" for="{{ form.name.id_for_label }}">{{ form.name.label }}</label>
                 {{ form.name }}
-                {% if form.name.errors %}
-                    <div class="ff-error-text">{{ form.name.errors|join:", " }}</div>
-                {% endif %}
-                {% if form.name.help_text %}
-                    <div class="ff-help">{{ form.name.help_text }}</div>
-                {% endif %}
+                {% for error in form.name.errors %}<div class="ff-error-text"><i class="bi bi-exclamation-circle"></i> {{ error }}</div>{% endfor %}
+                {% if form.name.help_text %}<div class="ff-help">{{ form.name.help_text }}</div>{% endif %}
             </div>
-            
-            <div class="ff-grid ff-grid--2 ff-gap-4">
+
+            <div class="ff-grid ff-grid--2" style="gap:var(--sp-4);">
                 <div class="ff-field">
                     <label class="ff-label" for="{{ form.approver_type.id_for_label }}">{{ form.approver_type.label }}</label>
                     {{ form.approver_type }}
-                    {% if form.approver_type.errors %}
-                        <div class="ff-error-text">{{ form.approver_type.errors|join:", " }}</div>
-                    {% endif %}
+                    {% for error in form.approver_type.errors %}<div class="ff-error-text"><i class="bi bi-exclamation-circle"></i> {{ error }}</div>{% endfor %}
                 </div>
-                
-                <div class="ff-field" style="display: flex; align-items: flex-end; padding-bottom: 8px;">
-                    <label class="ff-flex ff-items-center ff-gap-2" style="cursor: pointer; margin: 0;">
+                <div class="ff-field" style="display:flex;align-items:flex-end;padding-bottom:10px;">
+                    <label style="display:flex;align-items:center;gap:var(--sp-2);cursor:pointer;font-size:var(--text-sm);font-weight:500;color:var(--text-primary);">
                         {{ form.is_required }}
-                        <span class="ff-font-medium">Required Step</span>
+                        <span>Required Step</span>
                     </label>
                 </div>
             </div>
 
-            <div class="ff-field" id="role-code-row" style="display: none;">
+            <div class="ff-field" id="role-code-row" style="display:none;">
                 <label class="ff-label" for="{{ form.role_code.id_for_label }}">{{ form.role_code.label }}</label>
                 {{ form.role_code }}
-                <div class="ff-help">Required if approver type is Role.</div>
-                {% if form.role_code.errors %}
-                    <div class="ff-error-text">{{ form.role_code.errors|join:", " }}</div>
-                {% endif %}
+                <div class="ff-help">Select the organizational role that will approve this step.</div>
+                {% for error in form.role_code.errors %}<div class="ff-error-text"><i class="bi bi-exclamation-circle"></i> {{ error }}</div>{% endfor %}
             </div>
 
-            <div class="ff-field" id="specific-user-row" style="display: none;">
+            <div class="ff-field" id="specific-user-row" style="display:none;">
                 <label class="ff-label" for="{{ form.specific_approver.id_for_label }}">{{ form.specific_approver.label }}</label>
                 {{ form.specific_approver }}
-                <div class="ff-help">Required if approver type is Specific User.</div>
-                {% if form.specific_approver.errors %}
-                    <div class="ff-error-text">{{ form.specific_approver.errors|join:", " }}</div>
-                {% endif %}
+                <div class="ff-help">Select a specific employee to be the approver for this step.</div>
+                {% for error in form.specific_approver.errors %}<div class="ff-error-text"><i class="bi bi-exclamation-circle"></i> {{ error }}</div>{% endfor %}
             </div>
 
-            <details class="ff-mb-4" style="background: var(--surface-hover); padding: var(--sp-3); border-radius: var(--r-md); border: 1px solid var(--border);">
-                <summary class="ff-font-medium ff-text-secondary" style="cursor: pointer;">▼ Advanced Settings</summary>
-                <div style="margin-top: var(--sp-4);">
+            <details class="ff-mb-4" style="background:var(--canvas-subtle);padding:var(--sp-4);border-radius:var(--r-lg);border:1px solid var(--border);">
+                <summary style="cursor:pointer;font-size:var(--text-sm);font-weight:600;color:var(--text-secondary);list-style:none;display:flex;align-items:center;gap:var(--sp-2);">
+                    <i class="bi bi-gear" style="color:var(--text-tertiary);"></i> Advanced Settings
+                    <i class="bi bi-chevron-down" style="margin-left:auto;font-size:10px;color:var(--text-tertiary);"></i>
+                </summary>
+                <div style="margin-top:var(--sp-4);">
                     <div class="ff-field">
                         <label class="ff-label" for="{{ form.step_order.id_for_label }}">{{ form.step_order.label }}</label>
                         {{ form.step_order }}
                         <div class="ff-help">Auto-assigned if left blank.</div>
-                        {% if form.step_order.errors %}
-                            <div class="ff-error-text">{{ form.step_order.errors|join:", " }}</div>
-                        {% endif %}
+                        {% for error in form.step_order.errors %}<div class="ff-error-text"><i class="bi bi-exclamation-circle"></i> {{ error }}</div>{% endfor %}
                     </div>
                 </div>
             </details>
 
-            <div class="ff-flex ff-gap-3" style="margin-top: var(--space-6);">
-                <button type="submit" class="ff-btn ff-btn--primary">Save Step</button>
-                <a href="{% url 'request-type-steps' request_type.pk %}" class="ff-btn ff-btn--ghost">Cancel</a>
+            <div class="ff-flex ff-gap-3" style="margin-top:var(--sp-5);padding-top:var(--sp-5);border-top:1px solid var(--border);">
+                <button type="submit" class="ff-btn ff-btn--primary">
+                    <i class="bi bi-check2"></i> Save Step
+                </button>
+                <a href="{% url 'request-type-steps' request_type.pk %}" class="ff-btn ff-btn--secondary">Cancel</a>
             </div>
         </form>
     </div>
 </div>
+{% endblock %}
 
+{% block extra_js %}
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const approverTypeSelect = document.getElementById('{{ form.approver_type.id_for_label }}');
-        const roleCodeRow = document.getElementById('role-code-row');
-        const specificUserRow = document.getElementById('specific-user-row');
-        
-        function toggleFields() {
-            const value = approverTypeSelect.value;
-            if (value === 'ROLE') {
-                roleCodeRow.style.display = 'block';
-                specificUserRow.style.display = 'none';
-            } else if (value === 'SPECIFIC_USER') {
-                roleCodeRow.style.display = 'none';
-                specificUserRow.style.display = 'block';
-            } else {
-                roleCodeRow.style.display = 'none';
-                specificUserRow.style.display = 'none';
-            }
-        }
-        
-        approverTypeSelect.addEventListener('change', toggleFields);
-        toggleFields();
-    });
+document.addEventListener('DOMContentLoaded', function () {
+    var sel = document.getElementById('{{ form.approver_type.id_for_label }}');
+    var roleRow = document.getElementById('role-code-row');
+    var userRow = document.getElementById('specific-user-row');
+    if (!sel) return;
+    function toggle() {
+        var v = sel.value;
+        roleRow.style.display = v === 'ROLE' ? 'block' : 'none';
+        userRow.style.display = v === 'SPECIFIC_USER' ? 'block' : 'none';
+    }
+    sel.addEventListener('change', toggle);
+    toggle();
+});
 </script>
 {% endblock %}

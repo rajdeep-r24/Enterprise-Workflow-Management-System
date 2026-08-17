@@ -1,38 +1,56 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}Create Employee{% endblock %}
 {% block topbar_title %}Create Employee{% endblock %}
 
 {% block content %}
-<div class="ff-flex ff-justify-between ff-items-center ff-mb-6">
+
+<div class="ff-flex ff-justify-between ff-items-center ff-mb-6" style="gap:var(--sp-4);flex-wrap:wrap;">
     <div>
-        <h2 class="ff-mb-2">Create Employee</h2>
+        <h1 class="ff-page-header__title">Create Employee</h1>
+        <p class="ff-page-header__sub">Add a new team member to your organization</p>
     </div>
+    <a href="{% url 'employee-list' %}" class="ff-btn ff-btn--ghost">
+        <i class="bi bi-arrow-left"></i> Back to Employees
+    </a>
 </div>
 
-<div class="ff-card shadow-sm" style="max-width: 600px;">
+<div class="ff-card" style="max-width:720px;">
+    <div class="ff-card__header">
+        <div class="ff-card__title"><i class="bi bi-person-plus" style="color:var(--accent);margin-right:var(--sp-2);"></i> Employee Information</div>
+        <div class="ff-card__subtitle">A temporary password will be sent to the employee's email</div>
+    </div>
     <div class="ff-card__body">
-        <form method="post">
+        <form method="post" novalidate>
             {% csrf_token %}
-            
+
+            {% if form.non_field_errors %}
+            <div class="ff-alert ff-alert--error ff-mb-4" role="alert">
+                <i class="bi bi-exclamation-circle"></i>
+                <span>{{ form.non_field_errors|striptags }}</span>
+            </div>
+            {% endif %}
+
+            <div class="ff-form-section">Personal Information</div>
+
             {% for field in form %}
-                <div class="ff-field">
-                    <label class="ff-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
-                    {{ field }}
-                    {% if field.help_text %}
-                        <div class="ff-help">{{ field.help_text }}</div>
-                    {% endif %}
-                    {% for error in field.errors %}
-                        <div class="ff-error-text">{{ error }}</div>
-                    {% endfor %}
-                </div>
+            <div class="ff-field">
+                <label class="ff-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% if field.help_text %}<div class="ff-help">{{ field.help_text }}</div>{% endif %}
+                {% for error in field.errors %}<div class="ff-error-text"><i class="bi bi-exclamation-circle"></i> {{ error }}</div>{% endfor %}
+            </div>
             {% endfor %}
 
-            <div class="ff-flex ff-gap-3" style="margin-top: var(--space-6);">
-                <button type="submit" class="ff-btn ff-btn--primary">Save Employee</button>
+            <div class="ff-flex ff-gap-3" style="margin-top:var(--sp-6);padding-top:var(--sp-5);border-top:1px solid var(--border);">
+                <button type="submit" class="ff-btn ff-btn--primary">
+                    <i class="bi bi-person-check"></i> Create Employee
+                </button>
                 <a href="{% url 'employee-list' %}" class="ff-btn ff-btn--secondary">Cancel</a>
             </div>
         </form>
     </div>
 </div>
+
 {% endblock %}

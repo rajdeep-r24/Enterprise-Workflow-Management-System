@@ -1,89 +1,106 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}Approval History{% endblock %}
 {% block topbar_title %}Approval History{% endblock %}
 
 {% block content %}
 
-<div class="ff-flex ff-justify-between ff-items-center ff-mb-6" style="flex-wrap: wrap; gap: var(--space-3);">
+<div class="ff-flex ff-justify-between ff-items-center ff-mb-6" style="flex-wrap:wrap;gap:var(--sp-4);">
     <div>
-        <h1>Approval History</h1>
-        <p class="ff-text-muted" style="margin: 0;">Every request you've approved or rejected, all in one place.</p>
+        <h1 class="ff-page-header__title">Approval History</h1>
+        <p class="ff-page-header__sub">Every request you've approved or rejected</p>
     </div>
     <div class="ff-flex ff-gap-2">
         <a href="{% url 'approval-history' %}" class="ff-btn ff-btn--sm {% if not status_filter %}ff-btn--secondary{% else %}ff-btn--ghost{% endif %}">All</a>
-        <a href="?status=APPROVED" class="ff-btn ff-btn--sm {% if status_filter == 'APPROVED' %}ff-btn--secondary{% else %}ff-btn--ghost{% endif %}">Approved</a>
-        <a href="?status=REJECTED" class="ff-btn ff-btn--sm {% if status_filter == 'REJECTED' %}ff-btn--secondary{% else %}ff-btn--ghost{% endif %}">Rejected</a>
+        <a href="?status=APPROVED" class="ff-btn ff-btn--sm {% if status_filter == 'APPROVED' %}ff-btn--success{% else %}ff-btn--ghost{% endif %}">Approved</a>
+        <a href="?status=REJECTED" class="ff-btn ff-btn--sm {% if status_filter == 'REJECTED' %}ff-btn--danger{% else %}ff-btn--ghost{% endif %}">Rejected</a>
     </div>
 </div>
 
-<div class="ff-grid ff-grid--3 ff-mb-6">
+<div class="ff-grid ff-grid--3 ff-mb-6 ff-stagger">
     <div class="ff-stat-card">
-        <div class="ff-stat-card__icon" style="background: var(--success-subtle); color: var(--success);"><i class="bi bi-check-circle"></i></div>
+        <div class="ff-stat-card__icon" style="background:var(--success-subtle);color:var(--success);"><i class="bi bi-check-circle"></i></div>
         <div class="ff-stat-card__label">Approved by you</div>
         <div class="ff-stat-card__value">{{ approved_count }}</div>
     </div>
     <div class="ff-stat-card">
-        <div class="ff-stat-card__icon" style="background: var(--danger-subtle); color: var(--danger);"><i class="bi bi-x-circle"></i></div>
+        <div class="ff-stat-card__icon" style="background:var(--danger-subtle);color:var(--danger);"><i class="bi bi-x-circle"></i></div>
         <div class="ff-stat-card__label">Rejected by you</div>
         <div class="ff-stat-card__value">{{ rejected_count }}</div>
     </div>
     <div class="ff-stat-card">
-        <div class="ff-stat-card__icon" style="background: var(--info-subtle); color: var(--info);"><i class="bi bi-list-check"></i></div>
+        <div class="ff-stat-card__icon" style="background:var(--info-subtle);color:var(--info);"><i class="bi bi-list-check"></i></div>
         <div class="ff-stat-card__label">Total actioned</div>
         <div class="ff-stat-card__value">{{ approved_count|add:rejected_count }}</div>
     </div>
 </div>
 
 <div class="ff-card">
-    <div class="ff-table-wrap">
-        <table class="ff-table">
-            <thead>
-                <tr>
-                    <th>Request</th>
-                    <th>Requested by</th>
-                    <th>Step</th>
-                    <th>Your decision</th>
-                    <th>Remarks</th>
-                    <th>Decided on</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for step in history %}
-                <tr>
-                    <td class="ff-mono">{{ step.workflow_instance.formsubmission.form.name|default:"Request" }}</td>
-                    <td>{{ step.workflow_instance.initiated_by.get_full_name|default:step.workflow_instance.initiated_by.email }}</td>
-                    <td>{{ step.step_definition.name }}</td>
-                    <td>
-                        {% if step.status == "APPROVED" %}
-                        <span class="ff-badge ff-badge--success"><span class="ff-badge__dot"></span> Approved</span>
-                        {% elif step.status == "REJECTED" %}
-                        <span class="ff-badge ff-badge--danger"><span class="ff-badge__dot"></span> Rejected</span>
-                        {% else %}
-                        <span class="ff-badge ff-badge--neutral">{{ step.get_status_display }}</span>
-                        {% endif %}
-                    </td>
-                    <td class="ff-text-secondary ff-text-sm">{{ step.remarks|default:"—"|truncatechars:60 }}</td>
-                    <td class="ff-text-sm ff-text-muted">{{ step.action_at|date:"d M Y, H:i"|default:"—" }}</td>
-                    <td>
-                        {% if step.workflow_instance.formsubmission %}
-                        <a href="{% url 'request-detail' step.workflow_instance.formsubmission.pk %}" class="ff-btn ff-btn--ghost ff-btn--sm">
-                            View <i class="bi bi-arrow-right"></i>
-                        </a>
-                        {% endif %}
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="7" class="ff-table__empty">
-                        <i class="bi bi-inbox" style="font-size: 28px; display:block; margin-bottom: 8px;"></i>
-                        You haven't approved or rejected anything yet.
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    <div class="ff-card__body" style="padding:0;">
+        <div class="ff-table-wrap" style="border:none;border-radius:var(--r-xl);box-shadow:none;">
+            <table class="ff-table">
+                <thead>
+                    <tr>
+                        <th>Request</th>
+                        <th>Requested by</th>
+                        <th>Step</th>
+                        <th>Your Decision</th>
+                        <th>Remarks</th>
+                        <th>Decided on</th>
+                        <th style="width:80px;"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for step in history %}
+                    <tr>
+                        <td>
+                            <div style="font-size:var(--text-sm);font-weight:600;color:var(--text-primary);">{{ step.workflow_instance.formsubmission.form.name|default:"Request" }}</div>
+                        </td>
+                        <td>
+                            <div style="display:flex;align-items:center;gap:var(--sp-2);">
+                                <div class="ff-avatar" style="width:24px;height:24px;font-size:9px;cursor:default;flex-shrink:0;">{{ step.workflow_instance.initiated_by.first_name|slice:":1" }}{{ step.workflow_instance.initiated_by.last_name|slice:":1" }}</div>
+                                <span style="font-size:var(--text-sm);color:var(--text-secondary);">{{ step.workflow_instance.initiated_by.get_full_name|default:step.workflow_instance.initiated_by.email }}</span>
+                            </div>
+                        </td>
+                        <td><span style="font-size:var(--text-sm);color:var(--text-secondary);">{{ step.step_definition.name }}</span></td>
+                        <td>
+                            {% if step.status == "APPROVED" %}
+                            <span class="ff-badge ff-badge--success"><span class="ff-badge__dot"></span> Approved</span>
+                            {% elif step.status == "REJECTED" %}
+                            <span class="ff-badge ff-badge--danger"><span class="ff-badge__dot"></span> Rejected</span>
+                            {% else %}
+                            <span class="ff-badge ff-badge--neutral">{{ step.get_status_display }}</span>
+                            {% endif %}
+                        </td>
+                        <td style="font-size:var(--text-sm);color:var(--text-tertiary);max-width:200px;">
+                            <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block;">{{ step.remarks|default:"—"|truncatechars:60 }}</span>
+                        </td>
+                        <td style="font-size:var(--text-sm);color:var(--text-tertiary);white-space:nowrap;font-variant-numeric:tabular-nums;">
+                            {{ step.action_at|date:"d M Y, H:i"|default:"—" }}
+                        </td>
+                        <td>
+                            {% if step.workflow_instance.formsubmission %}
+                            <a href="{% url 'request-detail' step.workflow_instance.formsubmission.pk %}" class="ff-btn ff-btn--ghost ff-btn--sm">
+                                View <i class="bi bi-arrow-right"></i>
+                            </a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7">
+                            <div class="ff-empty">
+                                <div class="ff-empty__icon" style="background:var(--info-subtle);color:var(--info);"><i class="bi bi-inbox"></i></div>
+                                <div class="ff-empty__title">No history yet</div>
+                                <p class="ff-empty__body">You haven't approved or rejected any requests yet.</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 

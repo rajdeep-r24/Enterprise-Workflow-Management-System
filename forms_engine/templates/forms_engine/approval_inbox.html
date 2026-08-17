@@ -1,64 +1,87 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}Pending Approvals{% endblock %}
 {% block topbar_title %}Pending Approvals{% endblock %}
 
 {% block content %}
 
-<div class="ff-flex ff-justify-between ff-items-center ff-mb-6">
+<div class="ff-flex ff-justify-between ff-items-center ff-mb-6" style="gap:var(--sp-4);flex-wrap:wrap;">
     <div>
-        <h2 class="ff-mb-2">Pending Approvals</h2>
-        <p class="ff-text-secondary mb-0">Review and take action on workflow requests assigned to you.</p>
+        <h1 class="ff-page-header__title">Pending Approvals</h1>
+        <p class="ff-page-header__sub">Review and take action on workflow requests assigned to you</p>
     </div>
+    {% if approvals %}
+    <span class="ff-badge ff-badge--warning" style="font-size:var(--text-sm);padding:6px 14px;">
+        <span class="ff-badge__dot ff-badge__dot--pulse"></span>
+        {{ approvals|length }} pending
+    </span>
+    {% endif %}
 </div>
 
-<div class="ff-card shadow-sm">
-    <div class="ff-card__body p-0">
-        <div class="ff-table-wrap">
+<div class="ff-card">
+    <div class="ff-card__body" style="padding:0;">
+        <div class="ff-table-wrap" style="border:none;border-radius:var(--r-xl);box-shadow:none;">
             <table class="ff-table">
                 <thead>
                     <tr>
                         <th>Employee</th>
-                        <th>Workflow</th>
+                        <th>Form</th>
                         <th>Current Step</th>
                         <th>Status</th>
-                        <th style="width: 120px;">Action</th>
+                        <th style="width:100px;text-align:right;">Action</th>
                     </tr>
                 </thead>
                 <tbody>
-                {% for approval in approvals %}
+                    {% for approval in approvals %}
                     <tr>
-                        <td style="font-weight: 500;">
-                            {{ approval.workflow_instance.initiated_by.get_full_name }}
+                        <td>
+                            <div style="display:flex;align-items:center;gap:var(--sp-3);">
+                                <div class="ff-avatar" style="width:28px;height:28px;font-size:10px;flex-shrink:0;cursor:default;">
+                                    {{ approval.workflow_instance.initiated_by.first_name|slice:":1" }}{{ approval.workflow_instance.initiated_by.last_name|slice:":1" }}
+                                </div>
+                                <div>
+                                    <div style="font-size:var(--text-sm);font-weight:600;color:var(--text-primary);">{{ approval.workflow_instance.initiated_by.get_full_name }}</div>
+                                    <div style="font-size:var(--text-xs);color:var(--text-tertiary);">{{ approval.workflow_instance.initiated_by.email }}</div>
+                                </div>
+                            </div>
                         </td>
                         <td>
-                            {{ approval.workflow_instance.workflow_version.workflow.name }}
+                            <div style="font-size:var(--text-sm);font-weight:500;color:var(--text-primary);">
+                                {{ approval.workflow_instance.workflow_version.workflow.name }}
+                            </div>
                         </td>
                         <td>
-                            {{ approval.step_definition.name }}
-                        </td>
-                        <td>
-                            <span class="ff-badge ff-badge--warning">
-                                <span class="ff-badge__dot"></span> Pending
+                            <span style="font-size:var(--text-sm);color:var(--text-secondary);">
+                                {{ approval.step_definition.name }}
                             </span>
                         </td>
                         <td>
-                            <a href="{% url 'request-detail' approval.workflow_instance.formsubmission.pk %}" class="ff-btn ff-btn--sm ff-btn--primary">
-                                View
+                            <span class="ff-badge ff-badge--warning">
+                                <span class="ff-badge__dot ff-badge__dot--pulse"></span>
+                                Pending
+                            </span>
+                        </td>
+                        <td style="text-align:right;">
+                            <a href="{% url 'request-detail' approval.workflow_instance.formsubmission.pk %}"
+                               class="ff-btn ff-btn--sm ff-btn--primary">
+                                Review <i class="bi bi-arrow-right"></i>
                             </a>
                         </td>
                     </tr>
-                {% empty %}
+                    {% empty %}
                     <tr>
                         <td colspan="5">
-                            <div class="ff-table__empty">
-                                <i class="bi bi-check-circle" style="font-size: 24px; color: var(--text-muted); display: block; margin-bottom: 8px;"></i>
-                                <h4 class="ff-text-secondary ff-mb-2">No Pending Approvals</h4>
-                                <p class="ff-text-muted mb-0">You're all caught up.</p>
+                            <div class="ff-empty">
+                                <div class="ff-empty__icon" style="background:var(--success-subtle);color:var(--success);">
+                                    <i class="bi bi-check2-circle"></i>
+                                </div>
+                                <div class="ff-empty__title">All caught up!</div>
+                                <p class="ff-empty__body">There are no pending approvals waiting for your review right now.</p>
                             </div>
                         </td>
                     </tr>
-                {% endfor %}
+                    {% endfor %}
                 </tbody>
             </table>
         </div>

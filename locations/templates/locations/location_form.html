@@ -1,65 +1,73 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}{{ title }}{% endblock %}
+{% block title %}{{ title }} — Locations{% endblock %}
 {% block topbar_title %}{{ title }}{% endblock %}
 
 {% block content %}
-<div class="ff-flex ff-justify-between ff-items-center ff-mb-6">
+
+<div class="ff-flex ff-justify-between ff-items-center ff-mb-6" style="gap:var(--sp-4);flex-wrap:wrap;">
     <div>
-        <h2 class="ff-mb-2">{{ title }}</h2>
+        <h1 class="ff-page-header__title">{{ title }}</h1>
+        <p class="ff-page-header__sub">{% if location %}Update location details{% else %}Add a new office or facility to your organization{% endif %}</p>
     </div>
+    <a href="{% url 'location-list' %}" class="ff-btn ff-btn--ghost">
+        <i class="bi bi-arrow-left"></i> Back to Locations
+    </a>
 </div>
 
-<div class="ff-card shadow-sm" style="max-width: 600px;">
+<div class="ff-card" style="max-width:640px;">
+    <div class="ff-card__header">
+        <div class="ff-card__title"><i class="bi bi-geo-alt" style="color:var(--accent);margin-right:var(--sp-2);"></i> Location Details</div>
+    </div>
     <div class="ff-card__body">
-        <form method="post">
+        <form method="post" novalidate>
             {% csrf_token %}
-            
+
+            {% if form.non_field_errors %}
+            <div class="ff-alert ff-alert--error" role="alert">
+                <i class="bi bi-exclamation-circle"></i>
+                <span>{{ form.non_field_errors|striptags }}</span>
+            </div>
+            {% endif %}
+
             {% for field in form %}
-                <div class="ff-field">
-                    <label class="ff-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
-                    {{ field }}
-                    {% if field.help_text %}
-                        <div class="ff-help">{{ field.help_text }}</div>
-                    {% endif %}
-                    {% for error in field.errors %}
-                        <div class="ff-error-text">{{ error }}</div>
-                    {% endfor %}
-                </div>
+            <div class="ff-field">
+                <label class="ff-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% if field.help_text %}<div class="ff-help">{{ field.help_text }}</div>{% endif %}
+                {% for error in field.errors %}<div class="ff-error-text"><i class="bi bi-exclamation-circle"></i> {{ error }}</div>{% endfor %}
+            </div>
             {% endfor %}
 
-            <div class="ff-flex ff-gap-3" style="margin-top: var(--space-6);">
-                <button type="submit" class="ff-btn ff-btn--primary">Save Location</button>
+            <div class="ff-flex ff-gap-3" style="margin-top:var(--sp-6);padding-top:var(--sp-5);border-top:1px solid var(--border);">
+                <button type="submit" class="ff-btn ff-btn--primary">
+                    <i class="bi bi-check2"></i> Save Location
+                </button>
                 <a href="{% url 'location-list' %}" class="ff-btn ff-btn--secondary">Cancel</a>
             </div>
         </form>
     </div>
 </div>
 
+{% endblock %}
+{% block extra_js %}
 <script src="{% static 'js/auto-code-generator.js' %}?v=2"></script>
 <script>
     document.addEventListener("DOMContentLoaded", function() {
-        new AutoCodeGenerator('location');
-        
-        const locTypeField = document.getElementById('id_location_type');
-        const customTypeField = document.getElementById('id_custom_location_type');
-        
+        if (typeof AutoCodeGenerator !== 'undefined') new AutoCodeGenerator('location');
+
+        var locTypeField = document.getElementById('id_location_type');
+        var customTypeField = document.getElementById('id_custom_location_type');
+
         if (locTypeField && customTypeField) {
-            const customTypeWrapper = customTypeField.closest('.ff-field');
-            
+            var customTypeWrapper = customTypeField.closest('.ff-field');
             function toggleCustomField() {
-                if (locTypeField.value === 'OTHER') {
-                    customTypeWrapper.style.display = 'block';
-                } else {
-                    customTypeWrapper.style.display = 'none';
-                }
+                customTypeWrapper.style.display = locTypeField.value === 'OTHER' ? 'block' : 'none';
             }
-            
             locTypeField.addEventListener('change', toggleCustomField);
-            toggleCustomField(); // Initialize on load
+            toggleCustomField();
         }
     });
 </script>
 {% endblock %}
-

@@ -1,60 +1,74 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}Employees{% endblock %}
 {% block topbar_title %}Employees{% endblock %}
 
 {% block content %}
 
-<div class="ff-flex ff-justify-between ff-items-center ff-mb-6">
+<div class="ff-flex ff-justify-between ff-items-center ff-mb-6" style="gap:var(--sp-4);flex-wrap:wrap;">
     <div>
-        <h2 class="ff-mb-2">Employees</h2>
-        <p class="ff-text-secondary mb-0">Manage organization personnel and their roles.</p>
+        <h1 class="ff-page-header__title">Employees</h1>
+        <p class="ff-page-header__sub">Manage organization personnel and their roles</p>
     </div>
     <a href="{% url 'employee-create' %}" class="ff-btn ff-btn--primary">
-        <i class="bi bi-plus"></i> Add Employee
+        <i class="bi bi-person-plus"></i> Add Employee
     </a>
 </div>
 
-<div class="ff-card shadow-sm ff-mb-6">
-    <div class="ff-card__body p-0">
-        <div style="padding: var(--space-4); border-bottom: 1px solid var(--border);">
-            <form method="get" class="ff-flex ff-gap-3">
-                <input type="text" name="q" value="{{ query }}" class="ff-input" placeholder="Search employee..." style="max-width: 400px;">
-                <button type="submit" class="ff-btn ff-btn--secondary">Search</button>
-            </form>
-        </div>
+<div class="ff-card">
+    <!-- Search bar -->
+    <div class="ff-card__header" style="border-bottom:1px solid var(--border);">
+        <form method="get" style="display:flex;gap:var(--sp-3);width:100%;max-width:480px;">
+            <div class="ff-input-wrap" style="flex:1;">
+                <i class="bi bi-search ff-input-wrap__icon"></i>
+                <input type="text" name="q" value="{{ query }}" class="ff-input ff-input--with-icon" placeholder="Search employees…" id="employee-search">
+            </div>
+            <button type="submit" class="ff-btn ff-btn--secondary">Search</button>
+            {% if query %}
+            <a href="{% url 'employee-list' %}" class="ff-btn ff-btn--ghost">Clear</a>
+            {% endif %}
+        </form>
+    </div>
 
-        <div class="ff-table-wrap">
+    <div class="ff-card__body" style="padding:0;">
+        <div class="ff-table-wrap" style="border:none;border-radius:0 0 var(--r-xl) var(--r-xl);box-shadow:none;">
             <table class="ff-table">
                 <thead>
                     <tr>
+                        <th>Employee</th>
                         <th>Code</th>
-                        <th>Name</th>
                         <th>Role</th>
                         <th>Department</th>
                         <th>Designation</th>
                         <th>Status</th>
-                        <th>Actions</th>
+                        <th style="width:180px;text-align:right;">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                 {% for employee in page_obj %}
                     <tr>
-                        <td class="ff-mono">{{ employee.employee_code }}</td>
-                        <td style="font-weight: 500;">
-                            <a href="{% url 'employee-detail' employee.id %}" style="color: inherit;">
-                                {{ employee.user.get_full_name }}
-                            </a>
+                        <td>
+                            <div style="display:flex;align-items:center;gap:var(--sp-3);">
+                                <div class="ff-avatar" style="width:32px;height:32px;font-size:11px;cursor:default;flex-shrink:0;">{{ employee.user.first_name|slice:":1" }}{{ employee.user.last_name|slice:":1" }}</div>
+                                <div>
+                                    <a href="{% url 'employee-detail' employee.id %}" style="font-size:var(--text-sm);font-weight:600;color:var(--text-primary);text-decoration:none;transition:color var(--dur-base);" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--text-primary)'">
+                                        {{ employee.user.get_full_name }}
+                                    </a>
+                                    <div style="font-size:var(--text-xs);color:var(--text-tertiary);">{{ employee.user.email }}</div>
+                                </div>
+                            </div>
                         </td>
+                        <td><code style="font-size:var(--text-xs);color:var(--text-secondary);font-family:var(--font-mono);background:var(--canvas-subtle);padding:2px 6px;border-radius:4px;border:1px solid var(--border);">{{ employee.employee_code }}</code></td>
                         <td>
                             <span class="ff-badge ff-badge--info">{{ employee.role.display_name }}</span>
                         </td>
-                        <td>{{ employee.department }}</td>
-                        <td>{{ employee.designation }}</td>
+                        <td><span style="font-size:var(--text-sm);color:var(--text-secondary);">{{ employee.department }}</span></td>
+                        <td><span style="font-size:var(--text-sm);color:var(--text-secondary);">{{ employee.designation }}</span></td>
                         <td>
                             {% if employee.is_active %}
                                 {% if employee.user.requires_password_change %}
-                                    <span class="ff-badge ff-badge--warning"><span class="ff-badge__dot"></span> Pending Activation</span>
+                                    <span class="ff-badge ff-badge--warning"><span class="ff-badge__dot ff-badge__dot--pulse"></span> Pending</span>
                                 {% else %}
                                     <span class="ff-badge ff-badge--success"><span class="ff-badge__dot"></span> Active</span>
                                 {% endif %}
@@ -62,12 +76,16 @@
                                 <span class="ff-badge ff-badge--danger"><span class="ff-badge__dot"></span> Inactive</span>
                             {% endif %}
                         </td>
-                        <td>
-                            <div class="ff-flex ff-gap-2">
-                                <a href="{% url 'employee-detail' employee.id %}" class="ff-btn ff-btn--sm ff-btn--secondary">View</a>
+                        <td style="text-align:right;">
+                            <div class="ff-flex ff-gap-2" style="justify-content:flex-end;">
+                                <a href="{% url 'employee-detail' employee.id %}" class="ff-btn ff-btn--sm ff-btn--ghost" title="View details">
+                                    <i class="bi bi-eye"></i>
+                                </a>
                                 <a href="{% url 'employee-update' employee.id %}" class="ff-btn ff-btn--sm ff-btn--secondary">Edit</a>
                                 {% if employee.is_active %}
-                                <a href="{% url 'employee-deactivate' employee.id %}" class="ff-btn ff-btn--sm ff-btn--danger">Deactivate</a>
+                                <a href="{% url 'employee-deactivate' employee.id %}" class="ff-btn ff-btn--sm ff-btn--danger" title="Deactivate">
+                                    <i class="bi bi-person-dash"></i>
+                                </a>
                                 {% endif %}
                             </div>
                         </td>
@@ -75,9 +93,15 @@
                 {% empty %}
                     <tr>
                         <td colspan="7">
-                            <div class="ff-table__empty">
-                                <i class="bi bi-people" style="font-size: 24px; color: var(--text-muted); display: block; margin-bottom: 8px;"></i>
-                                No employees found.
+                            <div class="ff-empty">
+                                <div class="ff-empty__icon"><i class="bi bi-people"></i></div>
+                                <div class="ff-empty__title">No employees found</div>
+                                <p class="ff-empty__body">{% if query %}No employees match your search. Try a different term.{% else %}You haven't added any employees yet.{% endif %}</p>
+                                {% if not query %}
+                                <a href="{% url 'employee-create' %}" class="ff-btn ff-btn--primary ff-btn--sm">
+                                    <i class="bi bi-person-plus"></i> Add First Employee
+                                </a>
+                                {% endif %}
                             </div>
                         </td>
                     </tr>
@@ -89,15 +113,17 @@
 </div>
 
 {% if page_obj.has_other_pages %}
-<div class="ff-flex ff-gap-2">
+<div class="ff-flex ff-gap-2" style="margin-top:var(--sp-4);align-items:center;">
     {% if page_obj.has_previous %}
-        <a class="ff-btn ff-btn--sm ff-btn--secondary" href="?page={{ page_obj.previous_page_number }}{% if query %}&q={{ query }}{% endif %}">Previous</a>
+        <a class="ff-btn ff-btn--sm ff-btn--secondary" href="?page={{ page_obj.previous_page_number }}{% if query %}&q={{ query }}{% endif %}">
+            <i class="bi bi-chevron-left"></i> Previous
+        </a>
     {% endif %}
-    
-    <span class="ff-btn ff-btn--sm ff-btn--ghost" style="pointer-events: none;">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
-    
+    <span style="font-size:var(--text-sm);color:var(--text-tertiary);">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
     {% if page_obj.has_next %}
-        <a class="ff-btn ff-btn--sm ff-btn--secondary" href="?page={{ page_obj.next_page_number }}{% if query %}&q={{ query }}{% endif %}">Next</a>
+        <a class="ff-btn ff-btn--sm ff-btn--secondary" href="?page={{ page_obj.next_page_number }}{% if query %}&q={{ query }}{% endif %}">
+            Next <i class="bi bi-chevron-right"></i>
+        </a>
     {% endif %}
 </div>
 {% endif %}

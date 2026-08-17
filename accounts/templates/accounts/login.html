@@ -6,6 +6,7 @@
 
 {% block extra_head %}
 <style>
+/* ── Auth layout ── */
 .auth-wrap {
     min-height: calc(100vh - 64px);
     display: grid;
@@ -25,6 +26,7 @@
     max-width: 400px;
 }
 
+/* ── Right visual panel ── */
 .auth-visual {
     background: var(--canvas-subtle);
     border-left: 1px solid var(--border);
@@ -36,181 +38,141 @@
     position: relative;
     overflow: hidden;
 }
-
 [data-theme="dark"] .auth-visual {
     background: var(--surface);
 }
 
+/* Animated grid */
 .auth-visual__grid {
-    position: absolute;
-    inset: 0;
+    position: absolute; inset: 0;
     background-image:
         linear-gradient(var(--border) 1px, transparent 1px),
         linear-gradient(90deg, var(--border) 1px, transparent 1px);
     background-size: 48px 48px;
     opacity: 0.5;
 }
+/* Corner fades */
+.auth-visual__grid::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 50%, transparent 40%, var(--canvas-subtle) 100%);
+}
+[data-theme="dark"] .auth-visual__grid::after {
+    background: radial-gradient(ellipse at 50% 50%, transparent 40%, var(--surface) 100%);
+}
 
 .auth-visual__glow {
     position: absolute;
-    top: 30%;
-    left: 50%;
+    top: 30%; left: 50%;
     transform: translate(-50%, -50%);
-    width: 400px;
-    height: 400px;
+    width: 440px; height: 440px;
     background: radial-gradient(circle at center, var(--accent-glow) 0%, transparent 70%);
     pointer-events: none;
+    animation: auth-glow-pulse 4s ease-in-out infinite;
+}
+@keyframes auth-glow-pulse {
+    0%, 100% { opacity: 0.8; transform: translate(-50%, -50%) scale(1); }
+    50%       { opacity: 1;   transform: translate(-50%, -50%) scale(1.08); }
 }
 
 .auth-visual__content {
-    position: relative;
-    z-index: 1;
-    width: 100%;
-    max-width: 380px;
+    position: relative; z-index: 1;
+    width: 100%; max-width: 380px;
 }
 
-/* Workflow visualization */
-.wf-chain {
-    display: flex;
-    flex-direction: column;
-    gap: var(--sp-3);
-}
+/* ── Workflow chain visualization ── */
+.wf-chain { display: flex; flex-direction: column; gap: var(--sp-3); }
 
 .wf-step {
-    display: flex;
-    align-items: center;
-    gap: var(--sp-3);
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--r-md);
-    padding: var(--sp-3) var(--sp-4);
+    display: flex; align-items: center; gap: var(--sp-3);
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--r-lg); padding: var(--sp-3) var(--sp-4);
     box-shadow: var(--shadow-sm);
     animation: wf-step-in 600ms var(--ease-out-expo) both;
+    transition: border-color var(--dur-base), box-shadow var(--dur-base);
 }
-
+.wf-step:hover { border-color: var(--border-strong); box-shadow: var(--shadow-md); }
 .wf-step:nth-child(1) { animation-delay: 200ms; }
 .wf-step:nth-child(2) { animation-delay: 380ms; }
 .wf-step:nth-child(3) { animation-delay: 560ms; }
 .wf-step:nth-child(4) { animation-delay: 740ms; }
-
-@keyframes wf-step-in {
-    from { opacity: 0; transform: translateX(20px); }
-    to   { opacity: 1; transform: translateX(0); }
-}
+@keyframes wf-step-in { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
 
 .wf-step__dot {
-    width: 32px; height: 32px;
-    border-radius: var(--r-sm);
-    flex-shrink: 0;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 14px;
+    width: 32px; height: 32px; border-radius: var(--r-md); flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; font-size: 14px;
 }
-
 .wf-step__dot--pending  { background: var(--accent-subtle);  color: var(--accent); }
 .wf-step__dot--review   { background: var(--warning-subtle); color: var(--warning); }
 .wf-step__dot--approved { background: var(--success-subtle); color: var(--success); }
 .wf-step__dot--done     { background: var(--success-subtle); color: var(--success); }
-
 .wf-step__label { font-size: var(--text-sm); font-weight: 600; color: var(--text-primary); }
 .wf-step__meta  { font-size: var(--text-xs); color: var(--text-tertiary); margin-top: 1px; }
 
 .wf-connector {
-    display: flex; align-items: center;
-    padding-left: 28px;
-    gap: var(--sp-2);
+    display: flex; align-items: center; padding-left: 28px; gap: var(--sp-2);
     animation: wf-connector-in 400ms var(--ease-out-expo) both;
 }
 .wf-connector:nth-child(2) { animation-delay: 300ms; }
 .wf-connector:nth-child(4) { animation-delay: 480ms; }
 .wf-connector:nth-child(6) { animation-delay: 660ms; }
+@keyframes wf-connector-in { from { opacity: 0; } to { opacity: 1; } }
+.wf-connector__line { width: 1px; height: 20px; background: var(--border-strong); margin-left: 15px; }
 
-@keyframes wf-connector-in {
-    from { opacity: 0; }
-    to   { opacity: 1; }
-}
-
-.wf-connector__line {
-    width: 1px;
-    height: 20px;
-    background: var(--border-strong);
-    margin-left: 15px;
-}
-
-/* Auth form */
+/* ── Auth form styles ── */
 .auth-logo {
-    display: flex;
-    align-items: center;
-    gap: var(--sp-3);
+    display: flex; align-items: center; gap: var(--sp-3);
     margin-bottom: var(--sp-8);
 }
-
 .auth-logo__mark {
-    width: 40px; height: 40px;
-    border-radius: var(--r-md);
-    background: linear-gradient(135deg, var(--accent) 0%, #5F3DC4 100%);
+    width: 40px; height: 40px; border-radius: var(--r-lg);
+    background: linear-gradient(135deg, var(--accent) 0%, #7C3AED 100%);
     display: flex; align-items: center; justify-content: center;
-    color: #fff; font-weight: 800; font-size: 18px;
-    letter-spacing: -0.04em;
-    box-shadow: 0 4px 14px var(--accent-glow);
+    color: #fff; font-weight: 900; font-size: 18px; letter-spacing: -0.05em;
+    box-shadow: 0 4px 16px var(--accent-glow), 0 0 0 1px rgba(255,255,255,0.08) inset;
+    position: relative; overflow: hidden;
+}
+.auth-logo__mark::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.18) 0%, transparent 60%);
 }
 
-.auth-title {
-    font-size: var(--text-2xl);
-    font-weight: 800;
-    letter-spacing: var(--tracking-tight);
-    color: var(--text-primary);
-    margin-bottom: var(--sp-1);
-}
+.auth-title    { font-size: var(--text-2xl); font-weight: 800; letter-spacing: var(--tracking-tighter); color: var(--text-primary); margin-bottom: var(--sp-1); }
+.auth-subtitle { font-size: var(--text-sm); color: var(--text-tertiary); margin-bottom: var(--sp-6); line-height: var(--leading-relaxed); }
 
-.auth-subtitle {
-    font-size: var(--text-sm);
-    color: var(--text-tertiary);
-    margin-bottom: var(--sp-6);
-}
-
-.auth-divider {
-    display: flex; align-items: center; gap: var(--sp-3);
-    margin: var(--sp-5) 0;
-}
+.auth-divider { display: flex; align-items: center; gap: var(--sp-3); margin: var(--sp-5) 0; }
 .auth-divider__line { flex: 1; height: 1px; background: var(--border); }
 .auth-divider__text { font-size: var(--text-xs); color: var(--text-tertiary); font-weight: 500; }
 
 .google-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: var(--sp-3);
-    width: 100%;
-    height: 44px;
-    border-radius: var(--r-sm);
-    border: 1.5px solid var(--border-strong);
-    background: var(--surface);
-    color: var(--text-primary);
-    font-size: var(--text-sm);
-    font-weight: 600;
-    font-family: var(--font-sans);
-    cursor: pointer;
-    transition: background var(--dur-fast), border-color var(--dur-fast), box-shadow var(--dur-fast);
-    text-decoration: none;
+    display: flex; align-items: center; justify-content: center; gap: var(--sp-3);
+    width: 100%; height: 42px; border-radius: var(--r-md);
+    border: 1px solid var(--border-strong);
+    background: var(--surface); color: var(--text-primary);
+    font-size: var(--text-sm); font-weight: 600; font-family: var(--font-sans);
+    cursor: pointer; text-decoration: none;
+    transition: background var(--dur-fast), border-color var(--dur-fast), box-shadow var(--dur-fast), transform var(--dur-fast) var(--ease-spring);
 }
-.google-btn:hover { background: var(--neutral); border-color: var(--border-strong); box-shadow: var(--shadow-sm); color: var(--text-primary); }
+.google-btn:hover { background: var(--neutral); border-color: var(--border-strong); box-shadow: var(--shadow-sm); color: var(--text-primary); transform: translateY(-1px); }
 
 @media (max-width: 768px) {
-    .auth-wrap { grid-template-columns: 1fr; }
+    .auth-wrap   { grid-template-columns: 1fr; }
     .auth-visual { display: none; }
-    .auth-panel { padding: var(--sp-8) var(--sp-5); }
+    .auth-panel  { padding: var(--sp-8) var(--sp-5); }
 }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="auth-wrap">
+
     <!-- Left: Form -->
     <div class="auth-panel">
         <div class="auth-card">
             <div class="auth-logo">
                 <div class="auth-logo__mark">F</div>
-                <span style="font-weight: 800; font-size: var(--text-md); letter-spacing: var(--tracking-tight);">ForgeFlow</span>
+                <span style="font-weight:800;font-size:var(--text-md);letter-spacing:var(--tracking-tight);">ForgeFlow</span>
             </div>
 
             <h1 class="auth-title">Welcome back</h1>
@@ -233,7 +195,7 @@
                 <div class="auth-divider__line"></div>
             </div>
 
-            <form method="post" novalidate>
+            <form method="post" novalidate id="login-form">
                 {% csrf_token %}
 
                 {% if form.non_field_errors %}
@@ -252,9 +214,9 @@
                 </div>
 
                 <div class="ff-field">
-                    <div class="ff-flex ff-items-center ff-justify-between" style="margin-bottom: var(--sp-2);">
-                        <label class="ff-label" for="{{ form.password.id_for_label }}" style="margin-bottom: 0;">Password</label>
-                        <a href="{% url 'password_reset' %}" class="ff-text-xs" style="color: var(--text-link); font-weight: 500;">Forgot password?</a>
+                    <div class="ff-flex ff-items-center ff-justify-between" style="margin-bottom:var(--sp-1-5);">
+                        <label class="ff-label" for="{{ form.password.id_for_label }}" style="margin-bottom:0;">Password</label>
+                        <a href="{% url 'password_reset' %}" style="font-size:var(--text-xs);color:var(--text-link);font-weight:500;">Forgot password?</a>
                     </div>
                     <div class="ff-input-wrap">
                         <i class="bi bi-lock ff-input-wrap__icon" aria-hidden="true"></i>
@@ -262,13 +224,12 @@
                     </div>
                 </div>
 
-                <button type="submit" class="ff-btn ff-btn--primary ff-btn--block ff-btn--lg" style="margin-top: var(--sp-2);">
-                    Sign in
-                    <i class="bi bi-arrow-right" aria-hidden="true"></i>
+                <button type="submit" class="ff-btn ff-btn--primary ff-btn--block ff-btn--lg" style="margin-top:var(--sp-2);" id="login-submit-btn">
+                    Sign in <i class="bi bi-arrow-right" aria-hidden="true"></i>
                 </button>
             </form>
 
-            <p class="ff-text-xs ff-text-muted ff-text-center" style="margin-top: var(--sp-6); line-height: var(--leading-relaxed);">
+            <p class="ff-text-xs ff-text-muted ff-text-center" style="margin-top:var(--sp-6);line-height:var(--leading-relaxed);">
                 Setting up a new workspace?
                 <a href="{% url 'organization_signup' %}" class="ff-link">Create an organization</a>
             </p>
@@ -280,7 +241,9 @@
         <div class="auth-visual__grid"></div>
         <div class="auth-visual__glow"></div>
         <div class="auth-visual__content">
-            <p style="font-size: var(--text-xs); font-weight: 700; text-transform: uppercase; letter-spacing: var(--tracking-wider); color: var(--text-tertiary); margin-bottom: var(--sp-4);">Live approval chain</p>
+            <p style="font-size:var(--text-xs);font-weight:700;text-transform:uppercase;letter-spacing:var(--tracking-wider);color:var(--text-tertiary);margin-bottom:var(--sp-4);">
+                Live approval chain
+            </p>
 
             <div class="wf-chain">
                 <div class="wf-step">
@@ -289,7 +252,7 @@
                         <div class="wf-step__label">Laptop Request Submitted</div>
                         <div class="wf-step__meta">by Priya Sharma · 2 min ago</div>
                     </div>
-                    <span class="ff-badge ff-badge--accent" style="margin-left: auto;">New</span>
+                    <span class="ff-badge ff-badge--accent" style="margin-left:auto;">New</span>
                 </div>
 
                 <div class="wf-connector"><div class="wf-connector__line"></div></div>
@@ -300,7 +263,7 @@
                         <div class="wf-step__label">IT Head Review</div>
                         <div class="wf-step__meta">Awaiting Rohan Mehta · Step 1 of 2</div>
                     </div>
-                    <span class="ff-badge ff-badge--warning" style="margin-left: auto;">
+                    <span class="ff-badge ff-badge--warning" style="margin-left:auto;">
                         <span class="ff-badge__dot ff-badge__dot--pulse"></span>
                         Pending
                     </span>
@@ -308,31 +271,51 @@
 
                 <div class="wf-connector"><div class="wf-connector__line"></div></div>
 
-                <div class="wf-step" style="opacity: 0.5;">
-                    <div class="wf-step__dot" style="background: var(--neutral); color: var(--text-tertiary);"><i class="bi bi-person-check"></i></div>
+                <div class="wf-step" style="opacity:0.45;">
+                    <div class="wf-step__dot" style="background:var(--neutral);color:var(--text-tertiary);"><i class="bi bi-person-check"></i></div>
                     <div>
                         <div class="wf-step__label">HR Director Review</div>
                         <div class="wf-step__meta">Step 2 of 2</div>
                     </div>
-                    <span class="ff-badge ff-badge--neutral" style="margin-left: auto;">Queued</span>
+                    <span class="ff-badge ff-badge--neutral" style="margin-left:auto;">Queued</span>
                 </div>
 
                 <div class="wf-connector"><div class="wf-connector__line"></div></div>
 
-                <div class="wf-step" style="opacity: 0.5;">
+                <div class="wf-step" style="opacity:0.45;">
                     <div class="wf-step__dot wf-step__dot--done"><i class="bi bi-patch-check"></i></div>
                     <div>
                         <div class="wf-step__label">Approved &amp; Issued</div>
                         <div class="wf-step__meta">QR permission slip generated</div>
                     </div>
-                    <span class="ff-badge ff-badge--neutral" style="margin-left: auto;">Queued</span>
+                    <span class="ff-badge ff-badge--neutral" style="margin-left:auto;">Queued</span>
                 </div>
             </div>
 
-            <p style="font-size: var(--text-xs); color: var(--text-tertiary); margin-top: var(--sp-6); line-height: var(--leading-relaxed);">
+            <p style="font-size:var(--text-xs);color:var(--text-tertiary);margin-top:var(--sp-6);line-height:var(--leading-relaxed);">
                 Every request is automatically routed, tracked, and documented — with a full audit trail.
             </p>
         </div>
     </div>
+
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Add ff-input class to Django-generated fields
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('#login-form input[type="text"], #login-form input[type="email"], #login-form input[type="password"]').forEach(function (el) {
+        el.classList.add('ff-input');
+    });
+    // Loading state on submit
+    var form = document.getElementById('login-form');
+    var btn  = document.getElementById('login-submit-btn');
+    if (form && btn) {
+        form.addEventListener('submit', function () {
+            btn.classList.add('is-loading');
+        });
+    }
+});
+</script>
 {% endblock %}

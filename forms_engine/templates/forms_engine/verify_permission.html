@@ -1,215 +1,307 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="en" data-theme="light">
 <head>
-
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Permission Verification — ForgeFlow</title>
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1">
+    <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    <title>
-        Permission Verification | ForgeFlow
-    </title>
+    :root {
+        --accent: #4F46E5;
+        --success: #059669;
+        --success-subtle: #ECFDF5;
+        --success-border: #6EE7B7;
+        --danger: #DC2626;
+        --danger-subtle: #FEF2F2;
+        --danger-border: #FECACA;
+        --warning: #D97706;
+        --warning-subtle: #FFFBEB;
+        --warning-border: #FDE68A;
+        --canvas: #F7F8FA;
+        --surface: #FFFFFF;
+        --border: #E3E6ED;
+        --text-primary: #0F1117;
+        --text-secondary: #3D4455;
+        --text-tertiary: #6B7280;
+        --sp-2: 8px; --sp-3: 12px; --sp-4: 16px;
+        --sp-5: 20px; --sp-6: 24px; --sp-8: 32px;
+        --sp-10: 40px; --sp-12: 48px;
+        --r-sm: 6px; --r-md: 8px; --r-lg: 12px;
+        --r-xl: 16px; --r-2xl: 20px; --r-full: 9999px;
+        --shadow-lg: 0 12px 24px rgba(15,17,23,0.08),0 4px 8px rgba(15,17,23,0.04);
+        --shadow-xl: 0 24px 48px rgba(15,17,23,0.10),0 8px 16px rgba(15,17,23,0.06);
+    }
 
-    <link
-        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css"
-        rel="stylesheet">
+    body {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        background: var(--canvas);
+        color: var(--text-primary);
+        min-height: 100vh;
+        display: flex; flex-direction: column;
+        -webkit-font-smoothing: antialiased;
+    }
 
+    /* ---- Header ---- */
+    .vp-header {
+        background: var(--surface);
+        border-bottom: 1px solid var(--border);
+        padding: 0 var(--sp-6);
+        height: 60px;
+        display: flex; align-items: center; justify-content: space-between;
+    }
+    .vp-brand {
+        display: flex; align-items: center; gap: 10px;
+        font-weight: 800; font-size: 15px;
+        letter-spacing: -0.025em; color: var(--text-primary);
+        text-decoration: none;
+    }
+    .vp-brand-mark {
+        width: 28px; height: 28px;
+        border-radius: 7px;
+        background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);
+        display: flex; align-items: center; justify-content: center;
+        color: #fff; font-weight: 900; font-size: 13px;
+    }
+    .vp-header-label {
+        font-size: 12px; font-weight: 600;
+        color: var(--text-tertiary);
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+    }
+
+    /* ---- Main ---- */
+    .vp-main {
+        flex: 1;
+        display: flex; align-items: flex-start; justify-content: center;
+        padding: var(--sp-8) var(--sp-5) var(--sp-12);
+    }
+
+    .vp-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--r-2xl);
+        box-shadow: var(--shadow-xl);
+        width: 100%; max-width: 560px;
+        overflow: hidden;
+        animation: card-in 500ms cubic-bezier(0.19,1,0.22,1) both;
+    }
+    @keyframes card-in {
+        from { opacity:0; transform:translateY(16px) scale(0.98); }
+        to   { opacity:1; transform:translateY(0) scale(1); }
+    }
+
+    /* Status band */
+    .vp-status-band {
+        padding: var(--sp-8) var(--sp-8) var(--sp-6);
+        display: flex; flex-direction: column; align-items: center;
+        text-align: center; position: relative;
+    }
+
+    .vp-status-icon {
+        width: 72px; height: 72px;
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 32px;
+        margin-bottom: var(--sp-4);
+        animation: icon-in 500ms 200ms cubic-bezier(0.34,1.56,0.64,1) both;
+    }
+    @keyframes icon-in { from{opacity:0;transform:scale(0.5) rotate(-15deg);} to{opacity:1;transform:scale(1) rotate(0);} }
+
+    .vp-status-band--valid   { background: linear-gradient(180deg, #ECFDF5 0%, var(--surface) 100%); }
+    .vp-status-band--expired { background: linear-gradient(180deg, #FFFBEB 0%, var(--surface) 100%); }
+    .vp-status-band--revoked { background: linear-gradient(180deg, #FEF2F2 0%, var(--surface) 100%); }
+    .vp-status-band--invalid { background: linear-gradient(180deg, #FEF2F2 0%, var(--surface) 100%); }
+
+    .vp-status-band--valid   .vp-status-icon { background: var(--success-subtle); color: var(--success); border: 2px solid var(--success-border); }
+    .vp-status-band--expired .vp-status-icon { background: var(--warning-subtle); color: var(--warning); border: 2px solid var(--warning-border); }
+    .vp-status-band--revoked .vp-status-icon { background: var(--danger-subtle);  color: var(--danger);  border: 2px solid var(--danger-border); }
+    .vp-status-band--invalid .vp-status-icon { background: var(--danger-subtle);  color: var(--danger);  border: 2px solid var(--danger-border); }
+
+    .vp-status-label {
+        font-size: 11px; font-weight: 800; letter-spacing: 0.1em;
+        text-transform: uppercase; margin-bottom: var(--sp-2);
+    }
+    .vp-status-band--valid   .vp-status-label { color: var(--success); }
+    .vp-status-band--expired .vp-status-label { color: var(--warning); }
+    .vp-status-band--revoked .vp-status-label,
+    .vp-status-band--invalid .vp-status-label { color: var(--danger); }
+
+    .vp-status-title {
+        font-size: 24px; font-weight: 800;
+        letter-spacing: -0.03em;
+        color: var(--text-primary);
+        margin-bottom: var(--sp-2);
+    }
+    .vp-status-desc {
+        font-size: 14px; color: var(--text-tertiary);
+        line-height: 1.6; max-width: 340px;
+    }
+
+    /* Divider */
+    .vp-divider { height: 1px; background: var(--border); }
+
+    /* Details table */
+    .vp-details { padding: var(--sp-6) var(--sp-8); }
+    .vp-details__title {
+        font-size: 11px; font-weight: 700;
+        text-transform: uppercase; letter-spacing: 0.08em;
+        color: var(--text-tertiary);
+        margin-bottom: var(--sp-4);
+    }
+    .vp-detail-row {
+        display: flex; gap: var(--sp-4);
+        padding: var(--sp-3) 0;
+        border-bottom: 1px solid var(--border);
+    }
+    .vp-detail-row:last-child { border-bottom: none; }
+    .vp-detail-key {
+        font-size: 12px; font-weight: 600;
+        color: var(--text-tertiary);
+        width: 130px; flex-shrink: 0;
+        padding-top: 2px;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+    .vp-detail-val {
+        font-size: 14px; font-weight: 600;
+        color: var(--text-primary); flex: 1;
+        word-break: break-word;
+    }
+
+    /* Footer note */
+    .vp-footer-note {
+        padding: var(--sp-5) var(--sp-8);
+        border-top: 1px solid var(--border);
+        background: #FAFAFA;
+        display: flex; align-items: flex-start; gap: var(--sp-3);
+    }
+    .vp-footer-note i { font-size: 14px; color: var(--text-tertiary); flex-shrink: 0; margin-top: 1px; }
+    .vp-footer-note p { font-size: 12px; color: var(--text-tertiary); line-height: 1.6; }
+
+    /* Valid animated pulse ring */
+    .vp-status-band--valid .vp-status-icon {
+        animation: icon-in 500ms 200ms cubic-bezier(0.34,1.56,0.64,1) both,
+                   valid-pulse 3s 800ms ease-in-out infinite;
+    }
+    @keyframes valid-pulse {
+        0%,100% { box-shadow: 0 0 0 0 rgba(5,150,105,0.2); }
+        50%      { box-shadow: 0 0 0 12px rgba(5,150,105,0); }
+    }
+    </style>
 </head>
 
-<body class="bg-light">
-
-<div class="container py-5">
-
-    <div class="row justify-content-center">
-
-        <div class="col-lg-7">
-
-            <div class="card shadow-sm">
-
-                <div class="card-body p-4">
-
-                    <div class="text-center mb-4">
-
-                        <h2>
-                            ForgeFlow
-                        </h2>
-
-                        <p class="text-muted">
-                            Permission Verification
-                        </p>
-
-                    </div>
-
-
-                    {% if verification_status == "VALID" %}
-
-                        <div class="alert alert-success text-center">
-
-                            <h4 class="mb-1">
-                                VALID & APPROVED
-                            </h4>
-
-                            <p class="mb-0">
-                                This permission was verified against
-                                the ForgeFlow system.
-                            </p>
-
-                        </div>
-
-
-                    {% elif verification_status == "EXPIRED" %}
-
-                        <div class="alert alert-warning text-center">
-
-                            <h4 class="mb-1">
-                                EXPIRED
-                            </h4>
-
-                            <p class="mb-0">
-                                This permission was valid but its
-                                permitted time period has ended.
-                            </p>
-
-                        </div>
-
-
-                    {% elif verification_status == "REVOKED" %}
-
-                        <div class="alert alert-danger text-center">
-
-                            <h4 class="mb-1">
-                                REVOKED
-                            </h4>
-
-                            <p class="mb-0">
-                                This permission has been revoked
-                                and is no longer valid.
-                            </p>
-
-                        </div>
-
-
-                    {% else %}
-
-                        <div class="alert alert-danger text-center">
-
-                            <h4 class="mb-1">
-                                INVALID PERMISSION
-                            </h4>
-
-                            <p class="mb-0">
-                                No valid permission could be found
-                                for this verification code.
-                            </p>
-
-                        </div>
-
-                    {% endif %}
-
-
-                    {% if submission %}
-
-                        <table class="table table-bordered mt-4">
-
-                            <tbody>
-
-                                <tr>
-                                    <th>Permission ID</th>
-
-                                    <td>
-                                        {{ submission.permission_id }}
-                                    </td>
-                                </tr>
-
-                                <tr>
-                                    <th>Name</th>
-
-                                    <td>
-                                        {{ submission.submitted_by.get_full_name }}
-                                    </td>
-                                </tr>
-
-                                <tr>
-                                    <th>Permission For</th>
-
-                                    <td>
-
-                                        {% if values.camera %}
-                                            Camera
-                                        {% endif %}
-
-                                        {% if values.laptop %}
-                                            Laptop
-                                        {% endif %}
-
-                                        {% if values.mobile_phone %}
-                                            Mobile Phone
-                                        {% endif %}
-
-                                    </td>
-                                </tr>
-
-                                <tr>
-                                    <th>Department / Area</th>
-
-                                    <td>
-                                        {{ values.department|default:"-" }}
-                                    </td>
-                                </tr>
-
-                                <tr>
-                                    <th>Valid From</th>
-
-                                    <td>
-                                        {{ values.from_date|default:"-" }}
-                                        {{ values.from_time|default:"" }}
-                                    </td>
-                                </tr>
-
-                                <tr>
-                                    <th>Valid Until</th>
-
-                                    <td>
-                                        {{ values.to_date|default:"-" }}
-                                        {{ values.to_time|default:"" }}
-                                    </td>
-                                </tr>
-
-                                <tr>
-                                    <th>Issued</th>
-
-                                    <td>
-                                        {{ submission.issued_at }}
-                                    </td>
-                                </tr>
-
-                            </tbody>
-
-                        </table>
-
-                    {% endif %}
-
-                    <p class="text-center text-muted small mt-4">
-
-                        Always verify permission documents by scanning
-                        the QR code. Do not rely solely on printed
-                        information.
-
-                    </p>
-
-                </div>
-
+<body>
+
+<header class="vp-header">
+    <a href="/" class="vp-brand" aria-label="ForgeFlow Home">
+        <div class="vp-brand-mark">F</div>
+        ForgeFlow
+    </a>
+    <div class="vp-header-label">QR Verification</div>
+</header>
+
+<main class="vp-main">
+    <div class="vp-card">
+
+        <!-- Status Band -->
+        {% if verification_status == "VALID" %}
+        <div class="vp-status-band vp-status-band--valid">
+            <div class="vp-status-icon"><i class="bi bi-shield-check"></i></div>
+            <div class="vp-status-label">Verified</div>
+            <h1 class="vp-status-title">Permission Valid</h1>
+            <p class="vp-status-desc">This permission has been verified against the ForgeFlow system and is currently active.</p>
+        </div>
+
+        {% elif verification_status == "EXPIRED" %}
+        <div class="vp-status-band vp-status-band--expired">
+            <div class="vp-status-icon"><i class="bi bi-clock-history"></i></div>
+            <div class="vp-status-label">Expired</div>
+            <h1 class="vp-status-title">Permission Expired</h1>
+            <p class="vp-status-desc">This permission was valid but the permitted time period has ended. Entry is not authorized.</p>
+        </div>
+
+        {% elif verification_status == "REVOKED" %}
+        <div class="vp-status-band vp-status-band--revoked">
+            <div class="vp-status-icon"><i class="bi bi-slash-circle"></i></div>
+            <div class="vp-status-label">Revoked</div>
+            <h1 class="vp-status-title">Permission Revoked</h1>
+            <p class="vp-status-desc">This permission has been explicitly revoked by an authorized administrator. Entry is not authorized.</p>
+        </div>
+
+        {% else %}
+        <div class="vp-status-band vp-status-band--invalid">
+            <div class="vp-status-icon"><i class="bi bi-x-circle"></i></div>
+            <div class="vp-status-label">Invalid</div>
+            <h1 class="vp-status-title">Permission Not Found</h1>
+            <p class="vp-status-desc">No valid permission could be found for this verification code. The document may be tampered or unrecognized.</p>
+        </div>
+        {% endif %}
+
+        {% if submission %}
+        <div class="vp-divider"></div>
+
+        <div class="vp-details">
+            <div class="vp-details__title">Permission Details</div>
+
+            <div class="vp-detail-row">
+                <span class="vp-detail-key">Permission ID</span>
+                <span class="vp-detail-val" style="font-family:monospace;font-size:13px;">{{ submission.permission_id }}</span>
             </div>
+            <div class="vp-detail-row">
+                <span class="vp-detail-key">Issued To</span>
+                <span class="vp-detail-val">{{ submission.submitted_by.get_full_name }}</span>
+            </div>
+            {% if values.camera or values.laptop or values.mobile_phone %}
+            <div class="vp-detail-row">
+                <span class="vp-detail-key">Permission For</span>
+                <span class="vp-detail-val">
+                    {% if values.camera %}Camera{% endif %}
+                    {% if values.laptop %}{% if values.camera %}, {% endif %}Laptop{% endif %}
+                    {% if values.mobile_phone %}{% if values.camera or values.laptop %}, {% endif %}Mobile Phone{% endif %}
+                </span>
+            </div>
+            {% endif %}
+            {% if values.department %}
+            <div class="vp-detail-row">
+                <span class="vp-detail-key">Department</span>
+                <span class="vp-detail-val">{{ values.department }}</span>
+            </div>
+            {% endif %}
+            {% if values.from_date %}
+            <div class="vp-detail-row">
+                <span class="vp-detail-key">Valid From</span>
+                <span class="vp-detail-val">{{ values.from_date }} {% if values.from_time %}{{ values.from_time }}{% endif %}</span>
+            </div>
+            {% endif %}
+            {% if values.to_date %}
+            <div class="vp-detail-row">
+                <span class="vp-detail-key">Valid Until</span>
+                <span class="vp-detail-val">{{ values.to_date }} {% if values.to_time %}{{ values.to_time }}{% endif %}</span>
+            </div>
+            {% endif %}
+            {% if submission.issued_at %}
+            <div class="vp-detail-row">
+                <span class="vp-detail-key">Issued At</span>
+                <span class="vp-detail-val">{{ submission.issued_at }}</span>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
 
+        <div class="vp-footer-note">
+            <i class="bi bi-info-circle"></i>
+            <p>Always verify by scanning the QR code from the original document. Do not grant access based solely on printed information.</p>
         </div>
 
     </div>
-
-</div>
+</main>
 
 </body>
-
 </html>
