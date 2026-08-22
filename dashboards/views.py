@@ -115,14 +115,22 @@ def dashboard(request):
             ).count(),
         })
 
-    # Normal Employee Dashboard
+    # Fetch recent requests for the live dashboard activity table
+    if role in ["ORG_ADMIN", "ADMIN", "SUPER_ADMIN", "HR_HEAD", "IT_HEAD", "UNIT_HEAD", "MANAGER"]:
+        recent_requests = WorkflowInstance.objects.for_tenant(request.tenant).select_related(
+            "initiated_by",
+            "workflow_version__workflow",
+            "current_step",
+        ).order_by("-created_at")[:6]
     else:
+        recent_requests = WorkflowInstance.objects.for_tenant(request.tenant).filter(
+            initiated_by=request.user
+        ).select_related(
+            "workflow_version__workflow",
+            "current_step",
+        ).order_by("-created_at")[:6]
 
-        context.update({
-            "my_requests": WorkflowInstance.objects.for_tenant(request.tenant).filter(
-                initiated_by=request.user,
-            ).count(),
-        })
+    context["recent_requests"] = recent_requests
 
     return render(
         request,

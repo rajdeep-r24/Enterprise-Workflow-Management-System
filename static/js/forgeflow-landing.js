@@ -145,7 +145,7 @@
     { id: 'it',   label: 'IT Head',      sub: 'Rohan Mehta',  dept: 'IT Department', color: '#f59e0b', action: 'Reviewing request…',  ms: 2200 },
     { id: 'hr',   label: 'HR Director',  sub: 'Meera Iyer',   dept: 'Human Resources', color: '#f59e0b', action: 'Reviewing request…', ms: 2200 },
     { id: 'fin',  label: 'Finance Head', sub: 'Karan Singh',  dept: 'Finance',       color: '#f59e0b', action: 'Final review…',       ms: 1800 },
-    { id: 'done', label: 'Issued',       sub: 'Auto-generated', dept: 'ForgeFlow', color: '#10b981', action: 'QR slip generated',    ms: 600  }
+    { id: 'done', label: 'Issued',       sub: 'Auto-generated', dept: 'Anukram', color: '#10b981', action: 'QR slip generated',    ms: 600  }
   ];
 
   function initTransit() {

@@ -157,7 +157,7 @@ class GoogleOAuthTests(TestCase):
         }
         response = self.client.get(reverse('google_callback'))
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "not associated with an active ForgeFlow account")
+        self.assertContains(response, "not associated with an active Anukram account")
 
     @patch('accounts.views.oauth.google.authorize_access_token')
     def test_unverified_email_denied(self, mock_access_token):
@@ -181,7 +181,7 @@ class GoogleOAuthTests(TestCase):
         }
         response = self.client.get(reverse('google_callback'))
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "ForgeFlow account is inactive")
+        self.assertContains(response, "Anukram account is inactive")
 
     @patch('accounts.views.oauth.google.authorize_access_token')
     def test_system_user_denied(self, mock_access_token):

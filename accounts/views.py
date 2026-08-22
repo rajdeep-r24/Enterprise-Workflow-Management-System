@@ -3,7 +3,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
 from django.urls import reverse_lazy
 from django.shortcuts import redirect
-from django.contrib.auth import login as auth_login
+from django.contrib.auth import logout, login as auth_login
 from .forms import LoginForm
 
 
@@ -36,9 +36,6 @@ class CustomPasswordChangeView(LoginRequiredMixin, PasswordChangeView):
         return response
 
 
-from django.views.decorators.http import require_POST
-
-@require_POST
 def logout_view(request):
     logout(request)
     return redirect("login")
@@ -79,17 +76,17 @@ def google_callback(request):
     try:
         user = User.objects.get(email=email)
     except User.DoesNotExist:
-        return render(request, "accounts/oauth_error.html", {"error": "Your Google account is not associated with an active ForgeFlow account. Contact your organization administrator."})
+        return render(request, "accounts/oauth_error.html", {"error": "Your Google account is not associated with an active Anukram account. Contact your organization administrator."})
 
     if not user.is_active:
-        return render(request, "accounts/oauth_error.html", {"error": "Your ForgeFlow account is inactive."})
+        return render(request, "accounts/oauth_error.html", {"error": "Your Anukram account is inactive."})
         
     if user.user_type == "SYSTEM":
         return render(request, "accounts/oauth_error.html", {"error": "System identities cannot use interactive authentication."})
 
     employee = getattr(user, "employee_profile", None)
     if not employee:
-        return render(request, "accounts/oauth_error.html", {"error": "Your ForgeFlow account lacks an employee profile."})
+        return render(request, "accounts/oauth_error.html", {"error": "Your Anukram account lacks an employee profile."})
 
     if not employee.is_active:
         return render(request, "accounts/oauth_error.html", {"error": "Your employee profile is inactive."})

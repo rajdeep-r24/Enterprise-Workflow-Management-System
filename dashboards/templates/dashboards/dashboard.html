@@ -127,18 +127,34 @@
 
 <div class="ff-stagger">
 
-<!-- ═══ Greeting ═══ -->
-<div class="dash-greeting-wrap">
-    <div class="dash-greeting__eyebrow">
-        <span class="dash-greeting__time-dot"></span>
-        <span id="dash-time-label">Good morning</span>
+<!-- ═══ Greeting & Quick Actions Header ═══ -->
+<div class="dash-greeting-wrap" style="display:flex;align-items:flex-start;justify-content:space-between;gap:var(--sp-4);flex-wrap:wrap;margin-bottom:var(--sp-6);">
+    <div>
+        <div class="dash-greeting__eyebrow">
+            <span class="dash-greeting__time-dot"></span>
+            <span id="dash-time-label">Dashboard</span>
+        </div>
+        <h1 class="dash-greeting__title" style="margin-bottom:var(--sp-2);">
+            Welcome back{% if request.user.first_name %}, {{ request.user.first_name }}{% endif %}
+        </h1>
+        <div class="dash-greeting__sub">
+            <span class="ff-badge ff-badge--accent">{{ role|role_display|default:"User" }}</span>
+            <span style="color:var(--text-tertiary);">{{ request.user.email }}</span>
+        </div>
     </div>
-    <h1 class="dash-greeting__title">
-        Welcome back{% if request.user.first_name %}, {{ request.user.first_name }}{% endif %} 👋
-    </h1>
-    <div class="dash-greeting__sub">
-        <span class="ff-badge ff-badge--accent">{{ role|role_display|default:"User" }}</span>
-        <span>{{ request.user.email }}</span>
+    <div style="display:flex;align-items:center;gap:var(--sp-3);flex-wrap:wrap;">
+        <a href="{% url 'new-request' %}" class="ff-btn ff-btn--primary">
+            <i class="bi bi-plus-lg"></i> New Request
+        </a>
+        {% if role != "USER" %}
+        <a href="{% url 'approval-inbox' %}" class="ff-btn ff-btn--secondary">
+            <i class="bi bi-inbox"></i> Pending Approvals
+        </a>
+        {% else %}
+        <a href="{% url 'my-requests' %}" class="ff-btn ff-btn--secondary">
+            <i class="bi bi-file-earmark-text"></i> My Requests
+        </a>
+        {% endif %}
     </div>
 </div>
 
@@ -154,7 +170,7 @@
             <i class="bi bi-check2-circle"></i>
         </div>
         <div>
-            <div class="dash-wizard__title">Organization is ready 🎉</div>
+            <div class="dash-wizard__title">Organization is ready</div>
             <div class="dash-wizard__sub">All setup steps have been completed successfully.</div>
         </div>
     </div>
@@ -214,9 +230,10 @@
 
 </div><!-- /.dash-wizard -->
 {% endif %}
+{% endif %}
 
-
-<!-- ── Stats grid ── -->
+<!-- ═══ KPI Stats Grid ═══ -->
+{% if role == "ORG_ADMIN" or role == "ADMIN" or role == "SUPER_ADMIN" %}
 <div class="ff-grid ff-grid--4 dash-stats ff-stagger">
     <div class="ff-stat-card">
         <div class="ff-stat-card__icon" style="background:var(--accent-subtle);color:var(--accent);">
@@ -255,23 +272,8 @@
     </div>
 </div>
 
-<!-- ── Quick actions ── -->
-<div class="dash-actions">
-    <a href="{% url 'new-request' %}" class="ff-btn ff-btn--primary">
-        <i class="bi bi-plus-circle"></i> New Request
-    </a>
-    <a href="{% url 'approval-inbox' %}" class="ff-btn ff-btn--secondary">
-        <i class="bi bi-check2-square"></i> Pending Approvals
-    </a>
-    <a href="{% url 'approval-history' %}" class="ff-btn ff-btn--secondary">
-        <i class="bi bi-clock-history"></i> History
-    </a>
-    <a href="{% url 'my-requests' %}" class="ff-btn ff-btn--ghost">All Requests</a>
-</div>
+{% elif role == "MANAGER" or role == "IT_HEAD" or role == "UNIT_HEAD" or role == "HR_HEAD" %}
 
-{% elif role == "MANAGER" or role == "IT_HEAD" or role == "UNIT_HEAD" %}
-
-<!-- ── Manager / Approver view ── -->
 <div class="ff-grid ff-grid--3 dash-stats ff-stagger">
     <a href="{% url 'approval-inbox' %}" class="ff-stat-card">
         <div class="ff-stat-card__icon" style="background:var(--warning-subtle);color:var(--warning);">
@@ -299,19 +301,8 @@
     </a>
 </div>
 
-<div class="dash-actions">
-    <a href="{% url 'new-request' %}" class="ff-btn ff-btn--primary">
-        <i class="bi bi-plus-circle"></i> New Request
-    </a>
-    <a href="{% url 'approval-inbox' %}" class="ff-btn ff-btn--secondary">
-        <i class="bi bi-check2-square"></i> Pending Approvals
-    </a>
-    <a href="{% url 'my-requests' %}" class="ff-btn ff-btn--ghost">My Requests</a>
-</div>
-
 {% else %}
 
-<!-- ── Employee view ── -->
 <div class="ff-grid ff-grid--3 dash-stats ff-stagger">
     <a href="{% url 'my-requests' %}" class="ff-stat-card">
         <div class="ff-stat-card__icon" style="background:var(--accent-subtle);color:var(--accent);">
@@ -322,36 +313,125 @@
         <div class="ff-stat-card__meta">All your submitted requests</div>
     </a>
 
-    <div class="ff-stat-card">
+    <a href="{% url 'my-requests' %}" class="ff-stat-card">
         <div class="ff-stat-card__icon" style="background:var(--warning-subtle);color:var(--warning);">
             <i class="bi bi-clock"></i>
         </div>
-        <div class="ff-stat-card__label">Pending</div>
-        <div class="ff-stat-card__value">—</div>
-        <div class="ff-stat-card__meta">Awaiting approval</div>
-    </div>
+        <div class="ff-stat-card__label">Status Tracking</div>
+        <div class="ff-stat-card__value"><i class="bi bi-arrow-right"></i></div>
+        <div class="ff-stat-card__meta">Real-time approval progress</div>
+    </a>
 
-    <div class="ff-stat-card" style="background:linear-gradient(135deg,var(--accent-subtle) 0%,var(--canvas-subtle) 100%);border-color:var(--accent-subtle-border);">
+    <a href="{% url 'new-request' %}" class="ff-stat-card" style="background:linear-gradient(135deg,var(--accent-subtle) 0%,var(--canvas-subtle) 100%);border-color:var(--accent-subtle-border);">
         <div class="ff-stat-card__icon" style="background:var(--accent);color:#fff;">
             <i class="bi bi-plus-circle"></i>
         </div>
-        <div class="ff-stat-card__label">Quick Action</div>
-        <div style="margin-top:var(--sp-3);">
-            <a href="{% url 'new-request' %}" class="ff-btn ff-btn--primary ff-btn--sm">
-                <i class="bi bi-plus-circle"></i> Submit New Request
-            </a>
-        </div>
-    </div>
-</div>
-
-<div class="dash-actions">
-    <a href="{% url 'new-request' %}" class="ff-btn ff-btn--primary">
-        <i class="bi bi-plus-circle"></i> New Request
+        <div class="ff-stat-card__label">Quick Submission</div>
+        <div class="ff-stat-card__value" style="font-size:var(--text-xl);"><i class="bi bi-plus-lg"></i></div>
+        <div class="ff-stat-card__meta">Create a new permission or asset request</div>
     </a>
-    <a href="{% url 'my-requests' %}" class="ff-btn ff-btn--ghost">View All Requests</a>
 </div>
 
 {% endif %}
+
+<!-- ═══ Live Recent Activity Table ═══ -->
+<div class="ff-card" style="margin-top:var(--sp-6);">
+    <div class="ff-card__header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:var(--sp-3);padding:var(--sp-4) var(--sp-6);border-bottom:1px solid var(--border);">
+        <div style="display:flex;align-items:center;gap:var(--sp-3);">
+            <div style="width:32px;height:32px;border-radius:var(--r-md);background:var(--accent-subtle);color:var(--accent);display:flex;align-items:center;justify-content:center;font-size:16px;">
+                <i class="bi bi-clock-history"></i>
+            </div>
+            <div>
+                <h2 style="font-size:var(--text-md);font-weight:700;margin:0;color:var(--text-primary);">Recent Activity</h2>
+                <p style="font-size:var(--text-xs);color:var(--text-tertiary);margin:0;">Latest workflow submissions across your organization</p>
+            </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:var(--sp-2);">
+            <a href="{% url 'my-requests' %}" class="ff-btn ff-btn--ghost ff-btn--sm">
+                View all requests <i class="bi bi-arrow-right"></i>
+            </a>
+        </div>
+    </div>
+    <div class="ff-card__body" style="padding:0;">
+        {% if recent_requests %}
+        <div class="ff-table-wrap" style="border:none;border-radius:0;box-shadow:none;">
+            <table class="ff-table">
+                <thead>
+                    <tr>
+                        <th>Requester</th>
+                        <th>Workflow Form</th>
+                        <th>Current Step</th>
+                        <th>Status</th>
+                        <th>Submitted</th>
+                        <th style="width:90px;text-align:right;">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for req in recent_requests %}
+                    <tr>
+                        <td>
+                            <div style="display:flex;align-items:center;gap:var(--sp-3);">
+                                <div class="ff-avatar" style="width:30px;height:30px;font-size:11px;flex-shrink:0;cursor:default;">
+                                    {{ req.initiated_by.first_name|slice:":1" }}{{ req.initiated_by.last_name|slice:":1" }}
+                                </div>
+                                <div>
+                                    <div style="font-size:var(--text-sm);font-weight:600;color:var(--text-primary);">{{ req.initiated_by.get_full_name|default:req.initiated_by.email }}</div>
+                                    <div style="font-size:var(--text-xs);color:var(--text-tertiary);">{{ req.initiated_by.email }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <span style="font-size:var(--text-sm);font-weight:600;color:var(--text-primary);">
+                                {{ req.workflow_version.workflow.name }}
+                            </span>
+                        </td>
+                        <td>
+                            <span style="font-size:var(--text-xs);color:var(--text-secondary);">
+                                {{ req.current_step.name|default:"—" }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if req.status == "APPROVED" %}
+                            <span class="ff-badge ff-badge--success"><span class="ff-badge__dot"></span> Approved</span>
+                            {% elif req.status == "REJECTED" %}
+                            <span class="ff-badge ff-badge--danger"><span class="ff-badge__dot"></span> Rejected</span>
+                            {% elif req.status == "IN_PROGRESS" or req.status == "SUBMITTED" %}
+                            <span class="ff-badge ff-badge--warning"><span class="ff-badge__dot ff-badge__dot--pulse"></span> In Progress</span>
+                            {% else %}
+                            <span class="ff-badge ff-badge--neutral">{{ req.status }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span style="font-size:var(--text-xs);color:var(--text-tertiary);">
+                                {{ req.created_at|date:"M d, Y" }}
+                            </span>
+                        </td>
+                        <td style="text-align:right;">
+                            <a href="{% url 'request-detail' req.id %}" class="ff-btn ff-btn--ghost ff-btn--sm" style="padding:4px 10px;font-size:var(--text-xs);">
+                                View <i class="bi bi-chevron-right"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div style="text-align:center;padding:var(--sp-12) var(--sp-6);">
+            <div style="width:48px;height:48px;border-radius:var(--r-xl);background:var(--accent-subtle);color:var(--accent);display:flex;align-items:center;justify-content:center;font-size:22px;margin:0 auto var(--sp-3);">
+                <i class="bi bi-inbox"></i>
+            </div>
+            <h3 style="font-size:var(--text-base);font-weight:700;margin-bottom:var(--sp-1);">No requests yet</h3>
+            <p style="font-size:var(--text-xs);color:var(--text-tertiary);max-width:360px;margin:0 auto var(--sp-5);">
+                Start by submitting a new workflow request or configuring organization request types.
+            </p>
+            <a href="{% url 'new-request' %}" class="ff-btn ff-btn--primary ff-btn--sm">
+                <i class="bi bi-plus-lg"></i> Create First Request
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
 
 </div><!-- /.ff-stagger -->
 {% endblock %}
@@ -363,9 +443,13 @@
     var el = document.getElementById('dash-time-label');
     if (!el) return;
     var h = new Date().getHours();
-    if      (h < 12) el.textContent = 'Good morning';
-    else if (h < 17) el.textContent = 'Good afternoon';
-    else             el.textContent = 'Good evening';
+    if (h >= 5 && h < 12) {
+        el.textContent = 'Good morning';
+    } else if (h >= 12 && h < 17) {
+        el.textContent = 'Good afternoon';
+    } else {
+        el.textContent = 'Good evening';
+    }
 })();
 </script>
 {% endblock %}

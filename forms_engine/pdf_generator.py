@@ -336,7 +336,7 @@ def generate_permission_pdf(submission):
             (
                 "Scan the QR code to verify "
                 "this request against the "
-                "live ForgeFlow system."
+                "live Anukram system."
             ),
             center_style,
         ),
