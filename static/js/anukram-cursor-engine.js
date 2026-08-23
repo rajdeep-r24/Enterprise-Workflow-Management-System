@@ -1,7 +1,7 @@
 /**
  * Anukram Precision Cursor & Interactive Reactivity Engine
- * Compact 280px ambient cursor spotlight, 3D card tilts,
- * magnetic interactions, and stationary blueprint dot matrix.
+ * Provides subtle 3D card perspective tilts and magnetic button interactions.
+ * (No mouse spotlight circles or particle distractions).
  */
 (function () {
   'use strict';
@@ -16,83 +16,8 @@
     return;
   }
 
-  function isDarkMode() {
-    return document.documentElement.getAttribute('data-theme') === 'dark';
-  }
-
   /* ==========================================================================
-     1. Compact & Focused Ambient Cursor Spotlight (280px)
-     ========================================================================== */
-  var spotlight = document.createElement('div');
-  spotlight.id = 'ank-cursor-spotlight';
-  spotlight.style.cssText = [
-    'position: fixed',
-    'top: 0',
-    'left: 0',
-    'width: 280px',
-    'height: 280px',
-    'margin-left: -140px',
-    'margin-top: -140px',
-    'border-radius: 50%',
-    'pointer-events: none',
-    'z-index: 1',
-    'opacity: 0',
-    'transition: opacity 400ms ease',
-    'will-change: transform',
-  ].join(';');
-
-  function syncSpotlightTheme() {
-    if (isDarkMode()) {
-      spotlight.style.background = 'radial-gradient(circle, rgba(99, 102, 241, 0.20) 0%, rgba(147, 51, 234, 0.08) 50%, transparent 75%)';
-      spotlight.style.mixBlendMode = 'screen';
-    } else {
-      spotlight.style.background = 'radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, rgba(139, 92, 246, 0.05) 50%, transparent 75%)';
-      spotlight.style.mixBlendMode = 'normal';
-    }
-  }
-  syncSpotlightTheme();
-  document.body.appendChild(spotlight);
-
-  var mouseX = window.innerWidth / 2;
-  var mouseY = window.innerHeight / 2;
-  var spotX = mouseX;
-  var spotY = mouseY;
-  var isMouseActive = false;
-
-  window.addEventListener('mousemove', function (e) {
-    mouseX = e.clientX;
-    mouseY = e.clientY;
-    if (!isMouseActive) {
-      isMouseActive = true;
-      spotlight.style.opacity = '1';
-    }
-  }, { passive: true });
-
-  window.addEventListener('mouseleave', function () {
-    isMouseActive = false;
-    spotlight.style.opacity = '0';
-  });
-
-  function updateSpotlight() {
-    spotX += (mouseX - spotX) * 0.16;
-    spotY += (mouseY - spotY) * 0.16;
-    spotlight.style.transform = 'translate3d(' + spotX.toFixed(1) + 'px, ' + spotY.toFixed(1) + 'px, 0)';
-    requestAnimationFrame(updateSpotlight);
-  }
-  requestAnimationFrame(updateSpotlight);
-
-  // Sync theme changes
-  var observer = new MutationObserver(function (mutations) {
-    mutations.forEach(function (m) {
-      if (m.attributeName === 'data-theme') {
-        syncSpotlightTheme();
-      }
-    });
-  });
-  observer.observe(document.documentElement, { attributes: true });
-
-  /* ==========================================================================
-     2. 3D Card Gyro Tilt & Mouse-Following Spotlight Borders
+     1. 3D Card Gyro Tilt & Mouse-Following Spotlight Borders
      ========================================================================== */
   function initInteractiveCards() {
     var cards = document.querySelectorAll('.lp-feature, .lp-plan, .lp-testimonial, .lp-stat-card, .lp-card, .ff-card');
@@ -125,7 +50,7 @@
   }
 
   /* ==========================================================================
-     3. Magnetic Elements (Buttons & Eyebrows)
+     2. Magnetic Elements (Buttons & Eyebrows)
      ========================================================================== */
   function initMagneticElements() {
     var magnetics = document.querySelectorAll('.ff-btn--primary, .google-btn, .lp-hero__eyebrow');

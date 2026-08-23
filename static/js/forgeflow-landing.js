@@ -361,12 +361,6 @@
         setTimeout(function () { el.classList.add('is-revealed'); }, 60 + i * 90);
       });
     }, 0);
-
-    // Auto-start hero sim
-    setTimeout(function () {
-      var btn = qs('#transit-btn');
-      if (btn && !btn.disabled) btn.click();
-    }, 1200);
   });
 
 })();
