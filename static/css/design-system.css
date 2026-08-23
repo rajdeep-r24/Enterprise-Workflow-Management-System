@@ -1080,6 +1080,30 @@ svg {
   border-color: var(--border-strong);
 }
 
+/* Interactive cursor border spotlight */
+.ank-interactive-card {
+  position: relative;
+  overflow: hidden;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+.ank-interactive-card::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background: radial-gradient(350px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(99, 102, 241, 0.28), transparent 60%);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 350ms ease;
+  z-index: 1;
+}
+
+.ank-interactive-card:hover::after {
+  opacity: 1;
+}
+
 .ff-card--bordered {
   border: 1.5px solid var(--border-strong);
 }
