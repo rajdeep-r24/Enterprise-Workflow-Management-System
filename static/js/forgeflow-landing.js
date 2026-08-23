@@ -112,7 +112,7 @@
       'it-approved': function () { setProgress(58); activateDot(3); showNotif('IT Head approved', 'success'); if (requestCard) { var b = requestCard.querySelector('.sim-card__badge'); if (b) b.textContent = '1/2 Approved'; } },
       'hr-review':   function () { setProgress(72); activateDot(4); showNotif('HR Director reviewing', 'warning'); },
       'hr-approved': function () { setProgress(88); activateDot(5); showNotif('HR Director approved', 'success'); },
-      'issued':      function () { setProgress(100); activateDot(6); if (qrReveal) qrReveal.classList.add('is-in'); showNotif('QR slip emailed to Priya', 'success'); }
+      'issued':      function () { setProgress(100); activateDot(6); if (qrReveal) qrReveal.classList.add('is-in'); showNotif('QR slip emailed to Rajdeep', 'success'); }
     };
 
     async function runLoop() {
@@ -141,7 +141,7 @@
      4. The Approval Transit: ForgeFlow Signature Interaction
      ========================================================= */
   var TRANSIT_STATIONS = [
-    { id: 'emp',  label: 'Employee',     sub: 'Priya Sharma', dept: 'Engineering',   color: '#4f46e5', action: 'Request submitted',  ms: 600  },
+    { id: 'emp',  label: 'Employee',     sub: 'Rajdeep Rathod', dept: 'Engineering',   color: '#4f46e5', action: 'Request submitted',  ms: 600  },
     { id: 'it',   label: 'IT Head',      sub: 'Rohan Mehta',  dept: 'IT Department', color: '#f59e0b', action: 'Reviewing request…',  ms: 2200 },
     { id: 'hr',   label: 'HR Director',  sub: 'Meera Iyer',   dept: 'Human Resources', color: '#f59e0b', action: 'Reviewing request…', ms: 2200 },
     { id: 'fin',  label: 'Finance Head', sub: 'Karan Singh',  dept: 'Finance',       color: '#f59e0b', action: 'Final review…',       ms: 1800 },
