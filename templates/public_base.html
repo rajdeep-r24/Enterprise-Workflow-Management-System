@@ -11,7 +11,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css" rel="stylesheet">
-    <link href="{% static 'css/design-system.css' %}" rel="stylesheet">
+    <link href="{% static 'css/design-system.css' %}?v=2.4.0" rel="stylesheet">
 
     <!-- Restore theme before paint -->
     <script>
@@ -81,8 +81,8 @@
 
 {% block content %}{% endblock %}
 
-<script src="{% static 'js/app-shell.js' %}"></script>
-<script src="{% static 'js/anukram-cursor-engine.js' %}"></script>
+<script src="{% static 'js/app-shell.js' %}?v=2.4.0"></script>
+<script src="{% static 'js/anukram-cursor-engine.js' %}?v=2.4.0"></script>
 <script>
 (function(){
     var icon = document.getElementById('pub-theme-icon');
