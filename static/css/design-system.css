@@ -427,25 +427,19 @@ svg {
 }
 
 .ff-sidebar__brand-mark {
-  width: 32px;
-  height: 32px;
-  border-radius: var(--r-sm);
-  background: linear-gradient(135deg, var(--accent) 0%, #5F3DC4 100%);
+  width: 30px;
+  height: 30px;
   flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #fff;
-  font-weight: 800;
-  font-size: 15px;
-  letter-spacing: -0.04em;
-  box-shadow: 0 2px 8px var(--accent-glow);
 }
 
 .ff-sidebar__brand-text {
+  font-family: var(--font-sans);
   font-weight: 800;
-  font-size: var(--text-md);
-  letter-spacing: var(--tracking-tight);
+  font-size: 18px;
+  letter-spacing: -0.035em;
   color: var(--text-primary);
   white-space: nowrap;
   opacity: 1;
@@ -2011,27 +2005,22 @@ a.ff-stat-card:active {
 .pf-nav__brand {
   display: flex;
   align-items: center;
-  gap: var(--sp-2);
+  gap: var(--sp-2-5, 10px);
+  font-family: var(--font-sans);
   font-weight: 800;
-  font-size: var(--text-md);
-  letter-spacing: var(--tracking-tight);
+  font-size: 18px;
+  letter-spacing: -0.035em;
   color: var(--text-primary);
-  text-decoration: none;
+  text-decoration: none !important;
 }
 
 .pf-nav__brand-mark {
-  width: 32px;
-  height: 32px;
-  border-radius: var(--r-sm);
-  background: linear-gradient(135deg, var(--accent) 0%, #5F3DC4 100%);
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #fff;
-  font-weight: 800;
-  font-size: 15px;
-  letter-spacing: -0.04em;
-  box-shadow: 0 2px 8px var(--accent-glow);
 }
 
 .pf-center-wrap {
