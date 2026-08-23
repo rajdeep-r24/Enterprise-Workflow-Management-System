@@ -1,7 +1,7 @@
 {% load static %}
 
-{# ── Brand / Logo ── #}
-<a href="{% url 'dashboard' %}" class="ff-sidebar__brand" tabindex="0" aria-label="Anukram — Go to dashboard">
+{# Brand / Logo #}
+<a href="{% url 'dashboard' %}" class="ff-sidebar__brand" tabindex="0" aria-label="Anukram Dashboard">
     <div class="ff-sidebar__brand-mark" aria-hidden="true" style="background:transparent;box-shadow:none;padding:0;width:30px;height:30px;">
         <svg width="30" height="30" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
             <rect width="32" height="32" rx="8" fill="url(#ank-logo-bg-side)"/>
@@ -20,7 +20,7 @@
     <span class="ff-sidebar__brand-text" style="font-weight:800;font-size:18px;letter-spacing:-0.035em;color:var(--text-primary);">Anukram</span>
 </a>
 
-{# ── Navigation ── #}
+{# Navigation #}
 <nav class="ff-nav" aria-label="Application navigation">
 
     {# Overview #}
@@ -54,7 +54,7 @@
         </a>
     </div>
 
-    {# Approvals — conditional #}
+    {# Approvals - conditional #}
     {% if user_can_approve %}
     <div class="ff-nav__group">
         <span class="ff-nav__section-label" aria-hidden="true">Approvals</span>
@@ -75,7 +75,7 @@
     </div>
     {% endif %}
 
-    {# Administration — conditional #}
+    {# Administration - conditional #}
     {% if user_can_view_employees %}
     <div class="ff-nav__group">
         <span class="ff-nav__section-label" aria-hidden="true">Administration</span>

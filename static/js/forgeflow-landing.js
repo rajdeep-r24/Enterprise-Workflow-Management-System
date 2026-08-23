@@ -1,5 +1,5 @@
 /* ==========================================================================
-   ForgeFlow Landing — Animation Engine v3
+   ForgeFlow Landing: Animation Engine v3
    Signature: The Approval Transit
    ========================================================================== */
 (function () {
@@ -13,7 +13,7 @@
   function delay(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
 
   /* =========================================================
-     1. Section reveal — IntersectionObserver
+     1. Section reveal: IntersectionObserver
      ========================================================= */
   function initReveal() {
     if (!('IntersectionObserver' in window)) {
@@ -53,7 +53,7 @@
   }
 
   /* =========================================================
-     3. Hero simulation — cinematic state machine
+     3. Hero simulation: cinematic state machine
      Cycles through: SUBMITTED → ROUTING → IT_APPROVED →
                      HR_ROUTING → HR_APPROVED → ISSUED → RESET
      ========================================================= */
@@ -138,7 +138,7 @@
   }
 
   /* =========================================================
-     4. The Approval Transit — ForgeFlow Signature Interaction
+     4. The Approval Transit: ForgeFlow Signature Interaction
      ========================================================= */
   var TRANSIT_STATIONS = [
     { id: 'emp',  label: 'Employee',     sub: 'Priya Sharma', dept: 'Engineering',   color: '#4f46e5', action: 'Request submitted',  ms: 600  },
@@ -315,7 +315,7 @@
   }
 
   /* =========================================================
-     8. Audit log reveal — stagger rows
+     8. Audit log reveal: stagger rows
      ========================================================= */
   function initAuditReveal() {
     if (!('IntersectionObserver' in window)) return;

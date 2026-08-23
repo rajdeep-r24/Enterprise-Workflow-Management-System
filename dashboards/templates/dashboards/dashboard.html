@@ -42,7 +42,7 @@
     margin-bottom: var(--sp-6);
 }
 
-/* Setup wizard card — premium treatment */
+/* Setup wizard card: premium treatment */
 .dash-wizard {
     background: var(--surface);
     border: 1px solid var(--accent-subtle-border);
@@ -387,7 +387,7 @@
                         </td>
                         <td>
                             <span style="font-size:var(--text-xs);color:var(--text-secondary);">
-                                {{ req.current_step.name|default:"—" }}
+                                {{ req.current_step.name|default:"-" }}
                             </span>
                         </td>
                         <td>

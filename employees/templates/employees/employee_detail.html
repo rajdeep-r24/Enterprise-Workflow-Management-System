@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}{{ employee.user.get_full_name }} — Employee Details{% endblock %}
+{% block title %}{{ employee.user.get_full_name }} | Employee Details{% endblock %}
 {% block topbar_title %}Employee Details{% endblock %}
 
 {% block content %}
@@ -51,33 +51,31 @@
 </div>
 
 <!-- Details Grid -->
-<div class="ff-card" style="max-width:760px;">
-    <div class="ff-card__header">
-        <div class="ff-card__title">Employment Information</div>
-    </div>
-    <div class="ff-card__body" style="padding:0;">
-        <div class="ff-table-wrap" style="border:none;box-shadow:none;border-radius:0 0 var(--r-xl) var(--r-xl);">
-            <table class="ff-table ff-table--borderless">
-                <tbody>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-borderless" style="margin-bottom:0;">
+                    <tbody>
                     <tr>
-                        <th style="width:38%;color:var(--text-tertiary);font-weight:600;font-size:var(--text-xs);text-transform:uppercase;letter-spacing:0.06em;">Employee Code</th>
-                        <td><code style="font-family:var(--font-mono);font-size:var(--text-sm);background:var(--canvas-subtle);padding:3px 8px;border-radius:var(--r-sm);border:1px solid var(--border);">{{ employee.employee_code }}</code></td>
+                        <th style="width:30%;color:var(--text-tertiary);font-weight:600;font-size:var(--text-xs);text-transform:uppercase;letter-spacing:0.06em;">Username</th>
+                        <td style="font-size:var(--text-sm);color:var(--text-primary);">{{ employee.user.username }}</td>
                     </tr>
                     <tr>
                         <th style="color:var(--text-tertiary);font-weight:600;font-size:var(--text-xs);text-transform:uppercase;letter-spacing:0.06em;">Department</th>
-                        <td style="font-size:var(--text-sm);font-weight:500;color:var(--text-primary);">{{ employee.department|default:"—" }}</td>
+                        <td style="font-size:var(--text-sm);font-weight:500;color:var(--text-primary);">{{ employee.department|default:"-" }}</td>
                     </tr>
                     <tr>
                         <th style="color:var(--text-tertiary);font-weight:600;font-size:var(--text-xs);text-transform:uppercase;letter-spacing:0.06em;">Designation</th>
-                        <td style="font-size:var(--text-sm);color:var(--text-secondary);">{{ employee.designation|default:"—" }}</td>
+                        <td style="font-size:var(--text-sm);color:var(--text-secondary);">{{ employee.designation|default:"-" }}</td>
                     </tr>
                     <tr>
                         <th style="color:var(--text-tertiary);font-weight:600;font-size:var(--text-xs);text-transform:uppercase;letter-spacing:0.06em;">Location</th>
-                        <td style="font-size:var(--text-sm);color:var(--text-secondary);">{{ employee.location|default:"—" }}</td>
+                        <td style="font-size:var(--text-sm);color:var(--text-secondary);">{{ employee.location|default:"-" }}</td>
                     </tr>
                     <tr>
                         <th style="color:var(--text-tertiary);font-weight:600;font-size:var(--text-xs);text-transform:uppercase;letter-spacing:0.06em;">Manager</th>
-                        <td style="font-size:var(--text-sm);color:var(--text-secondary);">{{ employee.manager|default:"—" }}</td>
+                        <td style="font-size:var(--text-sm);color:var(--text-secondary);">{{ employee.manager|default:"-" }}</td>
                     </tr>
                     <tr>
                         <th style="color:var(--text-tertiary);font-weight:600;font-size:var(--text-xs);text-transform:uppercase;letter-spacing:0.06em;">Organization</th>

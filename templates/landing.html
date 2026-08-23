@@ -1,7 +1,7 @@
 {% extends "public_base.html" %}
 {% load static %}
 
-{% block title %}Anukram — Enterprise Workflow Management System{% endblock %}
+{% block title %}Anukram | Enterprise Workflow Management System{% endblock %}
 {% block meta_description %}Anukram routes every request through the right approver, automatically. Full audit trail. QR-verifiable permission slips. Built for the enterprise.{% endblock %}
 
 {% block nav_actions %}
@@ -12,7 +12,7 @@
 {% block extra_head %}
 <style>
 /* ==========================================================================
-   Anukram Landing — Page Styles
+   Anukram Landing Page Styles
    ========================================================================== */
 
 /* ---- Layout ---- */
@@ -307,7 +307,7 @@
 }
 
 /* ==========================================================================
-   THE REAL COST — Dark section
+   THE REAL COST: Cost Analysis
    ========================================================================== */
 .lp-cost-section {
     background: var(--surface);
@@ -384,7 +384,7 @@
 .lp-stat-card__body  { font-size: var(--text-xs); color: var(--text-tertiary); line-height: var(--leading-relaxed); }
 
 /* ==========================================================================
-   THE APPROVAL TRANSIT — Anukram Signature
+   THE APPROVAL TRANSIT: Anukram Signature
    ========================================================================== */
 .lp-transit-section {
     padding: var(--sp-20) var(--sp-8);
@@ -602,7 +602,7 @@
 .transit-log-time { color: var(--text-tertiary); flex-shrink: 0; font-family: var(--font-mono); }
 
 /* ==========================================================================
-   FEATURES — Bento grid
+   FEATURES: Bento grid
    ========================================================================== */
 .lp-bento {
     display: grid;
@@ -625,8 +625,8 @@
 .lp-bento-card:hover { box-shadow: var(--shadow-md); border-color: var(--border-strong); }
 
 /* Grid placement */
-.lp-bento-card--a { grid-column: span 5; } /* Routing — large */
-.lp-bento-card--b { grid-column: span 7; } /* Audit trail — wide */
+.lp-bento-card--a { grid-column: span 5; } /* Routing: large */
+.lp-bento-card--b { grid-column: span 7; } /* Audit trail: wide */
 .lp-bento-card--c { grid-column: span 4; } /* QR slips */
 .lp-bento-card--d { grid-column: span 4; } /* RBAC */
 .lp-bento-card--e { grid-column: span 4; } /* Notifications */
@@ -728,7 +728,7 @@
 .lp-audit-time  { font-size: var(--text-xs); color: var(--text-tertiary); font-family: var(--font-mono); }
 
 /* ==========================================================================
-   TESTIMONIALS — Scattered layout
+   ENTERPRISE USE CASES
    ========================================================================== */
 .lp-quotes-grid {
     display: grid;
@@ -753,7 +753,7 @@
     font-style: italic;
 }
 
-/* The "wow" word — one key word per quote highlighted */
+/* Highlighted key word */
 .lp-testimonial__quote strong {
     font-style: normal; font-weight: 700;
     color: var(--text-primary);
@@ -988,7 +988,7 @@
         </h1>
 
         <p class="lp-hero__sub" data-reveal data-delay="2">
-            Anukram replaces email chains, Slack DMs, and spreadsheet trackers with a single system that routes every request to the right approver — automatically.
+            Anukram replaces email chains, Slack DMs, and spreadsheet trackers with a single system that routes every request to the right approver automatically.
         </p>
 
         <div class="lp-hero__ctas" data-reveal data-delay="3">
@@ -1110,13 +1110,13 @@
 </section>
 
 <!-- ================================================================
-     THE APPROVAL TRANSIT — Anukram Signature
+     THE APPROVAL TRANSIT
      ================================================================ -->
 <section class="lp-gap" style="border-bottom: 1px solid var(--border);">
     <div class="lp-transit-section" style="max-width: 1200px; margin: 0 auto; padding: 0 var(--sp-8);">
         <div class="lp-transit-header" data-reveal>
             <p class="lp-transit-eyebrow">The Approval Transit</p>
-            <h2 class="lp-transit-title">Watch your organization approve a request — live.</h2>
+            <h2 class="lp-transit-title">Watch your organization approve a request live.</h2>
             <p class="lp-transit-sub">This is what Anukram does for every request, every time. No configuration required after initial setup.</p>
         </div>
 
@@ -1187,7 +1187,7 @@
 </section>
 
 <!-- ================================================================
-     FEATURES — BENTO GRID
+     FEATURES
      ================================================================ -->
 <section class="lp-gap">
     <div class="lp-section">
@@ -1205,7 +1205,7 @@
                 </div>
                 <p class="lp-bento-card__eyebrow">Smart routing</p>
                 <h3 class="lp-bento-card__title">Every request finds its approver. Automatically.</h3>
-                <p class="lp-bento-card__body">Define approval chains once. Anukram reads the requester's department and role, then routes to the correct approver — every time, without human intervention.</p>
+                <p class="lp-bento-card__body">Define approval chains once. Anukram reads the requester's department and role, then routes to the correct approver every time, without human intervention.</p>
                 <div class="lp-bento-visual">
                     <div class="lp-routing-chain">
                         <div class="lp-routing-step">
@@ -1234,7 +1234,7 @@
                 </div>
                 <p class="lp-bento-card__eyebrow">Immutable audit trail</p>
                 <h3 class="lp-bento-card__title">Every decision. Permanently recorded.</h3>
-                <p class="lp-bento-card__body">Timestamped, attributed, and searchable. When auditors ask who approved what — you answer instantly.</p>
+                <p class="lp-bento-card__body">Timestamped, attributed, and searchable. When auditors ask who approved what, you answer instantly.</p>
                 <div class="lp-bento-visual">
                     <div class="lp-audit-mini">
                         <div class="lp-audit-mini-row">
@@ -1313,7 +1313,7 @@
 </div>
 
 <!-- ================================================================
-     AUDIT TRAIL — Detailed section
+     AUDIT TRAIL: Detailed section
      ================================================================ -->
 <section class="lp-gap" style="background: var(--canvas-subtle); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);">
     <div class="lp-section">
@@ -1366,21 +1366,21 @@
                     Your auditors will ask. You'll have the answer in seconds.
                 </h2>
                 <p style="font-size: var(--text-md); color: var(--text-tertiary); line-height: var(--leading-relaxed); margin-bottom: var(--sp-8);">
-                    Every approval action is immutably recorded — who did what, when, and why. Searchable by request type, approver, date, or department.
+                    Every approval action is immutably recorded with who did what, when, and why. Searchable by request type, approver, date, or department.
                 </p>
                 <ul style="list-style: none; display: flex; flex-direction: column; gap: var(--sp-3);">
                     <li style="display: flex; align-items: flex-start; gap: var(--sp-3);">
                         <i class="bi bi-check-circle-fill" style="color: var(--success); flex-shrink: 0; margin-top: 2px;"></i>
                         <div>
                             <div style="font-size: var(--text-sm); font-weight: 700; margin-bottom: 2px;">Timestamped approver identity</div>
-                            <div style="font-size: var(--text-xs); color: var(--text-tertiary);">Name, role, timestamp, and remark — for every action.</div>
+                            <div style="font-size: var(--text-xs); color: var(--text-tertiary);">Name, role, timestamp, and remark for every action.</div>
                         </div>
                     </li>
                     <li style="display: flex; align-items: flex-start; gap: var(--sp-3);">
                         <i class="bi bi-check-circle-fill" style="color: var(--success); flex-shrink: 0; margin-top: 2px;"></i>
                         <div>
                             <div style="font-size: var(--text-sm); font-weight: 700; margin-bottom: 2px;">Rejection remarks preserved</div>
-                            <div style="font-size: var(--text-xs); color: var(--text-tertiary);">Every rejection includes the approver's reason — permanently.</div>
+                            <div style="font-size: var(--text-xs); color: var(--text-tertiary);">Every rejection includes the approver's reason permanently.</div>
                         </div>
                     </li>
                     <li style="display: flex; align-items: flex-start; gap: var(--sp-3);">
@@ -1512,7 +1512,7 @@
         <div class="lp-faq" id="faq" data-reveal>
             <div class="lp-faq-item">
                 <div class="lp-faq-q" role="button" tabindex="0">How does automatic routing actually work?</div>
-                <div class="lp-faq-a">You define approval workflows per request type — specifying which role or department should approve each step. Anukram reads the requester's profile at submission time and resolves the correct approver automatically. No manual forwarding, ever.</div>
+                <div class="lp-faq-a">You define approval workflows per request type, specifying which role or department should approve each step. Anukram reads the requester's profile at submission time and resolves the correct approver automatically. No manual forwarding, ever.</div>
             </div>
             <div class="lp-faq-item">
                 <div class="lp-faq-q" role="button" tabindex="0">Can we have different approvers per department?</div>
@@ -1524,7 +1524,7 @@
             </div>
             <div class="lp-faq-item">
                 <div class="lp-faq-q" role="button" tabindex="0">Are the QR slips actually verifiable?</div>
-                <div class="lp-faq-a">Yes. Each QR code encodes a signed token tied to the specific approved request. Security staff scan the code and immediately see the approval status, approver identity, and expiry — without calling anyone.</div>
+                <div class="lp-faq-a">Yes. Each QR code encodes a signed token tied to the specific approved request. Security staff scan the code and immediately see the approval status, approver identity, and expiry without calling anyone.</div>
             </div>
             <div class="lp-faq-item">
                 <div class="lp-faq-q" role="button" tabindex="0">Is our data completely isolated from other organizations?</div>

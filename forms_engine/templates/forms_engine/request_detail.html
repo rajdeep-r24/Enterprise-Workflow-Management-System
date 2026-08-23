@@ -109,7 +109,7 @@
             <div>
                 <div style="font-weight:700;font-size:var(--text-sm);color:var(--warning-text);">In Progress</div>
                 <div style="font-size:var(--text-xs);color:var(--warning-text);opacity:0.8;margin-top:2px;">
-                    Currently at: <strong>{{ submission.workflow_instance.current_step.name|default:"—" }}</strong>
+                    Currently at: <strong>{{ submission.workflow_instance.current_step.name|default:"-" }}</strong>
                 </div>
             </div>
         </div>
@@ -139,7 +139,7 @@
                 {% for item in values %}
                 <div class="rd-field-row">
                     <span class="rd-field-label">{{ item.field.label }}</span>
-                    <span class="rd-field-value">{{ item.value|default:"—" }}</span>
+                    <span class="rd-field-value">{{ item.value|default:"-" }}</span>
                 </div>
                 {% empty %}
                 <div class="ff-empty" style="padding:var(--sp-8);">

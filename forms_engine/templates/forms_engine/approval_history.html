@@ -74,10 +74,10 @@
                             {% endif %}
                         </td>
                         <td style="font-size:var(--text-sm);color:var(--text-tertiary);max-width:200px;">
-                            <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block;">{{ step.remarks|default:"—"|truncatechars:60 }}</span>
+                            <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block;">{{ step.remarks|default:"-"|truncatechars:60 }}</span>
                         </td>
                         <td style="font-size:var(--text-sm);color:var(--text-tertiary);white-space:nowrap;font-variant-numeric:tabular-nums;">
-                            {{ step.action_at|date:"d M Y, H:i"|default:"—" }}
+                            {{ step.action_at|date:"d M Y, H:i"|default:"-" }}
                         </td>
                         <td>
                             {% if step.workflow_instance.formsubmission %}
