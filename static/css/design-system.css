@@ -16,13 +16,13 @@
 :root,
 [data-theme="light"] {
   /* Canvas */
-  --canvas: #F6F8FC;
-  --canvas-subtle: #EDF2F7;
-  --canvas-mesh: radial-gradient(at 0% 0%, rgba(224, 231, 255, 0.65) 0px, transparent 50%),
-                 radial-gradient(at 100% 0%, rgba(243, 232, 255, 0.55) 0px, transparent 50%),
-                 radial-gradient(at 50% 100%, rgba(238, 242, 255, 0.55) 0px, transparent 50%),
-                 radial-gradient(circle at 1px 1px, rgba(99, 102, 241, 0.08) 1px, transparent 0),
-                 #F6F8FC;
+  --canvas: #EBF0F5;
+  --canvas-subtle: #E1E7EF;
+  --canvas-mesh: radial-gradient(at 0% 0%, rgba(218, 226, 250, 0.8) 0px, transparent 50%),
+                 radial-gradient(at 100% 0%, rgba(237, 231, 252, 0.7) 0px, transparent 50%),
+                 radial-gradient(at 50% 100%, rgba(226, 234, 248, 0.75) 0px, transparent 50%),
+                 radial-gradient(circle at 1px 1px, rgba(99, 102, 241, 0.07) 1px, transparent 0),
+                 #EBF0F5;
   --surface: #FFFFFF;
   --surface-raised: #FFFFFF;
   --surface-overlay: #FFFFFF;
