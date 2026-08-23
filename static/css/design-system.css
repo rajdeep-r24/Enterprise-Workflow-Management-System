@@ -16,8 +16,12 @@
 :root,
 [data-theme="light"] {
   /* Canvas */
-  --canvas: #F4F5F7;
-  --canvas-subtle: #ECEEF2;
+  --canvas: #F6F8FC;
+  --canvas-subtle: #EDF2F7;
+  --canvas-mesh: radial-gradient(at 0% 0%, rgba(224, 231, 255, 0.7) 0px, transparent 50%),
+                 radial-gradient(at 100% 0%, rgba(243, 232, 255, 0.6) 0px, transparent 50%),
+                 radial-gradient(at 50% 100%, rgba(238, 242, 255, 0.6) 0px, transparent 50%),
+                 #F6F8FC;
   --surface: #FFFFFF;
   --surface-raised: #FFFFFF;
   --surface-overlay: #FFFFFF;
@@ -90,6 +94,10 @@
 [data-theme="dark"] {
   --canvas: #0A0C10;
   --canvas-subtle: #060709;
+  --canvas-mesh: radial-gradient(at 0% 0%, rgba(30, 27, 75, 0.55) 0px, transparent 50%),
+                 radial-gradient(at 100% 0%, rgba(46, 16, 101, 0.4) 0px, transparent 50%),
+                 radial-gradient(at 50% 100%, rgba(15, 23, 42, 0.75) 0px, transparent 50%),
+                 #0A0C10;
   --surface: #111318;
   --surface-raised: #181B22;
   --surface-overlay: #1E2029;
@@ -264,7 +272,8 @@ body {
   font-family: var(--font-sans);
   font-size: var(--text-base);
   line-height: var(--leading-normal);
-  background: var(--canvas);
+  background: var(--canvas-mesh, var(--canvas));
+  background-attachment: fixed;
   min-height: 100vh;
 }
 

@@ -16,6 +16,10 @@
     return;
   }
 
+  function isDarkMode() {
+    return document.documentElement.getAttribute('data-theme') === 'dark';
+  }
+
   /* ==========================================================================
      1. Ambient Cursor Spotlight Aura
      ========================================================================== */
@@ -25,19 +29,29 @@
     'position: fixed',
     'top: 0',
     'left: 0',
-    'width: 600px',
-    'height: 600px',
-    'margin-left: -300px',
-    'margin-top: -300px',
+    'width: 640px',
+    'height: 640px',
+    'margin-left: -320px',
+    'margin-top: -320px',
     'border-radius: 50%',
     'pointer-events: none',
     'z-index: 1',
     'opacity: 0',
-    'transition: opacity 600ms ease',
+    'transition: opacity 500ms ease, background 500ms ease',
     'will-change: transform',
-    'background: radial-gradient(circle, rgba(99, 102, 241, 0.12) 0%, rgba(139, 92, 246, 0.05) 40%, transparent 70%)',
-    'mix-blend-mode: screen',
   ].join(';');
+
+  function syncSpotlightTheme() {
+    if (isDarkMode()) {
+      spotlight.style.background = 'radial-gradient(circle, rgba(99, 102, 241, 0.26) 0%, rgba(147, 51, 234, 0.14) 40%, transparent 70%)';
+      spotlight.style.mixBlendMode = 'screen';
+    } else {
+      // In light mode, normal blend mode with soft indigo-violet hue creates a visible luxurious glow
+      spotlight.style.background = 'radial-gradient(circle, rgba(99, 102, 241, 0.22) 0%, rgba(139, 92, 246, 0.10) 45%, transparent 70%)';
+      spotlight.style.mixBlendMode = 'normal';
+    }
+  }
+  syncSpotlightTheme();
   document.body.appendChild(spotlight);
 
   var mouseX = window.innerWidth / 2;
@@ -61,9 +75,8 @@
   });
 
   function updateSpotlight() {
-    // Easing interpolation (lerp)
-    spotX += (mouseX - spotX) * 0.12;
-    spotY += (mouseY - spotY) * 0.12;
+    spotX += (mouseX - spotX) * 0.14;
+    spotY += (mouseY - spotY) * 0.14;
     spotlight.style.transform = 'translate3d(' + spotX.toFixed(1) + 'px, ' + spotY.toFixed(1) + 'px, 0)';
     requestAnimationFrame(updateSpotlight);
   }
@@ -81,19 +94,18 @@
     'height: 100%',
     'pointer-events: none',
     'z-index: 0',
-    'opacity: 0.7',
+    'opacity: 0.85',
     'transition: opacity 800ms ease',
   ].join(';');
 
-  // Insert before content so it stays behind UI elements
   document.body.insertBefore(canvas, document.body.firstChild);
 
   var ctx = canvas.getContext('2d');
   var width, height;
   var particles = [];
-  var PARTICLE_COUNT = 48;
-  var CONNECT_DISTANCE = 140;
-  var MOUSE_RADIUS = 160;
+  var PARTICLE_COUNT = 60;
+  var CONNECT_DISTANCE = 150;
+  var MOUSE_RADIUS = 180;
 
   function resizeCanvas() {
     var dpr = window.devicePixelRatio || 1;
@@ -109,21 +121,23 @@
   function Particle() {
     this.x = Math.random() * width;
     this.y = Math.random() * height;
-    this.vx = (Math.random() - 0.5) * 0.6;
-    this.vy = (Math.random() - 0.5) * 0.6;
-    this.size = Math.random() * 2 + 1;
+    this.vx = (Math.random() - 0.5) * 0.7;
+    this.vy = (Math.random() - 0.5) * 0.7;
+    this.size = Math.random() * 2.2 + 1.2;
     this.baseX = this.x;
     this.baseY = this.y;
-    this.density = Math.random() * 20 + 10;
+    this.density = Math.random() * 25 + 12;
   }
 
   Particle.prototype.update = function () {
     this.x += this.vx;
     this.y += this.vy;
 
-    // Bounce off edges
-    if (this.x < 0 || this.x > width) this.vx = -this.vx;
-    if (this.y < 0 || this.y > height) this.vy = -this.vy;
+    // Wrap around screen edges for continuous flow
+    if (this.x < -10) this.x = width + 10;
+    if (this.x > width + 10) this.x = -10;
+    if (this.y < -10) this.y = height + 10;
+    if (this.y > height + 10) this.y = -10;
 
     // Mouse repulsion / antigravity reaction
     var dx = mouseX - this.x;
@@ -137,14 +151,14 @@
       var force = (maxDistance - distance) / maxDistance;
       var directionX = forceDirectionX * force * this.density;
       var directionY = forceDirectionY * force * this.density;
-      this.x -= directionX * 0.4;
-      this.y -= directionY * 0.4;
+      this.x -= directionX * 0.45;
+      this.y -= directionY * 0.45;
     }
   };
 
   Particle.prototype.draw = function () {
-    var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-    ctx.fillStyle = isDark ? 'rgba(165, 180, 252, 0.45)' : 'rgba(99, 102, 241, 0.35)';
+    var dark = isDarkMode();
+    ctx.fillStyle = dark ? 'rgba(165, 180, 252, 0.85)' : 'rgba(79, 70, 229, 0.75)';
     ctx.beginPath();
     ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
     ctx.fill();
@@ -156,25 +170,41 @@
 
   function renderParticles() {
     ctx.clearRect(0, 0, width, height);
-
-    var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    var dark = isDarkMode();
 
     for (var a = 0; a < particles.length; a++) {
       particles[a].update();
       particles[a].draw();
 
+      // Connect particle to nearby particles
       for (var b = a + 1; b < particles.length; b++) {
         var dx = particles[a].x - particles[b].x;
         var dy = particles[a].y - particles[b].y;
         var dist = Math.sqrt(dx * dx + dy * dy);
 
         if (dist < CONNECT_DISTANCE) {
-          var opacity = (1 - dist / CONNECT_DISTANCE) * (isDark ? 0.18 : 0.1);
-          ctx.strokeStyle = isDark ? 'rgba(129, 140, 248, ' + opacity + ')' : 'rgba(79, 70, 229, ' + opacity + ')';
-          ctx.lineWidth = 1;
+          var opacity = (1 - dist / CONNECT_DISTANCE) * (dark ? 0.28 : 0.22);
+          ctx.strokeStyle = dark ? 'rgba(129, 140, 248, ' + opacity + ')' : 'rgba(99, 102, 241, ' + opacity + ')';
+          ctx.lineWidth = 1.2;
           ctx.beginPath();
           ctx.moveTo(particles[a].x, particles[a].y);
           ctx.lineTo(particles[b].x, particles[b].y);
+          ctx.stroke();
+        }
+      }
+
+      // Connect particle directly to cursor if within range
+      if (isMouseActive) {
+        var mdx = mouseX - particles[a].x;
+        var mdy = mouseY - particles[a].y;
+        var mdist = Math.sqrt(mdx * mdx + mdy * mdy);
+        if (mdist < 130) {
+          var mOpacity = (1 - mdist / 130) * (dark ? 0.45 : 0.35);
+          ctx.strokeStyle = dark ? 'rgba(56, 189, 248, ' + mOpacity + ')' : 'rgba(79, 70, 229, ' + mOpacity + ')';
+          ctx.lineWidth = 1.4;
+          ctx.beginPath();
+          ctx.moveTo(particles[a].x, particles[a].y);
+          ctx.lineTo(mouseX, mouseY);
           ctx.stroke();
         }
       }
@@ -183,6 +213,16 @@
     requestAnimationFrame(renderParticles);
   }
   requestAnimationFrame(renderParticles);
+
+  // Sync themes when user toggles dark/light mode
+  var observer = new MutationObserver(function (mutations) {
+    mutations.forEach(function (m) {
+      if (m.attributeName === 'data-theme') {
+        syncSpotlightTheme();
+      }
+    });
+  });
+  observer.observe(document.documentElement, { attributes: true });
 
   /* ==========================================================================
      3. 3D Card Gyro Tilt & Mouse-Following Spotlight Borders
@@ -198,11 +238,9 @@
         var x = e.clientX - rect.left;
         var y = e.clientY - rect.top;
 
-        // Set CSS variables for mouse-tracking border glow
         card.style.setProperty('--mouse-x', x + 'px');
         card.style.setProperty('--mouse-y', y + 'px');
 
-        // 3D perspective tilt
         var centerX = rect.width / 2;
         var centerY = rect.height / 2;
         var rotateX = ((y - centerY) / centerY) * -5;
