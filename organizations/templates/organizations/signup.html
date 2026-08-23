@@ -50,11 +50,30 @@
 .ff-field-group { display: flex; gap: var(--sp-4); }
 .ff-field-group .ff-field { flex: 1; min-width: 0; }
 
-.field-error {
-    font-size: var(--text-xs);
-    color: var(--danger-text);
-    margin-top: var(--sp-1);
-    font-weight: 500;
+.ff-input-wrap {
+    position: relative;
+    display: block;
+    width: 100%;
+}
+.ff-input-wrap .ff-input,
+.ff-input-wrap input {
+    padding-left: 42px !important;
+}
+.ff-input-wrap__icon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-tertiary);
+    font-size: 16px;
+    line-height: 1;
+    pointer-events: none;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
 }
 </style>
 {% endblock %}
@@ -90,7 +109,10 @@
             <!-- Organization name -->
             <div class="ff-field">
                 <label class="ff-label" for="{{ form.organization_name.id_for_label }}">Organization name</label>
-                {{ form.organization_name }}
+                <div class="ff-input-wrap">
+                    <i class="bi bi-building ff-input-wrap__icon" aria-hidden="true"></i>
+                    {{ form.organization_name }}
+                </div>
                 {% if form.organization_name.errors %}
                 <div class="field-error">{{ form.organization_name.errors.0 }}</div>
                 {% endif %}
@@ -100,14 +122,20 @@
             <div class="ff-field-group">
                 <div class="ff-field">
                     <label class="ff-label" for="{{ form.first_name.id_for_label }}">First name</label>
-                    {{ form.first_name }}
+                    <div class="ff-input-wrap">
+                        <i class="bi bi-person ff-input-wrap__icon" aria-hidden="true"></i>
+                        {{ form.first_name }}
+                    </div>
                     {% if form.first_name.errors %}
                     <div class="field-error">{{ form.first_name.errors.0 }}</div>
                     {% endif %}
                 </div>
                 <div class="ff-field">
                     <label class="ff-label" for="{{ form.last_name.id_for_label }}">Last name</label>
-                    {{ form.last_name }}
+                    <div class="ff-input-wrap">
+                        <i class="bi bi-person ff-input-wrap__icon" aria-hidden="true"></i>
+                        {{ form.last_name }}
+                    </div>
                     {% if form.last_name.errors %}
                     <div class="field-error">{{ form.last_name.errors.0 }}</div>
                     {% endif %}
@@ -117,7 +145,10 @@
             <!-- Work email -->
             <div class="ff-field">
                 <label class="ff-label" for="{{ form.email.id_for_label }}">Work email</label>
-                {{ form.email }}
+                <div class="ff-input-wrap">
+                    <i class="bi bi-envelope ff-input-wrap__icon" aria-hidden="true"></i>
+                    {{ form.email }}
+                </div>
                 {% if form.email.errors %}
                 <div class="field-error">{{ form.email.errors.0 }}</div>
                 {% endif %}
@@ -127,14 +158,20 @@
             <div class="ff-field-group">
                 <div class="ff-field">
                     <label class="ff-label" for="{{ form.password.id_for_label }}">Password</label>
-                    {{ form.password }}
+                    <div class="ff-input-wrap">
+                        <i class="bi bi-lock ff-input-wrap__icon" aria-hidden="true"></i>
+                        {{ form.password }}
+                    </div>
                     {% if form.password.errors %}
                     <div class="field-error">{{ form.password.errors.0 }}</div>
                     {% endif %}
                 </div>
                 <div class="ff-field">
                     <label class="ff-label" for="{{ form.confirm_password.id_for_label }}">Confirm password</label>
-                    {{ form.confirm_password }}
+                    <div class="ff-input-wrap">
+                        <i class="bi bi-shield-lock ff-input-wrap__icon" aria-hidden="true"></i>
+                        {{ form.confirm_password }}
+                    </div>
                     {% if form.confirm_password.errors %}
                     <div class="field-error">{{ form.confirm_password.errors.0 }}</div>
                     {% endif %}

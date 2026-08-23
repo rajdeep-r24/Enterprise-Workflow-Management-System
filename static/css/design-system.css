@@ -1036,20 +1036,31 @@ svg {
 /* Input with prefix/suffix */
 .ff-input-wrap {
   position: relative;
+  display: block;
+  width: 100%;
 }
 
-.ff-input-wrap .ff-input {
-  padding-left: 38px;
+.ff-input-wrap .ff-input,
+.ff-input-wrap input,
+.ff-input-wrap select {
+  padding-left: 42px !important;
 }
 
 .ff-input-wrap__icon {
   position: absolute;
-  left: var(--sp-3);
+  left: 14px;
   top: 50%;
   transform: translateY(-50%);
   color: var(--text-tertiary);
-  font-size: 15px;
+  font-size: 16px;
+  line-height: 1;
   pointer-events: none;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
 }
 
 /* -------------------------------------------------------------------------

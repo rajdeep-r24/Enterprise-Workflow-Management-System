@@ -6,28 +6,50 @@ User = get_user_model()
 class OrganizationSignupForm(forms.Form):
     organization_name = forms.CharField(
         max_length=255, 
-        label="Organization Name"
+        label="Organization Name",
+        widget=forms.TextInput(attrs={
+            "class": "ff-input",
+            "placeholder": "Acme Corp",
+        })
     )
     
     first_name = forms.CharField(
         max_length=150, 
-        label="First Name"
+        label="First Name",
+        widget=forms.TextInput(attrs={
+            "class": "ff-input",
+            "placeholder": "Rajvee",
+        })
     )
     last_name = forms.CharField(
         max_length=150, 
-        label="Last Name"
+        label="Last Name",
+        widget=forms.TextInput(attrs={
+            "class": "ff-input",
+            "placeholder": "Rathod",
+        })
     )
     
     email = forms.EmailField(
-        label="Email Address"
+        label="Email Address",
+        widget=forms.EmailInput(attrs={
+            "class": "ff-input",
+            "placeholder": "you@company.com",
+        })
     )
     
     password = forms.CharField(
-        widget=forms.PasswordInput, 
+        widget=forms.PasswordInput(attrs={
+            "class": "ff-input",
+            "placeholder": "Create a password",
+        }), 
         label="Password"
     )
     confirm_password = forms.CharField(
-        widget=forms.PasswordInput, 
+        widget=forms.PasswordInput(attrs={
+            "class": "ff-input",
+            "placeholder": "Confirm password",
+        }), 
         label="Confirm Password"
     )
 
