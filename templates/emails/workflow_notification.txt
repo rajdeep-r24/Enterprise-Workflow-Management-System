@@ -1,0 +1,22 @@
+[{{ badge_text }}] {{ headline }}
+
+{{ main_message }}
+
+--------------------------------------------------
+REQUEST DETAILS:
+- Request Type: {{ workflow_name }}
+- Requester: {{ requester_name }} ({{ requester_dept|default:"General" }})
+{% if current_step_name %}- Current Step: {{ current_step_name }}
+{% endif %}{% if permission_id %}- Permission ID: {{ permission_id }}
+{% endif %}{% if remarks %}- Remarks: "{{ remarks }}"
+{% endif %}- Timestamp: {{ timestamp|date:"M d, Y · H:i e" }}
+--------------------------------------------------
+
+{% if cta_url %}
+To view or take action on this request, open the link below:
+{{ cta_url }}
+{% endif %}
+
+--
+Anukram | Enterprise Workflow Management System
+Organization: {{ organization_name|default:"Anukram Enterprise" }}

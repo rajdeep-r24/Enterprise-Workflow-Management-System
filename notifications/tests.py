@@ -246,3 +246,35 @@ class NotificationLifecycleTests(TestCase):
         self.assertEqual(response.status_code, 404)
 
         self.assertFalse(Notification.objects.get(pk=notification.pk).is_read)
+
+    def test_workflow_email_notifications_dispatched_to_outbox(self):
+        from django.core import mail
+        mail.outbox.clear()
+
+        # 1. Test Submission Email Dispatch
+        _, _, form_definition, steps = self._create_workflow(["IT_HEAD"])
+        submission = self._submit_request(form_definition)
+        
+        # Expect 2 emails: 1 to requester (SUBMITTED) and 1 to IT Head (ASSIGNED)
+        self.assertGreaterEqual(len(mail.outbox), 2)
+        
+        recipients = [m.to[0] for m in mail.outbox]
+        self.assertIn(self.requester_user.email, recipients)
+        self.assertIn(self.it_head_user.email, recipients)
+
+        # Verify action-required email for IT Head
+        it_mail = [m for m in mail.outbox if self.it_head_user.email in m.to][0]
+        self.assertIn("Action Required", it_mail.subject)
+        self.assertIn("Review & Take Action", it_mail.alternatives[0][0])
+
+        # 2. Test Step Approval & Completion Email Dispatch
+        mail.outbox.clear()
+        workflow_instance = submission.workflow_instance
+        step_instance = workflow_instance.steps.get(step_definition=steps[0])
+        WorkflowService.approve(step_instance, self.it_head_user)
+
+        # Final approval triggers COMPLETED email with QR verification link
+        self.assertGreaterEqual(len(mail.outbox), 1)
+        completed_mail = [m for m in mail.outbox if self.requester_user.email in m.to][0]
+        self.assertIn("Approved & Completed", completed_mail.subject)
+        self.assertIn("QR Permission Slip", completed_mail.alternatives[0][0])

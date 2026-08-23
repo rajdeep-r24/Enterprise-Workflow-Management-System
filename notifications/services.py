@@ -1,6 +1,7 @@
 from django.db import transaction
 
 from .models import Notification
+from .email_service import WorkflowEmailService
 
 
 class NotificationService:
@@ -12,6 +13,7 @@ class NotificationService:
         title,
         message="",
         workflow_instance=None,
+        send_email=True,
     ):
         if not recipient:
             return None
@@ -25,15 +27,25 @@ class NotificationService:
         ).first()
 
         if existing:
-            return existing
+            notification = existing
+        else:
+            notification = Notification.objects.create(
+                recipient=recipient,
+                notification_type=notification_type,
+                title=title,
+                message=message,
+                workflow_instance=workflow_instance,
+            )
 
-        notification = Notification.objects.create(
-            recipient=recipient,
-            notification_type=notification_type,
-            title=title,
-            message=message,
-            workflow_instance=workflow_instance,
-        )
+        if send_email:
+            WorkflowEmailService.send_workflow_email(
+                recipient=recipient,
+                notification_type=notification_type,
+                title=title,
+                message=message,
+                workflow_instance=workflow_instance,
+            )
+
         return notification
 
     @staticmethod
