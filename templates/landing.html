@@ -429,6 +429,37 @@
     pointer-events: none;
 }
 
+/* Scenario selection pills */
+.lp-scenario-pills {
+    display: flex; gap: var(--sp-2); flex-wrap: wrap; margin-bottom: var(--sp-6);
+    position: relative; z-index: 2;
+}
+.lp-scenario-pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 14px;
+    border-radius: var(--r-full);
+    font-size: var(--text-xs); font-weight: 600;
+    font-family: var(--font-sans);
+    border: 1px solid var(--border);
+    background: var(--canvas-subtle);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 160ms ease;
+    user-select: none;
+}
+.lp-scenario-pill:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: var(--surface);
+    transform: translateY(-1px);
+}
+.lp-scenario-pill.is-active {
+    background: var(--accent);
+    color: #FFFFFF;
+    border-color: var(--accent);
+    box-shadow: 0 2px 10px rgba(59, 91, 219, 0.35);
+}
+
 /* Transit track */
 .lp-transit-track-wrap {
     position: relative; height: 6px;
@@ -1123,6 +1154,22 @@
         <div class="lp-transit-arena" data-reveal data-delay="1">
             <!-- Map panel -->
             <div class="lp-transit-map">
+                <!-- Scenario selector pills -->
+                <div class="lp-scenario-pills" id="transit-scenario-pills">
+                    <button class="lp-scenario-pill is-active" data-scenario="equipment" type="button">
+                        <i class="bi bi-laptop"></i> Equipment
+                    </button>
+                    <button class="lp-scenario-pill" data-scenario="expense" type="button">
+                        <i class="bi bi-receipt"></i> Expense
+                    </button>
+                    <button class="lp-scenario-pill" data-scenario="access" type="button">
+                        <i class="bi bi-shield-lock"></i> Access
+                    </button>
+                    <button class="lp-scenario-pill" data-scenario="leave" type="button">
+                        <i class="bi bi-calendar-check"></i> Leave
+                    </button>
+                </div>
+
                 <!-- Track -->
                 <div class="lp-transit-track-wrap">
                     <div class="lp-transit-track-fill" id="transit-track-fill"></div>
@@ -1130,31 +1177,26 @@
                 </div>
 
                 <!-- Stations -->
-                <div class="lp-transit-nodes">
+                <div class="lp-transit-nodes" id="transit-nodes">
                     <div class="transit-node" data-station="emp">
                         <div class="transit-node__badge"><i class="bi bi-person-circle"></i></div>
                         <div class="transit-node__name">Employee</div>
                         <div class="transit-node__role">Rajdeep Rathod</div>
+                    </div>
+                    <div class="transit-node" data-station="mgr">
+                        <div class="transit-node__badge"><i class="bi bi-person-badge"></i></div>
+                        <div class="transit-node__name">Unit Manager</div>
+                        <div class="transit-node__role">Vikram Sahay</div>
                     </div>
                     <div class="transit-node" data-station="it">
                         <div class="transit-node__badge"><i class="bi bi-pc-display"></i></div>
                         <div class="transit-node__name">IT Head</div>
                         <div class="transit-node__role">Rohan Mehta</div>
                     </div>
-                    <div class="transit-node" data-station="hr">
-                        <div class="transit-node__badge"><i class="bi bi-people"></i></div>
-                        <div class="transit-node__name">HR Director</div>
-                        <div class="transit-node__role">Meera Iyer</div>
-                    </div>
-                    <div class="transit-node" data-station="fin">
-                        <div class="transit-node__badge"><i class="bi bi-bank"></i></div>
-                        <div class="transit-node__name">Finance</div>
-                        <div class="transit-node__role">Karan Singh</div>
-                    </div>
                     <div class="transit-node" data-station="done">
                         <div class="transit-node__badge"><i class="bi bi-qr-code"></i></div>
-                        <div class="transit-node__name">Issued</div>
-                        <div class="transit-node__role">Auto-generated</div>
+                        <div class="transit-node__name">Asset Issued</div>
+                        <div class="transit-node__role">QR Voucher</div>
                     </div>
                 </div>
 
@@ -1163,7 +1205,7 @@
                         <i class="bi bi-play-fill"></i>
                         Submit a request
                     </button>
-                    <span style="font-size: var(--text-xs); color: var(--text-tertiary);">MacBook Pro 16" · Equipment Request</span>
+                    <span id="transit-req-summary" style="font-size: var(--text-xs); color: var(--text-tertiary);">MacBook Pro 16" · Equipment Requisition</span>
                 </div>
             </div>
 
