@@ -194,6 +194,6 @@ Distributed under the MIT License. See `LICENSE` for more information.
 
 <div align="center">
 
-Built with ❤️ by **Rajvee Rathod** • Anukram — Enterprise Workflow Management System
+Built with ❤️ by **Rajdeep Rathod** • Anukram — Enterprise Workflow Management System
 
 </div>
