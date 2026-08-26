@@ -128,10 +128,10 @@
   --success-border: rgba(76, 216, 133, 0.24);
   --success-text: #4CD885;
 
-  --warning: #F5A623;
-  --warning-subtle: rgba(245, 166, 35, 0.10);
-  --warning-border: rgba(245, 166, 35, 0.24);
-  --warning-text: #F5A623;
+  --warning: #FBBF24;
+  --warning-subtle: rgba(251, 191, 36, 0.14);
+  --warning-border: rgba(251, 191, 36, 0.28);
+  --warning-text: #FDE68A;
 
   --danger: #F07070;
   --danger-hover: #F58080;
@@ -299,10 +299,8 @@ a:active,
 a.ff-stat-card,
 a.ff-stat-card:hover,
 a.ff-stat-card:focus,
-a.ff-stat-card:active,
-a.ff-stat-card * {
+a.ff-stat-card:active {
   text-decoration: none !important;
-  color: inherit !important;
 }
 
 a.ff-sidebar__brand,
@@ -1167,22 +1165,23 @@ a.ff-stat-card {
   padding: var(--sp-5);
   box-shadow: var(--shadow-sm);
   text-decoration: none !important;
-  color: inherit !important;
   display: block;
   transition: box-shadow var(--dur-base) var(--ease-standard),
-    transform var(--dur-base) var(--ease-standard);
+    transform var(--dur-base) var(--ease-standard),
+    border-color var(--dur-base) var(--ease-standard);
 }
 
 a.ff-stat-card:hover,
 a.ff-stat-card:focus,
 a.ff-stat-card:active {
   text-decoration: none !important;
-  color: inherit !important;
+  border-color: var(--accent-subtle-border);
   box-shadow: var(--shadow-md);
   transform: translateY(-2px);
 }
 
-.ff-stat-card__icon {
+.ff-stat-card__icon,
+a.ff-stat-card .ff-stat-card__icon {
   width: 40px;
   height: 40px;
   border-radius: var(--r-md);
@@ -1193,26 +1192,29 @@ a.ff-stat-card:active {
   margin-bottom: var(--sp-4);
 }
 
-.ff-stat-card__label {
+.ff-stat-card__label,
+a.ff-stat-card .ff-stat-card__label {
   font-size: var(--text-xs);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: var(--tracking-wider);
-  color: var(--text-tertiary);
+  color: var(--text-tertiary) !important;
   margin-bottom: var(--sp-1);
 }
 
-.ff-stat-card__value {
+.ff-stat-card__value,
+a.ff-stat-card .ff-stat-card__value {
   font-size: var(--text-4xl);
   font-weight: 800;
   letter-spacing: var(--tracking-tight);
-  color: var(--text-primary);
+  color: var(--text-primary) !important;
   line-height: 1;
 }
 
-.ff-stat-card__meta {
+.ff-stat-card__meta,
+a.ff-stat-card .ff-stat-card__meta {
   font-size: var(--text-xs);
-  color: var(--text-tertiary);
+  color: var(--text-tertiary) !important;
   margin-top: var(--sp-2);
 }
 
