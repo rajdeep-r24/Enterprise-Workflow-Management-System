@@ -235,3 +235,25 @@ class RequestAttachment(models.Model):
 
     def __str__(self):
         return self.original_filename
+
+
+class RequestComment(models.Model):
+    submission = models.ForeignKey(
+        FormSubmission,
+        on_delete=models.CASCADE,
+        related_name="comments",
+    )
+    author = models.ForeignKey(
+        User,
+        on_delete=models.PROTECT,
+        related_name="request_comments",
+    )
+    message = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["created_at"]
+
+    def __str__(self):
+        return f"Comment by {self.author} on #{self.submission_id}"

@@ -9,6 +9,9 @@ from django.http import HttpResponse, HttpResponseForbidden, FileResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
+from django.views.decorators.http import require_POST
+from notifications.services import NotificationService
+
 from employees.models import Employee
 from employees.permissions import can_approve, role_required
 from workflow.models.events import WorkflowEvent
@@ -16,10 +19,11 @@ from workflow.models.instances import WorkflowStepInstance
 from workflow.services import WorkflowService
 
 from .forms import DynamicForm
-from .models import FormDefinition, FormSubmission, RequestAttachment
+from .models import FormDefinition, FormSubmission, RequestAttachment, RequestComment
 from .pdf_generator import generate_permission_pdf
 from .services import FormEngineService
 from .audit_service import AuditExportService
+from .permissions import can_comment_on_request
 
 
 # =========================================================
@@ -389,6 +393,46 @@ def request_detail(request, pk):
     )
 
     # =====================================================
+    # INTERNAL NOTES & DISCUSSION
+    # =====================================================
+
+    can_comment = can_comment_on_request(request.user, submission)
+    comments = (
+        submission.comments
+        .select_related("author")
+        .all()
+    )
+    comment_author_ids = [c.author_id for c in comments]
+    emp_map = {
+        emp.user_id: emp
+        for emp in Employee.objects.filter(user_id__in=comment_author_ids, organization=submission.organization).select_related("role", "designation", "department")
+    }
+    comments_list = []
+    for c in comments:
+        emp = emp_map.get(c.author_id)
+        role_label = emp.role.name if (emp and emp.role) else ("Requester" if c.author_id == submission.submitted_by_id else "Staff")
+        first = c.author.first_name or ""
+        last = c.author.last_name or ""
+        if first and last:
+            initials = (first[0] + last[0]).upper()
+        elif first:
+            initials = first[:2].upper()
+        else:
+            initials = c.author.username[:2].upper()
+            
+        comments_list.append({
+            "id": c.pk,
+            "author": c.author,
+            "author_name": c.author.get_full_name() or c.author.username or c.author.email,
+            "role_label": role_label,
+            "initials": initials,
+            "message": c.message,
+            "created_at": c.created_at,
+            "is_requester": c.author_id == submission.submitted_by_id,
+            "is_current_user": c.author_id == request.user.pk,
+        })
+
+    # =====================================================
     # RENDER PAGE
     # =====================================================
 
@@ -403,8 +447,84 @@ def request_detail(request, pk):
             "can_take_action": is_assigned_approver,
             "can_revoke": can_revoke,
             "events": events,
+            "comments": comments_list,
+            "can_comment": can_comment,
         },
     )
+
+
+# =========================================================
+# ADD INTERNAL NOTE / COMMENT
+# =========================================================
+
+@login_required
+@require_POST
+def add_request_comment(request, pk):
+    """
+    Adds an internal note/discussion message to a request.
+    Notifies the counterpart (approver if requester commented, or requester if approver commented).
+    """
+    submission = get_object_or_404(
+        FormSubmission.objects.for_tenant(request.tenant).select_related(
+            "workflow_instance",
+            "submitted_by",
+            "organization",
+        ),
+        pk=pk,
+    )
+
+    if not can_comment_on_request(request.user, submission):
+        return HttpResponseForbidden("Permission Denied: You cannot comment on this request.")
+
+    message = request.POST.get("message", "").strip()
+    if not message:
+        messages.error(request, "Note cannot be empty.")
+        return redirect(f"/requests/{pk}/#discussion")
+
+    if len(message) > 2000:
+        messages.error(request, "Note exceeds maximum limit of 2000 characters.")
+        return redirect(f"/requests/{pk}/#discussion")
+
+    # Create RequestComment record (independent of WorkflowEvent)
+    RequestComment.objects.create(
+        submission=submission,
+        author=request.user,
+        message=message,
+    )
+
+    # Trigger notifications based on author role
+    author_name = request.user.get_full_name() or request.user.username or request.user.email
+    preview_msg = message if len(message) <= 100 else f"{message[:97]}..."
+
+    # If approver/admin commented -> notify requester
+    if request.user != submission.submitted_by:
+        NotificationService.notify(
+            recipient=submission.submitted_by,
+            notification_type="COMMENT",
+            title=f"New Note on {submission.form.name}",
+            message=f"{author_name} left a note: \"{preview_msg}\"",
+            workflow_instance=submission.workflow_instance,
+        )
+    # If requester commented/replied -> notify currently assigned approver
+    else:
+        if submission.workflow_instance:
+            pending_step = (
+                WorkflowStepInstance.objects
+                .filter(workflow_instance=submission.workflow_instance, status="PENDING")
+                .select_related("assigned_to")
+                .first()
+            )
+            if pending_step and pending_step.assigned_to and pending_step.assigned_to != request.user:
+                NotificationService.notify(
+                    recipient=pending_step.assigned_to,
+                    notification_type="COMMENT",
+                    title=f"Requester Replied: {submission.form.name}",
+                    message=f"{author_name} replied: \"{preview_msg}\"",
+                    workflow_instance=submission.workflow_instance,
+                )
+
+    messages.success(request, "Internal note posted successfully.")
+    return redirect(f"/requests/{pk}/#discussion")
 
 
 # =========================================================

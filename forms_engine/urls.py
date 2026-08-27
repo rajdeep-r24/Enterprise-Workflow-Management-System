@@ -22,6 +22,12 @@ urlpatterns = [
     ),
 
     path(
+        "requests/<int:pk>/comment/",
+        views.add_request_comment,
+        name="add-request-comment",
+    ),
+
+    path(
         "attachment/<int:pk>/download/",
         views.download_attachment,
         name="download-attachment",

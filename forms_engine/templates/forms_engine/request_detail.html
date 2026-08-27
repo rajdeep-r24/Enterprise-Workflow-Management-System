@@ -227,6 +227,88 @@
         </div>
         {% endif %}
 
+        <!-- ═══ Internal Notes & Discussion Thread ═══ -->
+        <div class="ff-card" id="discussion" style="margin-top:var(--sp-5);">
+            <div class="ff-card__header">
+                <div style="display:flex;align-items:center;gap:var(--sp-3);">
+                    <div style="width:36px;height:36px;background:var(--accent-subtle);color:var(--accent);border-radius:var(--r-md);display:flex;align-items:center;justify-content:center;font-size:16px;">
+                        <i class="bi bi-chat-left-text"></i>
+                    </div>
+                    <div>
+                        <div class="ff-card__title" style="margin:0;">Internal Notes & Discussion</div>
+                        <div class="ff-card__subtitle">Questions, clarifications & notes between requester and approvers</div>
+                    </div>
+                </div>
+                <span class="ff-badge ff-badge--neutral">{{ comments|length }} note{{ comments|length|pluralize }}</span>
+            </div>
+            <div class="ff-card__body" style="padding:var(--sp-6);">
+                
+                <!-- Comment List -->
+                {% if comments %}
+                <div style="display:flex;flex-direction:column;gap:var(--sp-4);margin-bottom:var(--sp-6);">
+                    {% for c in comments %}
+                    <div style="display:flex;gap:var(--sp-3-5);align-items:flex-start;padding:var(--sp-4);border-radius:var(--r-lg);background:{% if c.is_current_user %}var(--accent-subtle){% else %}var(--canvas-subtle){% endif %};border:1px solid {% if c.is_current_user %}var(--accent-subtle-border){% else %}var(--border){% endif %};">
+                        
+                        <!-- Avatar -->
+                        <div style="width:38px;height:38px;border-radius:var(--r-md);background:{% if c.is_requester %}var(--info-subtle);color:var(--info){% else %}var(--accent-subtle);color:var(--accent){% endif %};border:1px solid var(--border-strong);display:flex;align-items:center;justify-content:center;font-size:var(--text-xs);font-weight:700;flex-shrink:0;">
+                            {{ c.initials }}
+                        </div>
+                        
+                        <!-- Body -->
+                        <div style="flex:1;min-width:0;">
+                            <div style="display:flex;align-items:center;justify-content:space-between;gap:var(--sp-2);flex-wrap:wrap;margin-bottom:var(--sp-1-5);">
+                                <div style="display:flex;align-items:center;gap:var(--sp-2);">
+                                    <span style="font-weight:700;font-size:var(--text-sm);color:var(--text-primary);">{{ c.author_name }}</span>
+                                    <span class="ff-badge {% if c.is_requester %}ff-badge--info{% else %}ff-badge--accent{% endif %}" style="font-size:10px;padding:1px 6px;">{{ c.role_label }}</span>
+                                    {% if c.is_current_user %}
+                                    <span style="font-size:10px;color:var(--text-tertiary);font-weight:500;">(You)</span>
+                                    {% endif %}
+                                </div>
+                                <span style="font-size:var(--text-xs);color:var(--text-tertiary);font-variant-numeric:tabular-nums;">
+                                    <i class="bi bi-clock" style="font-size:10px;"></i> {{ c.created_at|date:"M d, Y H:i" }}
+                                </span>
+                            </div>
+                            <div style="font-size:var(--text-sm);color:var(--text-primary);line-height:var(--leading-relaxed);white-space:pre-line;word-break:break-word;">{{ c.message }}</div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="ff-empty" style="padding:var(--sp-6) 0 var(--sp-6) 0;border:none;">
+                    <div class="ff-empty__icon" style="width:40px;height:40px;font-size:18px;"><i class="bi bi-chat-square-dots"></i></div>
+                    <div class="ff-empty__title" style="font-size:var(--text-sm);">No notes or questions posted yet</div>
+                    <p class="ff-empty__body" style="font-size:var(--text-xs);">Requesters and reviewers can leave internal notes, request details, or post updates here.</p>
+                </div>
+                {% endif %}
+
+                <!-- Comment Input Form -->
+                {% if can_comment %}
+                <form method="post" action="{% url 'add-request-comment' submission.pk %}" id="comment-form" style="margin-top:var(--sp-4);border-top:1px solid var(--border);padding-top:var(--sp-5);">
+                    {% csrf_token %}
+                    <div class="ff-field" style="margin-bottom:var(--sp-3);">
+                        <label class="ff-label" for="comment-message-input" style="font-size:var(--text-xs);font-weight:700;color:var(--text-secondary);display:flex;justify-content:space-between;align-items:center;">
+                            <span><i class="bi bi-pencil-square"></i> Add a Note / Reply</span>
+                            <span id="char-counter" style="font-weight:400;color:var(--text-tertiary);">0 / 2000</span>
+                        </label>
+                        <textarea id="comment-message-input" name="message" class="ff-input" rows="3" maxlength="2000" required
+                                  placeholder="Type your question, clarification, or update here…"
+                                  style="height:auto;min-height:84px;resize:vertical;font-size:var(--text-sm);font-family:var(--font-sans);"></textarea>
+                    </div>
+                    <div style="display:flex;justify-content:flex-end;">
+                        <button type="submit" class="ff-btn ff-btn--primary ff-btn--sm" id="post-note-btn">
+                            <i class="bi bi-send"></i> Post Note
+                        </button>
+                    </div>
+                </form>
+                {% else %}
+                <div style="font-size:var(--text-xs);color:var(--text-tertiary);text-align:center;padding-top:var(--sp-4);border-top:1px solid var(--border);">
+                    <i class="bi bi-lock"></i> Only the requester, assigned approver, or organization administrators can post notes on this request.
+                </div>
+                {% endif %}
+
+            </div>
+        </div>
+
     </div><!-- /.left -->
 
     <!-- ═══ Right: Timeline ═══ -->
@@ -401,5 +483,25 @@
     </div>
 </div>
 {% endif %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var txt = document.getElementById('comment-message-input');
+    var counter = document.getElementById('char-counter');
+    if (txt && counter) {
+        txt.addEventListener('input', function () {
+            var len = txt.value.length;
+            counter.textContent = len + ' / 2000';
+            if (len > 1900) {
+                counter.style.color = 'var(--danger)';
+            } else {
+                counter.style.color = 'var(--text-tertiary)';
+            }
+        });
+    }
+});
+</script>
+{% endblock %}
 
 {% endblock %}
