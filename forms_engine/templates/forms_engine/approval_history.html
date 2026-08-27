@@ -11,10 +11,13 @@
         <h1 class="ff-page-header__title">Approval History</h1>
         <p class="ff-page-header__sub">Every request you've approved or rejected</p>
     </div>
-    <div class="ff-flex ff-gap-2">
+    <div class="ff-flex ff-gap-2" style="align-items:center;">
         <a href="{% url 'approval-history' %}" class="ff-btn ff-btn--sm {% if not status_filter %}ff-btn--secondary{% else %}ff-btn--ghost{% endif %}">All</a>
         <a href="?status=APPROVED" class="ff-btn ff-btn--sm {% if status_filter == 'APPROVED' %}ff-btn--success{% else %}ff-btn--ghost{% endif %}">Approved</a>
         <a href="?status=REJECTED" class="ff-btn ff-btn--sm {% if status_filter == 'REJECTED' %}ff-btn--danger{% else %}ff-btn--ghost{% endif %}">Rejected</a>
+        <a href="{% url 'export-approval-history-csv' %}{% if status_filter %}?status={{ status_filter }}{% endif %}" class="ff-btn ff-btn--sm ff-btn--secondary" style="margin-left:6px;" title="Download personal decision history as CSV">
+            <i class="bi bi-download"></i> Export CSV
+        </a>
     </div>
 </div>
 

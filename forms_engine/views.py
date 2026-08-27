@@ -19,6 +19,7 @@ from .forms import DynamicForm
 from .models import FormDefinition, FormSubmission, RequestAttachment
 from .pdf_generator import generate_permission_pdf
 from .services import FormEngineService
+from .audit_service import AuditExportService
 
 
 # =========================================================
@@ -1203,4 +1204,47 @@ def request_type_step_delete(request, rt_pk, step_pk):
         messages.success(request, "Step deleted successfully.")
         
     return redirect("request-type-steps", pk=request_type.pk)
+
+
+# =========================================================
+# AUDIT TRAIL & COMPLIANCE CSV EXPORT
+# =========================================================
+
+@login_required
+@role_required("ORG_ADMIN", "SUPER_ADMIN", "ADMIN")
+def export_audit_trail(request):
+    """
+    Exports a comprehensive ISO 27001 / SOC 2 compliance audit CSV for the organization.
+    """
+    status_filter = request.GET.get("status")
+    csv_data = AuditExportService.generate_organization_audit_csv(
+        organization=request.tenant,
+        status_filter=status_filter,
+    )
+    timestamp = timezone.now().strftime("%Y%m%d_%H%M%S")
+    filename = f"Anukram_Audit_Trail_{timestamp}.csv"
+
+    response = HttpResponse(csv_data, content_type="text/csv; charset=utf-8")
+    response["Content-Disposition"] = f'attachment; filename="{filename}"'
+    return response
+
+
+@login_required
+def export_approval_history_csv(request):
+    """
+    Exports the logged-in approver's personal decision history CSV.
+    """
+    status_filter = request.GET.get("status")
+    csv_data = AuditExportService.generate_approver_history_csv(
+        user=request.user,
+        organization=request.tenant,
+        status_filter=status_filter,
+    )
+    timestamp = timezone.now().strftime("%Y%m%d_%H%M%S")
+    filename = f"Anukram_Approval_History_{timestamp}.csv"
+
+    response = HttpResponse(csv_data, content_type="text/csv; charset=utf-8")
+    response["Content-Disposition"] = f'attachment; filename="{filename}"'
+    return response
+
 

@@ -146,4 +146,16 @@ urlpatterns = [
         views.request_type_step_delete,
         name="request-type-step-delete",
     ),
+
+    path(
+        "export-audit-trail/",
+        views.export_audit_trail,
+        name="export-audit-trail",
+    ),
+
+    path(
+        "approvals/history/export/",
+        views.export_approval_history_csv,
+        name="export-approval-history-csv",
+    ),
 ]
