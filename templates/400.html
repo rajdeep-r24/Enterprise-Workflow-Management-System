@@ -1,0 +1,51 @@
+{% extends "public_base.html" %}
+{% load static %}
+
+{% block title %}Invalid Request (400) · Anukram{% endblock %}
+
+{% block content %}
+<main style="min-height: 80vh; display: flex; align-items: center; justify-content: center; padding: 48px 24px;">
+    <div style="max-width: 580px; width: 100%; text-align: center; background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 48px 36px; box-shadow: var(--shadow-lg); position: relative; overflow: hidden;">
+        
+        <!-- Ambient decorative background glow -->
+        <div style="position: absolute; top: -60px; left: 50%; transform: translateX(-50%); width: 220px; height: 120px; background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, transparent 70%); filter: blur(30px); pointer-events: none;"></div>
+
+        <!-- Warning Document Emblem -->
+        <div style="display: inline-flex; align-items: center; justify-content: center; width: 68px; height: 68px; border-radius: 18px; background: color-mix(in srgb, var(--brand-primary) 12%, transparent); border: 1px solid color-mix(in srgb, var(--brand-primary) 28%, transparent); margin-bottom: 24px;">
+            <i class="bi bi-file-earmark-x-fill" style="font-size: 30px; color: var(--brand-primary);"></i>
+        </div>
+
+        <!-- 400 Badge -->
+        <div>
+            <span style="display: inline-block; padding: 4px 14px; border-radius: 999px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; background: color-mix(in srgb, var(--brand-primary) 14%, transparent); color: var(--brand-primary); border: 1px solid color-mix(in srgb, var(--brand-primary) 30%, transparent); margin-bottom: 16px;">
+                Error 400 · Invalid Request
+            </span>
+        </div>
+
+        <h1 style="font-size: 28px; font-weight: 800; letter-spacing: -0.03em; color: var(--text-primary); margin: 0 0 12px 0;">
+            Malformed Request Payload
+        </h1>
+
+        <p style="font-size: 15px; line-height: 1.6; color: var(--text-secondary); margin: 0 0 32px 0;">
+            The request could not be processed due to invalid parameters, missing CSRF verification tokens, or corrupted form submission data.
+        </p>
+
+        <!-- CTA Actions -->
+        <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+            {% if user.is_authenticated %}
+                <a href="{% url 'dashboard' %}" class="ff-btn ff-btn--primary" style="display: inline-flex; align-items: center; gap: 8px; text-decoration: none; padding: 10px 22px;">
+                    <i class="bi bi-speedometer2"></i> Return to Dashboard
+                </a>
+            {% else %}
+                <a href="{% url 'landing' %}" class="ff-btn ff-btn--primary" style="display: inline-flex; align-items: center; gap: 8px; text-decoration: none; padding: 10px 22px;">
+                    <i class="bi bi-house"></i> Return Home
+                </a>
+            {% endif %}
+            <a href="javascript:history.back();" class="ff-btn ff-btn--secondary" style="display: inline-flex; align-items: center; gap: 8px; text-decoration: none; padding: 10px 22px;">
+                <i class="bi bi-arrow-left"></i> Go Back
+            </a>
+        </div>
+
+    </div>
+</main>
+{% endblock %}

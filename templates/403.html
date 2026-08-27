@@ -1,0 +1,54 @@
+{% extends "public_base.html" %}
+{% load static %}
+
+{% block title %}Access Denied (403) · Anukram{% endblock %}
+
+{% block content %}
+<main style="min-height: 80vh; display: flex; align-items: center; justify-content: center; padding: 48px 24px;">
+    <div style="max-width: 580px; width: 100%; text-align: center; background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 48px 36px; box-shadow: var(--shadow-lg); position: relative; overflow: hidden;">
+        
+        <!-- Ambient decorative background glow -->
+        <div style="position: absolute; top: -60px; left: 50%; transform: translateX(-50%); width: 220px; height: 120px; background: radial-gradient(circle, rgba(245, 158, 11, 0.15) 0%, transparent 70%); filter: blur(30px); pointer-events: none;"></div>
+
+        <!-- Security Shield Emblem -->
+        <div style="display: inline-flex; align-items: center; justify-content: center; width: 68px; height: 68px; border-radius: 18px; background: color-mix(in srgb, #F59E0B 12%, transparent); border: 1px solid color-mix(in srgb, #F59E0B 28%, transparent); margin-bottom: 24px;">
+            <i class="bi bi-shield-lock-fill" style="font-size: 30px; color: #F59E0B;"></i>
+        </div>
+
+        <!-- 403 Badge -->
+        <div>
+            <span style="display: inline-block; padding: 4px 14px; border-radius: 999px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; background: color-mix(in srgb, #F59E0B 14%, transparent); color: #D97706; border: 1px solid color-mix(in srgb, #F59E0B 30%, transparent); margin-bottom: 16px;">
+                Error 403 · Access Restricted
+            </span>
+        </div>
+
+        <h1 style="font-size: 28px; font-weight: 800; letter-spacing: -0.03em; color: var(--text-primary); margin: 0 0 12px 0;">
+            Insufficient Role Permissions
+        </h1>
+
+        <p style="font-size: 15px; line-height: 1.6; color: var(--text-secondary); margin: 0 0 32px 0;">
+            Your account does not have authorization to view this workflow resource, perform this approval action, or access this organization's tenant workspace.
+        </p>
+
+        <!-- CTA Actions -->
+        <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+            {% if user.is_authenticated %}
+                <a href="{% url 'dashboard' %}" class="ff-btn ff-btn--primary" style="display: inline-flex; align-items: center; gap: 8px; text-decoration: none; padding: 10px 22px;">
+                    <i class="bi bi-speedometer2"></i> Return to Dashboard
+                </a>
+                <a href="{% url 'my-requests' %}" class="ff-btn ff-btn--secondary" style="display: inline-flex; align-items: center; gap: 8px; text-decoration: none; padding: 10px 22px;">
+                    <i class="bi bi-file-earmark-text"></i> My Requests
+                </a>
+            {% else %}
+                <a href="{% url 'login' %}" class="ff-btn ff-btn--primary" style="display: inline-flex; align-items: center; gap: 8px; text-decoration: none; padding: 10px 22px;">
+                    <i class="bi bi-box-arrow-in-right"></i> Sign In to Authorized Account
+                </a>
+                <a href="{% url 'landing' %}" class="ff-btn ff-btn--secondary" style="display: inline-flex; align-items: center; gap: 8px; text-decoration: none; padding: 10px 22px;">
+                    <i class="bi bi-house"></i> Home
+                </a>
+            {% endif %}
+        </div>
+
+    </div>
+</main>
+{% endblock %}
