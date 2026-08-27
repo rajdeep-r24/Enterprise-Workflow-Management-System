@@ -1,0 +1,45 @@
+{% extends "public_base.html" %}
+{% load static %}
+
+{% block title %}Server Error (500) · Anukram{% endblock %}
+
+{% block content %}
+<main style="min-height: 80vh; display: flex; align-items: center; justify-content: center; padding: 48px 24px;">
+    <div style="max-width: 560px; width: 100%; text-align: center; background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 48px 36px; box-shadow: var(--shadow-lg); position: relative; overflow: hidden;">
+        
+        <!-- Ambient decorative background glow -->
+        <div style="position: absolute; top: -60px; left: 50%; transform: translateX(-50%); width: 220px; height: 120px; background: radial-gradient(circle, rgba(239, 68, 68, 0.15) 0%, transparent 70%); filter: blur(30px); pointer-events: none;"></div>
+
+        <!-- Warning Icon / Emblem -->
+        <div style="display: inline-flex; align-items: center; justify-content: center; width: 64px; height: 64px; border-radius: 16px; background: color-mix(in srgb, #EF4444 10%, transparent); border: 1px solid color-mix(in srgb, #EF4444 25%, transparent); margin-bottom: 24px;">
+            <i class="bi bi-exclamation-triangle-fill" style="font-size: 28px; color: #EF4444;"></i>
+        </div>
+
+        <!-- 500 Badge -->
+        <div>
+            <span style="display: inline-block; padding: 4px 12px; border-radius: 999px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; background: color-mix(in srgb, #EF4444 12%, transparent); color: #EF4444; border: 1px solid color-mix(in srgb, #EF4444 25%, transparent); margin-bottom: 16px;">
+                Error 500 · Server Exception
+            </span>
+        </div>
+
+        <h1 style="font-size: 28px; font-weight: 800; letter-spacing: -0.03em; color: var(--text-primary); margin: 0 0 12px 0;">
+            Unexpected Engine Condition
+        </h1>
+
+        <p style="font-size: 15px; line-height: 1.6; color: var(--text-secondary); margin: 0 0 32px 0;">
+            The workflow engine encountered an unexpected condition while processing this request. Our monitoring system has recorded this event for inspection.
+        </p>
+
+        <!-- CTA Actions -->
+        <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+            <a href="{% url 'landing' %}" class="ff-btn ff-btn--primary" style="display: inline-flex; align-items: center; gap: 8px; text-decoration: none; padding: 10px 22px;">
+                <i class="bi bi-house"></i> Return to Safety
+            </a>
+            <a href="javascript:location.reload();" class="ff-btn ff-btn--secondary" style="display: inline-flex; align-items: center; gap: 8px; text-decoration: none; padding: 10px 22px;">
+                <i class="bi bi-arrow-clockwise"></i> Try Reloading
+            </a>
+        </div>
+
+    </div>
+</main>
+{% endblock %}

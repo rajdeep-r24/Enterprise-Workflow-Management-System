@@ -48,8 +48,8 @@
                             <div style="font-size:var(--text-sm);font-weight:600;color:var(--text-primary);">{{ department.name }}</div>
                         </td>
                         <td><code style="font-size:var(--text-xs);font-family:var(--font-mono);background:var(--canvas-subtle);padding:2px 6px;border-radius:4px;border:1px solid var(--border);">{{ department.code }}</code></td>
-                        <td><span style="font-size:var(--text-sm);color:var(--text-secondary);">{{ department.email|default:"—" }}</span></td>
-                        <td><span style="font-size:var(--text-sm);color:var(--text-secondary);">{{ department.phone|default:"—" }}</span></td>
+                        <td><span style="font-size:var(--text-sm);color:var(--text-secondary);">{{ department.email|default:"-" }}</span></td>
+                        <td><span style="font-size:var(--text-sm);color:var(--text-secondary);">{{ department.phone|default:"-" }}</span></td>
                         <td>
                             {% if department.is_active %}
                                 <span class="ff-badge ff-badge--success"><span class="ff-badge__dot"></span> Active</span>

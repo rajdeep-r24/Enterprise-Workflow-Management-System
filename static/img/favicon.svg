@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+    <rect width="32" height="32" rx="8" fill="url(#ank-fav-bg)"/>
+    <rect width="32" height="32" rx="8" stroke="rgba(255,255,255,0.18)" stroke-width="1"/>
+    <path d="M9 16.5L16 9.5L23 16.5L20.5 19L16 14.5L11.5 19L9 16.5Z" fill="white"/>
+    <path d="M11.5 22L16 17.5L20.5 22L18.5 24L16 21.5L13.5 24L11.5 22Z" fill="white" fill-opacity="0.65"/>
+    <circle cx="16" cy="10" r="1.5" fill="#38BDF8"/>
+    <defs>
+        <linearGradient id="ank-fav-bg" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#4F46E5"/>
+            <stop offset="1" stop-color="#312E81"/>
+        </linearGradient>
+    </defs>
+</svg>

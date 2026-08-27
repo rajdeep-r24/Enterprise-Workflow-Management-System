@@ -22,6 +22,12 @@ urlpatterns = [
     ),
 
     path(
+        "requests/<int:pk>/comment/",
+        views.add_request_comment,
+        name="add-request-comment",
+    ),
+
+    path(
         "attachment/<int:pk>/download/",
         views.download_attachment,
         name="download-attachment",
@@ -145,5 +151,17 @@ urlpatterns = [
         "request-types/<int:rt_pk>/steps/<int:step_pk>/delete/",
         views.request_type_step_delete,
         name="request-type-step-delete",
+    ),
+
+    path(
+        "export-audit-trail/",
+        views.export_audit_trail,
+        name="export-audit-trail",
+    ),
+
+    path(
+        "approvals/history/export/",
+        views.export_approval_history_csv,
+        name="export-approval-history-csv",
     ),
 ]

@@ -1,6 +1,6 @@
 /* ==========================================================================
    ForgeFlow Design System V2
-   Enterprise SaaS — Handcrafted for clarity, velocity, and confidence.
+   Enterprise SaaS: Handcrafted for clarity, velocity, and confidence.
    Typography: Plus Jakarta Sans + DM Mono
    Inspired by: Stripe, Linear, Clerk, Vercel, Atlassian
    ========================================================================== */
@@ -11,13 +11,18 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=DM+Mono:ital,wght@0,400;0,500;1,400&display=swap');
 
 /* -------------------------------------------------------------------------
-   1. Design tokens — Light mode
+   1. Design tokens: Light mode
    ------------------------------------------------------------------------- */
 :root,
 [data-theme="light"] {
   /* Canvas */
-  --canvas: #F4F5F7;
-  --canvas-subtle: #ECEEF2;
+  --canvas: #EBF0F5;
+  --canvas-subtle: #E1E7EF;
+  --canvas-mesh: radial-gradient(at 0% 0%, rgba(218, 226, 250, 0.8) 0px, transparent 50%),
+                 radial-gradient(at 100% 0%, rgba(237, 231, 252, 0.7) 0px, transparent 50%),
+                 radial-gradient(at 50% 100%, rgba(226, 234, 248, 0.75) 0px, transparent 50%),
+                 radial-gradient(circle at 1px 1px, rgba(99, 102, 241, 0.07) 1px, transparent 0),
+                 #EBF0F5;
   --surface: #FFFFFF;
   --surface-raised: #FFFFFF;
   --surface-overlay: #FFFFFF;
@@ -35,7 +40,7 @@
   --text-on-accent: #FFFFFF;
   --text-link: #3B5BDB;
 
-  /* Brand — deep indigo */
+  /* Brand: deep indigo */
   --accent: #3B5BDB;
   --accent-hover: #3451C7;
   --accent-active: #2A3FAA;
@@ -70,7 +75,7 @@
   --neutral-border: #DDE1E8;
   --neutral-text: #5C6472;
 
-  /* Elevation / shadows — Stripe-style layered */
+  /* Elevation / shadows: Stripe-style layered */
   --shadow-xs: 0 1px 2px rgba(13, 17, 23, 0.05);
   --shadow-sm: 0 1px 3px rgba(13, 17, 23, 0.07), 0 1px 2px rgba(13, 17, 23, 0.04);
   --shadow-md: 0 4px 12px rgba(13, 17, 23, 0.08), 0 2px 4px rgba(13, 17, 23, 0.04);
@@ -85,11 +90,16 @@
 }
 
 /* -------------------------------------------------------------------------
-   1b. Design tokens — Dark mode
+   1b. Design tokens: Dark mode
    ------------------------------------------------------------------------- */
 [data-theme="dark"] {
   --canvas: #0A0C10;
   --canvas-subtle: #060709;
+  --canvas-mesh: radial-gradient(at 0% 0%, rgba(30, 27, 75, 0.5) 0px, transparent 50%),
+                 radial-gradient(at 100% 0%, rgba(46, 16, 101, 0.35) 0px, transparent 50%),
+                 radial-gradient(at 50% 100%, rgba(15, 23, 42, 0.7) 0px, transparent 50%),
+                 radial-gradient(circle at 1px 1px, rgba(129, 140, 248, 0.08) 1px, transparent 0),
+                 #0A0C10;
   --surface: #111318;
   --surface-raised: #181B22;
   --surface-overlay: #1E2029;
@@ -118,10 +128,10 @@
   --success-border: rgba(76, 216, 133, 0.24);
   --success-text: #4CD885;
 
-  --warning: #F5A623;
-  --warning-subtle: rgba(245, 166, 35, 0.10);
-  --warning-border: rgba(245, 166, 35, 0.24);
-  --warning-text: #F5A623;
+  --warning: #FBBF24;
+  --warning-subtle: rgba(251, 191, 36, 0.14);
+  --warning-border: rgba(251, 191, 36, 0.28);
+  --warning-text: #FDE68A;
 
   --danger: #F07070;
   --danger-hover: #F58080;
@@ -264,7 +274,9 @@ body {
   font-family: var(--font-sans);
   font-size: var(--text-base);
   line-height: var(--leading-normal);
-  background: var(--canvas);
+  background: var(--canvas-mesh, var(--canvas));
+  background-size: 100% 100%, 100% 100%, 100% 100%, 28px 28px, 100% 100%;
+  background-attachment: fixed;
   min-height: 100vh;
 }
 
@@ -287,10 +299,8 @@ a:active,
 a.ff-stat-card,
 a.ff-stat-card:hover,
 a.ff-stat-card:focus,
-a.ff-stat-card:active,
-a.ff-stat-card * {
+a.ff-stat-card:active {
   text-decoration: none !important;
-  color: inherit !important;
 }
 
 a.ff-sidebar__brand,
@@ -1080,6 +1090,30 @@ svg {
   border-color: var(--border-strong);
 }
 
+/* Interactive cursor border spotlight */
+.ank-interactive-card {
+  position: relative;
+  overflow: hidden;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+.ank-interactive-card::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background: radial-gradient(350px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(99, 102, 241, 0.28), transparent 60%);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 350ms ease;
+  z-index: 1;
+}
+
+.ank-interactive-card:hover::after {
+  opacity: 1;
+}
+
 .ff-card--bordered {
   border: 1.5px solid var(--border-strong);
 }
@@ -1099,16 +1133,58 @@ svg {
 }
 
 .ff-card__title {
-  font-size: var(--text-md);
+  font-size: var(--text-lg);
   font-weight: 700;
   letter-spacing: var(--tracking-snug);
+  color: var(--text-primary) !important;
 }
 
 .ff-card__subtitle {
-  font-size: var(--text-xs);
-  color: var(--text-tertiary);
+  font-size: var(--text-sm);
+  color: var(--text-secondary) !important;
   margin-top: 2px;
   font-weight: 400;
+}
+
+/* Global File Input Styling */
+input[type="file"],
+.ff-input[type="file"] {
+  height: auto;
+  padding: var(--sp-2-5) var(--sp-3);
+  font-size: var(--text-sm);
+  color: var(--text-secondary) !important;
+  background: var(--canvas-subtle);
+  border: 1.5px dashed var(--border-strong);
+  border-radius: var(--r-md);
+  cursor: pointer;
+  font-family: var(--font-sans);
+  transition: border-color var(--dur-base), background-color var(--dur-base);
+}
+
+input[type="file"]:hover,
+.ff-input[type="file"]:hover {
+  border-color: var(--accent);
+}
+
+input[type="file"]::file-selector-button,
+.ff-input[type="file"]::file-selector-button {
+  background: var(--surface-raised);
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-sm);
+  padding: 6px 14px;
+  font-weight: 600;
+  font-size: var(--text-xs);
+  cursor: pointer;
+  margin-right: 12px;
+  transition: background-color var(--dur-base), border-color var(--dur-base), color var(--dur-base);
+}
+
+input[type="file"]::file-selector-button:hover,
+.ff-input[type="file"]::file-selector-button:hover {
+  background: var(--accent);
+  color: #ffffff !important;
+  border-color: var(--accent);
 }
 
 .ff-card__body {
@@ -1131,22 +1207,23 @@ a.ff-stat-card {
   padding: var(--sp-5);
   box-shadow: var(--shadow-sm);
   text-decoration: none !important;
-  color: inherit !important;
   display: block;
   transition: box-shadow var(--dur-base) var(--ease-standard),
-    transform var(--dur-base) var(--ease-standard);
+    transform var(--dur-base) var(--ease-standard),
+    border-color var(--dur-base) var(--ease-standard);
 }
 
 a.ff-stat-card:hover,
 a.ff-stat-card:focus,
 a.ff-stat-card:active {
   text-decoration: none !important;
-  color: inherit !important;
+  border-color: var(--accent-subtle-border);
   box-shadow: var(--shadow-md);
   transform: translateY(-2px);
 }
 
-.ff-stat-card__icon {
+.ff-stat-card__icon,
+a.ff-stat-card .ff-stat-card__icon {
   width: 40px;
   height: 40px;
   border-radius: var(--r-md);
@@ -1157,26 +1234,29 @@ a.ff-stat-card:active {
   margin-bottom: var(--sp-4);
 }
 
-.ff-stat-card__label {
+.ff-stat-card__label,
+a.ff-stat-card .ff-stat-card__label {
   font-size: var(--text-xs);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: var(--tracking-wider);
-  color: var(--text-tertiary);
+  color: var(--text-tertiary) !important;
   margin-bottom: var(--sp-1);
 }
 
-.ff-stat-card__value {
+.ff-stat-card__value,
+a.ff-stat-card .ff-stat-card__value {
   font-size: var(--text-4xl);
   font-weight: 800;
   letter-spacing: var(--tracking-tight);
-  color: var(--text-primary);
+  color: var(--text-primary) !important;
   line-height: 1;
 }
 
-.ff-stat-card__meta {
+.ff-stat-card__meta,
+a.ff-stat-card .ff-stat-card__meta {
   font-size: var(--text-xs);
-  color: var(--text-tertiary);
+  color: var(--text-tertiary) !important;
   margin-top: var(--sp-2);
 }
 

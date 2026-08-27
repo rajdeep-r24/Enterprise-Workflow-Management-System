@@ -1,0 +1,62 @@
+{% extends "public_base.html" %}
+{% load static %}
+
+{% block title %}Page Not Found (404) · Anukram{% endblock %}
+
+{% block content %}
+<main style="min-height: 80vh; display: flex; align-items: center; justify-content: center; padding: 48px 24px;">
+    <div style="max-width: 560px; width: 100%; text-align: center; background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 48px 36px; box-shadow: var(--shadow-lg); position: relative; overflow: hidden;">
+        
+        <!-- Ambient decorative background glow -->
+        <div style="position: absolute; top: -60px; left: 50%; transform: translateX(-50%); width: 220px; height: 120px; background: radial-gradient(circle, rgba(79, 70, 229, 0.15) 0%, transparent 70%); filter: blur(30px); pointer-events: none;"></div>
+
+        <!-- Anukram Emblem -->
+        <div style="display: inline-flex; align-items: center; justify-content: center; width: 64px; height: 64px; border-radius: 16px; background: color-mix(in srgb, var(--brand-primary) 10%, transparent); border: 1px solid color-mix(in srgb, var(--brand-primary) 25%, transparent); margin-bottom: 24px;">
+            <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <rect width="32" height="32" rx="8" fill="url(#ank-404-bg)"/>
+                <path d="M9 16.5L16 9.5L23 16.5L20.5 19L16 14.5L11.5 19L9 16.5Z" fill="white"/>
+                <path d="M11.5 22L16 17.5L20.5 22L18.5 24L16 21.5L13.5 24L11.5 22Z" fill="white" fill-opacity="0.65"/>
+                <circle cx="16" cy="10" r="1.5" fill="#38BDF8"/>
+                <defs>
+                    <linearGradient id="ank-404-bg" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
+                        <stop stop-color="#4F46E5"/>
+                        <stop offset="1" stop-color="#312E81"/>
+                    </linearGradient>
+                </defs>
+            </svg>
+        </div>
+
+        <!-- 404 Badge -->
+        <div>
+            <span style="display: inline-block; padding: 4px 12px; border-radius: 999px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; background: color-mix(in srgb, var(--brand-primary) 12%, transparent); color: var(--brand-primary); border: 1px solid color-mix(in srgb, var(--brand-primary) 25%, transparent); margin-bottom: 16px;">
+                Error 404 · Not Found
+            </span>
+        </div>
+
+        <h1 style="font-size: 28px; font-weight: 800; letter-spacing: -0.03em; color: var(--text-primary); margin: 0 0 12px 0;">
+            Workflow or Page Not Found
+        </h1>
+
+        <p style="font-size: 15px; line-height: 1.6; color: var(--text-secondary); margin: 0 0 32px 0;">
+            The request, step form, or page you are looking for does not exist, has been archived, or was moved to a different pipeline.
+        </p>
+
+        <!-- CTA Actions -->
+        <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+            {% if user.is_authenticated %}
+                <a href="{% url 'dashboard' %}" class="ff-btn ff-btn--primary" style="display: inline-flex; align-items: center; gap: 8px; text-decoration: none; padding: 10px 22px;">
+                    <i class="bi bi-speedometer2"></i> Return to Dashboard
+                </a>
+            {% else %}
+                <a href="{% url 'landing' %}" class="ff-btn ff-btn--primary" style="display: inline-flex; align-items: center; gap: 8px; text-decoration: none; padding: 10px 22px;">
+                    <i class="bi bi-house"></i> Return Home
+                </a>
+                <a href="{% url 'login' %}" class="ff-btn ff-btn--secondary" style="display: inline-flex; align-items: center; gap: 8px; text-decoration: none; padding: 10px 22px;">
+                    <i class="bi bi-box-arrow-in-right"></i> Sign In
+                </a>
+            {% endif %}
+        </div>
+
+    </div>
+</main>
+{% endblock %}

@@ -6,7 +6,7 @@ from accounts.models import User
 from departments.models import Department
 from designations.models import Designation
 from employees.models import Employee
-from forms_engine.models import FormDefinition, FormField, FormSubmission, RequestAttachment
+from forms_engine.models import FormDefinition, FormField, FormSubmission, RequestAttachment, RequestComment
 from forms_engine.services import FormEngineService
 from locations.models import Location
 from organizations.models import Organization
@@ -790,3 +790,131 @@ class RequestTypeFieldManagementTests(TestCase):
         response = self.client.post(reverse("request-type-field-delete", args=[self.published_form.pk, self.published_field.pk]))
         self.assertEqual(response.status_code, 302)
         self.assertTrue(FormField.objects.filter(pk=self.published_field.pk).exists())
+
+
+class RequestCommentAndDiscussionTests(TestCase):
+
+    def setUp(self):
+        from notifications.models import Notification
+        self.Notification = Notification
+
+        # Org A
+        self.org_a = Organization.objects.create(name="Acme Corp", code="ACME", email="admin@acme.test")
+        self.dept_a = Department.objects.create(organization=self.org_a, name="Engineering", code="ENG")
+        self.loc_a = Location.objects.create(organization=self.org_a, name="HQ", code="HQ", address="123 St", city="Mumbai", state="MH")
+        self.desig_a = Designation.objects.create(organization=self.org_a, name="Engineer", code="ENG")
+
+        # Roles
+        self.role_emp, _ = Role.objects.get_or_create(code="EMPLOYEE", defaults={"name": "Employee"})
+        self.role_mgr, _ = Role.objects.get_or_create(code="MANAGER", defaults={"name": "Manager"})
+        self.role_admin, _ = Role.objects.get_or_create(code="ADMIN", defaults={"name": "Admin"})
+        self.role_it_head, _ = Role.objects.get_or_create(code="IT_HEAD", defaults={"name": "IT Head"})
+
+        # Users in Org A
+        self.requester = User.objects.create_user(username="req_user", email="req@acme.test", password="pass123", first_name="Rahul", last_name="Sharma")
+        self.emp_requester = Employee.objects.create(user=self.requester, organization=self.org_a, department=self.dept_a, location=self.loc_a, designation=self.desig_a, role=self.role_emp, employee_code="EMP_R", joining_date="2024-01-01")
+
+        self.approver = User.objects.create_user(username="app_user", email="app@acme.test", password="pass123", first_name="Vikram", last_name="Sahay")
+        self.emp_approver = Employee.objects.create(user=self.approver, organization=self.org_a, department=self.dept_a, location=self.loc_a, designation=self.desig_a, role=self.role_mgr, employee_code="EMP_A", joining_date="2024-01-01")
+
+        self.admin = User.objects.create_user(username="adm_user", email="adm@acme.test", password="pass123", first_name="Admin", last_name="User")
+        self.emp_admin = Employee.objects.create(user=self.admin, organization=self.org_a, department=self.dept_a, location=self.loc_a, designation=self.desig_a, role=self.role_admin, employee_code="EMP_AD", joining_date="2024-01-01")
+
+        self.other_emp = User.objects.create_user(username="oth_user", email="oth@acme.test", password="pass123", first_name="Other", last_name="User")
+        self.emp_other = Employee.objects.create(user=self.other_emp, organization=self.org_a, department=self.dept_a, location=self.loc_a, designation=self.desig_a, role=self.role_emp, employee_code="EMP_O", joining_date="2024-01-01")
+
+        # Org B User (for tenant isolation test)
+        self.org_b = Organization.objects.create(name="Beta Corp", code="BETA", email="admin@beta.test")
+        self.dept_b = Department.objects.create(organization=self.org_b, name="Sales", code="SAL")
+        self.loc_b = Location.objects.create(organization=self.org_b, name="HQ B", code="HQB", address="456 St", city="Delhi", state="DL")
+        self.desig_b = Designation.objects.create(organization=self.org_b, name="Executive", code="EXEC")
+        self.user_org_b = User.objects.create_user(username="beta_user", email="user@beta.test", password="pass123")
+        self.emp_org_b = Employee.objects.create(user=self.user_org_b, organization=self.org_b, department=self.dept_b, location=self.loc_b, designation=self.desig_b, role=self.role_admin, employee_code="EMP_B", joining_date="2024-01-01")
+
+        # Workflow & Form
+        self.wf_def = WorkflowDefinition.objects.create(organization=self.org_a, name="Hardware Approval", code="HW_APP")
+        self.wf_ver = WorkflowVersion.objects.create(workflow=self.wf_def, version=1, is_published=True, is_latest=True)
+        self.step_def = WorkflowStepDefinition.objects.create(
+            workflow_version=self.wf_ver,
+            step_order=1,
+            name="Manager Review",
+            step_type="APPROVAL",
+            approver_type="ROLE",
+            role_code="MANAGER",
+        )
+
+        self.form_def = FormDefinition.objects.create(organization=self.org_a, name="Laptop Request", code="laptop-req", workflow=self.wf_ver, is_published=True)
+        self.field_1 = FormField.objects.create(form=self.form_def, label="Laptop Model", field_name="laptop_model", field_type="text", is_required=True, order=1)
+
+        # Create active submission
+        self.wf_inst = WorkflowInstance.objects.create(organization=self.org_a, workflow_version=self.wf_ver, initiated_by=self.requester, status="IN_PROGRESS")
+        self.step_inst = WorkflowStepInstance.objects.create(workflow_instance=self.wf_inst, step_definition=self.step_def, assigned_to=self.approver, status="PENDING")
+        self.wf_inst.current_step = self.step_def
+        self.wf_inst.save()
+
+        self.submission = FormSubmission.objects.create(form=self.form_def, organization=self.org_a, workflow_instance=self.wf_inst, submitted_by=self.requester, status="SUBMITTED")
+
+    def test_requester_can_comment(self):
+        self.client.force_login(self.requester)
+        url = reverse("add-request-comment", args=[self.submission.pk])
+        response = self.client.post(url, {"message": "Need this urgent for client project."})
+        self.assertEqual(response.status_code, 302)
+        
+        # Verify comment created
+        self.assertEqual(RequestComment.objects.filter(submission=self.submission).count(), 1)
+        comment = RequestComment.objects.first()
+        self.assertEqual(comment.author, self.requester)
+        self.assertEqual(comment.message, "Need this urgent for client project.")
+        
+        # Verify notification sent to pending approver
+        notif = self.Notification.objects.filter(recipient=self.approver).first()
+        self.assertIsNotNone(notif)
+        self.assertIn("Requester Replied", notif.title)
+        self.assertEqual(notif.notification_type, "COMMENT")
+
+    def test_assigned_approver_can_comment(self):
+        self.client.force_login(self.approver)
+        url = reverse("add-request-comment", args=[self.submission.pk])
+        response = self.client.post(url, {"message": "Please specify whether 16GB or 32GB RAM is needed."})
+        self.assertEqual(response.status_code, 302)
+        
+        # Verify comment created
+        self.assertEqual(RequestComment.objects.filter(submission=self.submission).count(), 1)
+        comment = RequestComment.objects.first()
+        self.assertEqual(comment.author, self.approver)
+        
+        # Verify notification sent to requester
+        notif = self.Notification.objects.filter(recipient=self.requester).first()
+        self.assertIsNotNone(notif)
+        self.assertIn("New Note", notif.title)
+        self.assertEqual(notif.notification_type, "COMMENT")
+
+    def test_authorized_admin_can_comment(self):
+        self.client.force_login(self.admin)
+        url = reverse("add-request-comment", args=[self.submission.pk])
+        response = self.client.post(url, {"message": "IT inventory has MacBook in stock."})
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(RequestComment.objects.filter(submission=self.submission, author=self.admin).count(), 1)
+
+    def test_unauthorized_user_cannot_comment(self):
+        self.client.force_login(self.other_emp)
+        url = reverse("add-request-comment", args=[self.submission.pk])
+        response = self.client.post(url, {"message": "Attempting unauthorized note."})
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(RequestComment.objects.filter(submission=self.submission).count(), 0)
+
+    def test_tenant_isolation_on_comment(self):
+        self.client.force_login(self.user_org_b)
+        url = reverse("add-request-comment", args=[self.submission.pk])
+        response = self.client.post(url, {"message": "Cross-tenant intrusion attempt."})
+        # Tenant isolation middleware / get_object_or_404 returns 404
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(RequestComment.objects.count(), 0)
+
+    def test_empty_comment_rejected(self):
+        self.client.force_login(self.requester)
+        url = reverse("add-request-comment", args=[self.submission.pk])
+        response = self.client.post(url, {"message": "   "})
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(RequestComment.objects.count(), 0)
+

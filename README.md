@@ -1,4 +1,4 @@
-# Anukram (अनुक्रम) — Enterprise Workflow Management System
+# Anukram (अनुक्रम) | Enterprise Workflow Management System
 
 <div align="center">
 
@@ -10,7 +10,7 @@
 [![License](https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square)](LICENSE)
 [![Status](https://img.shields.io/badge/Build-Passing-brightgreen?style=flat-square)](#)
 
-**Anukram** *(Sanskrit: अनुक्रम — "Sequence, Order, Process")* is a modern, multi-tenant enterprise workflow and permission management engine. It eliminates email chaos by transforming complex organizational requests into deterministic, automated multi-tier approval pipelines with digital signatures and QR-verifiable physical permission slips.
+**Anukram** *(Sanskrit: अनुक्रम: "Sequence, Order, Process")* is a modern, multi-tenant enterprise workflow and permission management engine. It eliminates email chaos by transforming complex organizational requests into deterministic, automated multi-tier approval pipelines with digital signatures and QR-verifiable physical permission slips.
 
 [Key Features](#-key-features) • [Architecture](#-system-architecture) • [Tech Stack](#-technology-stack) • [Quick Start](#-quick-start) • [Deployment](#-deployment-guide)
 
