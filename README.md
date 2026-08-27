@@ -7,7 +7,7 @@
 [![Django](https://img.shields.io/badge/Django-6.0-092E20?style=flat-square&logo=django&logoColor=white)](https://www.djangoproject.com/)
 [![Python](https://img.shields.io/badge/Python-3.12+-3776AB?style=flat-square&logo=python&logoColor=white)](https://www.python.org/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?style=flat-square&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
-[![License](https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square)](LICENSE)
+[![License](https://img.shields.io/badge/License-All_Rights_Reserved-red.svg?style=flat-square)](LICENSE)
 [![Status](https://img.shields.io/badge/Build-Passing-brightgreen?style=flat-square)](#)
 
 **Anukram** *(Sanskrit: अनुक्रम: "Sequence, Order, Process")* is a modern, multi-tenant enterprise workflow and permission management engine. It eliminates email chaos by transforming complex organizational requests into deterministic, automated multi-tier approval pipelines with digital signatures and QR-verifiable physical permission slips.
@@ -188,7 +188,7 @@ python manage.py test
 
 ## 📜 License
 
-Distributed under the MIT License. See `LICENSE` for more information.
+Copyright © 2026 **Rajdeep Rathod**. All Rights Reserved. See [LICENSE](LICENSE) for full legal terms.
 
 ---
 
