@@ -6,7 +6,7 @@ from accounts.models import User
 from departments.models import Department
 from designations.models import Designation
 from employees.models import Employee
-from forms_engine.models import FormDefinition, FormField, FormSubmission, RequestAttachment, RequestComment
+from forms_engine.models import FormDefinition, FormField, FormSubmission, FormSubmissionValue, RequestAttachment, RequestComment
 from forms_engine.services import FormEngineService
 from locations.models import Location
 from organizations.models import Organization
@@ -917,4 +917,133 @@ class RequestCommentAndDiscussionTests(TestCase):
         response = self.client.post(url, {"message": "   "})
         self.assertEqual(response.status_code, 302)
         self.assertEqual(RequestComment.objects.count(), 0)
+
+
+class CrossTenantAndQRTokenSecurityTests(TestCase):
+    """
+    Automated security tests verifying:
+    1. Strict tenant isolation across request viewing, approval, and audit export.
+    2. QR verification token security (valid, invalid, tampered, revoked).
+    """
+
+    def setUp(self):
+        import uuid
+        from forms_engine.audit_service import AuditExportService
+
+        self.AuditExportService = AuditExportService
+
+        # Global Roles
+        self.role_emp, _ = Role.objects.get_or_create(code="EMPLOYEE", defaults={"name": "Employee"})
+        self.role_mgr, _ = Role.objects.get_or_create(code="MANAGER", defaults={"name": "Manager"})
+        self.role_admin, _ = Role.objects.get_or_create(code="ORG_ADMIN", defaults={"name": "Organization Administrator"})
+
+        # Org A
+        self.org_a = Organization.objects.create(name="Alpha Corp", code="ALPHA", email="admin@alpha.test")
+        self.dept_a = Department.objects.create(organization=self.org_a, name="Engineering", code="ENG")
+        self.loc_a = Location.objects.create(organization=self.org_a, name="HQ Alpha", code="HQ_A", address="100 St", city="Bangalore", state="KA")
+        self.desig_a = Designation.objects.create(organization=self.org_a, name="Software Engineer", code="SWE")
+
+        self.user_a1 = User.objects.create_user(username="alpha_emp", email="emp@alpha.test", password="password123")
+        self.emp_a1 = Employee.objects.create(user=self.user_a1, organization=self.org_a, department=self.dept_a, location=self.loc_a, designation=self.desig_a, role=self.role_emp, employee_code="A_EMP_01", joining_date="2024-01-01")
+
+        self.user_a_mgr = User.objects.create_user(username="alpha_mgr", email="mgr@alpha.test", password="password123")
+        self.emp_a_mgr = Employee.objects.create(user=self.user_a_mgr, organization=self.org_a, department=self.dept_a, location=self.loc_a, designation=self.desig_a, role=self.role_mgr, employee_code="A_MGR_01", joining_date="2024-01-01")
+
+        self.user_a_admin = User.objects.create_user(username="alpha_admin", email="admin@alpha.test", password="password123")
+        self.emp_a_admin = Employee.objects.create(user=self.user_a_admin, organization=self.org_a, department=self.dept_a, location=self.loc_a, designation=self.desig_a, role=self.role_admin, employee_code="A_ADM_01", joining_date="2024-01-01")
+
+        # Org B
+        self.org_b = Organization.objects.create(name="Beta Industries", code="BETA", email="admin@beta.test")
+        self.dept_b = Department.objects.create(organization=self.org_b, name="Operations", code="OPS")
+        self.loc_b = Location.objects.create(organization=self.org_b, name="HQ Beta", code="HQ_B", address="200 St", city="Mumbai", state="MH")
+        self.desig_b = Designation.objects.create(organization=self.org_b, name="Analyst", code="ANL")
+
+        self.user_b_emp = User.objects.create_user(username="beta_emp", email="emp@beta.test", password="password123")
+        self.emp_b_emp = Employee.objects.create(user=self.user_b_emp, organization=self.org_b, department=self.dept_b, location=self.loc_b, designation=self.desig_b, role=self.role_emp, employee_code="B_EMP_01", joining_date="2024-01-01")
+
+        self.user_b_admin = User.objects.create_user(username="beta_admin", email="admin@beta.test", password="password123")
+        self.emp_b_admin = Employee.objects.create(user=self.user_b_admin, organization=self.org_b, department=self.dept_b, location=self.loc_b, designation=self.desig_b, role=self.role_admin, employee_code="B_ADM_01", joining_date="2024-01-01")
+
+        # Workflow & Form in Org A
+        self.wf_def_a = WorkflowDefinition.objects.create(organization=self.org_a, name="Hardware Approval", code="HW_ALPHA")
+        self.wf_ver_a = WorkflowVersion.objects.create(workflow=self.wf_def_a, version=1, is_published=True, is_latest=True)
+        self.step_def_a = WorkflowStepDefinition.objects.create(
+            workflow_version=self.wf_ver_a,
+            step_order=1,
+            name="Manager Review",
+            step_type="APPROVAL",
+            approver_type="ROLE",
+            role_code="MANAGER",
+        )
+
+        self.form_a = FormDefinition.objects.create(organization=self.org_a, name="Laptop Request", code="laptop-alpha", workflow=self.wf_ver_a, is_published=True)
+        self.field_a = FormField.objects.create(form=self.form_a, label="Item", field_name="item_name", field_type="text", is_required=True, order=1)
+
+        # Submission in Org A
+        self.wf_inst_a = WorkflowInstance.objects.create(
+            workflow_version=self.wf_ver_a,
+            organization=self.org_a,
+            initiated_by=self.user_a1,
+            status="APPROVED",
+        )
+        self.token_a = uuid.uuid4()
+        self.sub_a = FormSubmission.objects.create(
+            form=self.form_a,
+            organization=self.org_a,
+            submitted_by=self.user_a1,
+            workflow_instance=self.wf_inst_a,
+            status="APPROVED",
+            permission_id="PRM-ALPHA-001",
+            verification_token=self.token_a,
+            is_revoked=False,
+        )
+        FormSubmissionValue.objects.create(submission=self.sub_a, field=self.field_a, value="MacBook Pro M3")
+
+    def test_cross_tenant_request_detail_blocked(self):
+        """Users from Org B cannot view request details of Org A (returns 404)."""
+        self.client.force_login(self.user_b_emp)
+        url = reverse("request-detail", args=[self.sub_a.pk])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 404)
+
+    def test_cross_tenant_audit_export_isolation(self):
+        """Org Admin from Org B exporting audit CSV cannot see any submissions from Org A."""
+        csv_content_b = self.AuditExportService.generate_organization_audit_csv(self.org_b)
+        self.assertNotIn("PRM-ALPHA-001", csv_content_b)
+        self.assertNotIn("emp@alpha.test", csv_content_b)
+        self.assertNotIn("MacBook Pro M3", csv_content_b)
+
+        # Org A export should contain its own submission
+        csv_content_a = self.AuditExportService.generate_organization_audit_csv(self.org_a)
+        self.assertIn("PRM-ALPHA-001", csv_content_a)
+        self.assertIn("emp@alpha.test", csv_content_a)
+
+    def test_valid_qr_token_public_verification(self):
+        """A valid QR verification token returns 200 with public approval status."""
+        url = reverse("verify-permission", args=[str(self.token_a)])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["verification_status"], "VALID")
+        self.assertEqual(response.context["submission"].permission_id, "PRM-ALPHA-001")
+
+    def test_tampered_or_invalid_qr_token(self):
+        """An invalid or non-existent token returns INVALID status without crashing."""
+        import uuid
+        tampered_token = uuid.uuid4()
+        url = reverse("verify-permission", args=[str(tampered_token)])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["verification_status"], "INVALID")
+        self.assertIsNone(response.context["submission"])
+
+    def test_revoked_qr_token_shows_revoked_status(self):
+        """When a permission is revoked, the public verification page shows REVOKED."""
+        self.sub_a.is_revoked = True
+        self.sub_a.save()
+
+        url = reverse("verify-permission", args=[str(self.token_a)])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["verification_status"], "REVOKED")
+
 

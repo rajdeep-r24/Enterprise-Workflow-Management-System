@@ -24,6 +24,7 @@ from .pdf_generator import generate_permission_pdf
 from .services import FormEngineService
 from .audit_service import AuditExportService
 from .permissions import can_comment_on_request
+from accounts.decorators import public_access
 
 
 # =========================================================
@@ -807,6 +808,7 @@ def permission_pdf(request, pk):
 # PUBLIC PERMISSION VERIFICATION
 # =========================================================
 
+@public_access
 def verify_permission(request, token):
 
     submission = (
@@ -1334,7 +1336,7 @@ def request_type_step_delete(request, rt_pk, step_pk):
 @role_required("ORG_ADMIN", "SUPER_ADMIN", "ADMIN")
 def export_audit_trail(request):
     """
-    Exports a comprehensive ISO 27001 / SOC 2 compliance audit CSV for the organization.
+    Exports a comprehensive activity audit trail CSV for the organization.
     """
     status_filter = request.GET.get("status")
     csv_data = AuditExportService.generate_organization_audit_csv(

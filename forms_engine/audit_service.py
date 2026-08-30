@@ -10,8 +10,8 @@ class AuditExportService:
     @staticmethod
     def generate_organization_audit_csv(organization, status_filter=None, from_date=None, to_date=None):
         """
-        Generates an ISO 27001 / SOC 2 compliant audit log CSV of all form submissions
-        and approval chains for the given organization.
+        Generates an audit log CSV of all form submissions and approval chains
+        for the given organization, formatted for compliance and activity reviews.
         Returns a UTF-8 encoded string with BOM for Excel compatibility.
         """
         output = io.StringIO()

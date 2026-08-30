@@ -147,8 +147,8 @@
             <i class="bi bi-plus-lg"></i> New Request
         </a>
         {% if role == "ORG_ADMIN" or role == "ADMIN" or role == "SUPER_ADMIN" %}
-        <a href="{% url 'export-audit-trail' %}" class="ff-btn ff-btn--secondary" title="Download organization compliance audit trail (ISO 27001 / SOC 2)">
-            <i class="bi bi-download"></i> Export Audit Trail
+        <a href="{% url 'export-audit-trail' %}" class="ff-btn ff-btn--secondary" title="Export organization activity audit trail (CSV format)">
+            <i class="bi bi-file-earmark-spreadsheet"></i> Export Audit Trail
         </a>
         {% endif %}
         {% if role != "USER" %}
