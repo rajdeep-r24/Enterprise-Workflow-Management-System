@@ -19,6 +19,7 @@ from django.urls import include, path
 
 from django.conf import settings
 from django.conf.urls.static import static
+from config import views as config_views
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -33,6 +34,8 @@ urlpatterns = [
     path("", include("forms_engine.urls")),
     path("notifications/", include("notifications.urls", namespace="notifications")),
     path("api/", include("api.urls")),
+    path("robots.txt", config_views.robots_txt, name="robots_txt"),
+    path("sitemap.xml", config_views.sitemap_xml, name="sitemap_xml"),
 ]
 
 if settings.DEBUG:

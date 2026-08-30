@@ -5,7 +5,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Anukram | Enterprise Workflow Management System{% endblock %}</title>
-    <meta name="description" content="{% block meta_description %}Anukram Enterprise Workflow Management System for modern organizations.{% endblock %}">
+    <meta name="description" content="{% block meta_description %}Anukram routes every organizational request to the right approver automatically. Multi-tenant workflow engine with auditable history and live QR permission verification.{% endblock %}">
+    <link rel="canonical" href="https://anukram.onrender.com{{ request.path }}">
+    <meta name="theme-color" content="#4F46E5">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://anukram.onrender.com{{ request.path }}">
+    <meta property="og:title" content="{% block og_title %}Anukram | Enterprise Workflow Management System{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}Deterministic multi-tier workflow engine for modern enterprises. Automate hardware, leave, access, and finance approvals with audit history and live QR verification.{% endblock %}">
+    <meta property="og:site_name" content="Anukram">
+
+    <!-- Twitter / X -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://anukram.onrender.com{{ request.path }}">
+    <meta name="twitter:title" content="{% block twitter_title %}Anukram | Enterprise Workflow Management System{% endblock %}">
+    <meta name="twitter:description" content="{% block twitter_description %}Deterministic multi-tier workflow engine for modern enterprises. Automate approvals with full audit history and live QR verification.{% endblock %}">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
