@@ -24,7 +24,9 @@ from .pdf_generator import generate_permission_pdf
 from .services import FormEngineService
 from .audit_service import AuditExportService
 from .permissions import can_comment_on_request
+from .validators import validate_attachment_security, sanitize_filename
 from accounts.decorators import public_access
+from django.core.exceptions import ValidationError
 
 
 # =========================================================
@@ -35,9 +37,11 @@ from accounts.decorators import public_access
 def submit_request(request, code):
 
     form_definition = get_object_or_404(
-        FormDefinition.objects.for_tenant(request.tenant),
+        FormDefinition.objects.filter(
+            organization=request.tenant,
+            is_published=True,
+        ),
         code=code,
-        is_published=True,
     )
 
     if request.method == "POST":
@@ -45,24 +49,20 @@ def submit_request(request, code):
         form = DynamicForm(
             form_definition,
             request.POST,
+            request.FILES,
         )
 
         if form.is_valid():
 
             attachments = request.FILES.getlist('attachments')
             
-            # Validation
+            # Hardened attachment validation
             validation_error = None
-            max_size = 10 * 1024 * 1024
-            allowed_exts = {'.pdf', '.png', '.jpg', '.jpeg', '.doc', '.docx', '.xls', '.xlsx'}
-            
             for f in attachments:
-                if f.size > max_size:
-                    validation_error = f"File {f.name} exceeds the 10MB size limit."
-                    break
-                ext = os.path.splitext(f.name)[1].lower()
-                if ext not in allowed_exts:
-                    validation_error = f"File {f.name} has an invalid extension. Allowed extensions are PDF, PNG, JPG, DOC/X, XLS/X."
+                try:
+                    validate_attachment_security(f)
+                except ValidationError as ve:
+                    validation_error = str(ve.message if hasattr(ve, "message") else ve)
                     break
                     
             if validation_error:
@@ -85,10 +85,11 @@ def submit_request(request, code):
                     )
                     
                     for f in attachments:
+                        clean_name = sanitize_filename(f.name)
                         RequestAttachment.objects.create(
                             submission=submission,
                             file=f,
-                            original_filename=f.name,
+                            original_filename=clean_name,
                             uploaded_by=request.user
                         )
                 

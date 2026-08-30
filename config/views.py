@@ -47,3 +47,56 @@ def sitemap_xml(request):
     return HttpResponse(content, content_type="application/xml")
 
 
+@public_access
+def health_check(request):
+    """
+    Public health check endpoint for uptime monitors and load balancers.
+    Verifies application and PostgreSQL database connectivity.
+    Returns HTTP 200 on healthy, HTTP 503 if database check fails.
+    Never leaks credentials, hostnames, SQL queries, or stack traces.
+    """
+    from django.db import connection
+    from django.http import JsonResponse
+    from django.utils import timezone
+
+    db_ok = False
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT 1;")
+            row = cursor.fetchone()
+            if row and row[0] == 1:
+                db_ok = True
+    except Exception:
+        db_ok = False
+
+    if db_ok:
+        return JsonResponse(
+            {
+                "status": "healthy",
+                "version": "1.0.0",
+                "timestamp": timezone.now().isoformat(),
+            },
+            status=200,
+        )
+    else:
+        return JsonResponse(
+            {
+                "status": "unhealthy",
+                "version": "1.0.0",
+                "timestamp": timezone.now().isoformat(),
+            },
+            status=503,
+        )
+
+
+@public_access
+def security_architecture(request):
+    """
+    Public Security & Architecture documentation page.
+    Explains Anukram's tenant isolation, RBAC, QR token verification,
+    and audit trail logging.
+    """
+    return render(request, "security_architecture.html")
+
+
+

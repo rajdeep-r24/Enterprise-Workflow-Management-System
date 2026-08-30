@@ -568,7 +568,7 @@ class ForgeFlowWorkflowIntegrationTests(TestCase):
         })
         
         self.assertEqual(response.status_code, 200) # Form rendered with errors
-        self.assertContains(response, "invalid extension")
+        self.assertContains(response, "disallowed executable or script extension")
         self.assertEqual(FormSubmission.objects.count(), 0)
 
     def test_oversized_file_rejected(self):
@@ -586,7 +586,7 @@ class ForgeFlowWorkflowIntegrationTests(TestCase):
         })
         
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "exceeds the 10MB size limit")
+        self.assertContains(response, "exceeds the maximum allowed size of 10 MB")
         self.assertEqual(FormSubmission.objects.count(), 0)
 
     def test_authorized_users_can_download_attachment(self):
@@ -1045,5 +1045,324 @@ class CrossTenantAndQRTokenSecurityTests(TestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.context["verification_status"], "REVOKED")
+
+
+class GoldenPathWorkflowIntegrationTests(TestCase):
+    """
+    End-to-End Golden Path Workflow:
+    Employee → Form Submission (with attachment) → Auto Routing →
+    Manager Approval → IT Head Approval → Final Status APPROVED →
+    Permission ID (LP-YYYY-XXXXXX) → Verification Token (UUIDv4) →
+    ReportLab PDF Voucher Generation → Public Live QR Verification (HTTP 200 VALID) →
+    Audit Trail CSV Export with full decision history.
+    """
+
+    def setUp(self):
+        import re
+        self.re = re
+        from forms_engine.pdf_generator import generate_permission_pdf
+        from forms_engine.audit_service import AuditExportService
+        from forms_engine.validators import validate_attachment_security, sanitize_filename
+
+        self.generate_permission_pdf = generate_permission_pdf
+        self.AuditExportService = AuditExportService
+
+        # Organization
+        self.org = Organization.objects.create(name="Apex Global", code="APEX", email="admin@apex.test")
+        self.dept_it = Department.objects.create(organization=self.org, name="Information Technology", code="IT")
+        self.dept_ops = Department.objects.create(organization=self.org, name="Operations", code="OPS")
+        self.loc = Location.objects.create(organization=self.org, name="Headquarters", code="HQ", address="100 Enterprise Blvd", city="Bangalore", state="KA")
+        self.desig_dev = Designation.objects.create(organization=self.org, name="Senior Engineer", code="SR_ENG")
+        self.desig_mgr = Designation.objects.create(organization=self.org, name="Operations Manager", code="OPS_MGR")
+        self.desig_it_head = Designation.objects.create(organization=self.org, name="IT Director", code="IT_DIR")
+
+        # Global Roles
+        self.role_emp, _ = Role.objects.get_or_create(code="EMPLOYEE", defaults={"name": "Employee"})
+        self.role_mgr, _ = Role.objects.get_or_create(code="MANAGER", defaults={"name": "Manager"})
+        self.role_it_head, _ = Role.objects.get_or_create(code="IT_HEAD", defaults={"name": "IT Head"})
+        self.role_admin, _ = Role.objects.get_or_create(code="ORG_ADMIN", defaults={"name": "Organization Administrator"})
+
+        # Users & Employee Profiles
+        # 1. Requester (Employee)
+        self.user_emp = User.objects.create_user(username="rajdeep_emp", email="rajdeep@apex.test", password="pass123", first_name="Rajdeep", last_name="Rathod")
+        self.emp_profile = Employee.objects.create(user=self.user_emp, organization=self.org, department=self.dept_ops, location=self.loc, designation=self.desig_dev, role=self.role_emp, employee_code="APX_001", joining_date="2024-01-01")
+
+        # 2. Manager Approver
+        self.user_mgr = User.objects.create_user(username="rohan_mgr", email="rohan@apex.test", password="pass123", first_name="Rohan", last_name="Mehta")
+        self.mgr_profile = Employee.objects.create(user=self.user_mgr, organization=self.org, department=self.dept_ops, location=self.loc, designation=self.desig_mgr, role=self.role_mgr, employee_code="APX_002", joining_date="2024-01-01")
+
+        # 3. IT Head Approver
+        self.user_it = User.objects.create_user(username="vikram_it", email="vikram@apex.test", password="pass123", first_name="Vikram", last_name="Sahay")
+        self.it_profile = Employee.objects.create(user=self.user_it, organization=self.org, department=self.dept_it, location=self.loc, designation=self.desig_it_head, role=self.role_it_head, employee_code="APX_003", joining_date="2024-01-01")
+
+        # 4. Org Admin
+        self.user_admin = User.objects.create_user(username="admin_apex", email="admin@apex.test", password="pass123", first_name="Admin", last_name="Apex")
+        self.admin_profile = Employee.objects.create(user=self.user_admin, organization=self.org, department=self.dept_it, location=self.loc, designation=self.desig_it_head, role=self.role_admin, employee_code="APX_000", joining_date="2024-01-01")
+
+        # 2-Tier Workflow: Manager (Step 1) → IT Head (Step 2)
+        self.wf_def = WorkflowDefinition.objects.create(organization=self.org, name="Hardware & Equipment Provisioning", code="HW_PROV")
+        self.wf_ver = WorkflowVersion.objects.create(workflow=self.wf_def, version=1, is_published=True, is_latest=True)
+        self.step_1 = WorkflowStepDefinition.objects.create(workflow_version=self.wf_ver, step_order=1, name="Department Manager Approval", step_type="APPROVAL", approver_type="ROLE", role_code="MANAGER")
+        self.step_2 = WorkflowStepDefinition.objects.create(workflow_version=self.wf_ver, step_order=2, name="IT Head Provisioning Approval", step_type="APPROVAL", approver_type="ROLE", role_code="IT_HEAD")
+        self.step_1.next_step = self.step_2
+        self.step_1.save()
+
+        # Dynamic Form
+        self.form_def = FormDefinition.objects.create(organization=self.org, name="Equipment Requisition", code="equip-req", workflow=self.wf_ver, is_published=True)
+        self.field_1 = FormField.objects.create(form=self.form_def, label="Asset Name", field_name="asset_name", field_type="text", is_required=True, order=1)
+        self.field_2 = FormField.objects.create(form=self.form_def, label="Business Justification", field_name="justification", field_type="textarea", is_required=True, order=2)
+
+    def test_complete_golden_path_execution(self):
+        """
+        Executes and asserts every state transition of the golden path.
+        """
+        # 1. Employee Submits Request
+        form_data = {
+            "asset_name": "MacBook Pro M3 Max 64GB",
+            "justification": "Production deployment engineering and local VM execution",
+        }
+        submission = FormEngineService.submit(
+            form_definition=self.form_def,
+            submitted_by=self.user_emp,
+            cleaned_data=form_data,
+        )
+        self.assertIsNotNone(submission.pk)
+        self.assertEqual(submission.status, "SUBMITTED")
+        self.assertEqual(submission.workflow_instance.status, "IN_PROGRESS")
+        self.assertEqual(submission.workflow_instance.current_step, self.step_1)
+
+        # Verify Step 1 automatically assigned to Manager (Rohan Mehta)
+        step_1_instance = WorkflowStepInstance.objects.get(
+            workflow_instance=submission.workflow_instance,
+            step_definition=self.step_1,
+        )
+        self.assertEqual(step_1_instance.assigned_to, self.user_mgr)
+        self.assertEqual(step_1_instance.status, "PENDING")
+
+        # 2. Manager Approves Step 1
+        WorkflowService.approve(
+            step_instance=step_1_instance,
+            user=self.user_mgr,
+            remarks="Approved for Q3 engineering budget.",
+        )
+        step_1_instance.refresh_from_db()
+        self.assertEqual(step_1_instance.status, "APPROVED")
+        self.assertEqual(step_1_instance.remarks, "Approved for Q3 engineering budget.")
+
+        # Workflow advances to Step 2 (IT Head)
+        submission.workflow_instance.refresh_from_db()
+        self.assertEqual(submission.workflow_instance.current_step, self.step_2)
+        step_2_instance = WorkflowStepInstance.objects.get(
+            workflow_instance=submission.workflow_instance,
+            step_definition=self.step_2,
+        )
+        self.assertEqual(step_2_instance.assigned_to, self.user_it)
+        self.assertEqual(step_2_instance.status, "PENDING")
+
+        # 3. IT Head Approves Step 2 (Final Approval)
+        WorkflowService.approve(
+            step_instance=step_2_instance,
+            user=self.user_it,
+            remarks="Hardware allocated from IT inventory serial #APX-MBP-9042.",
+        )
+        step_2_instance.refresh_from_db()
+        self.assertEqual(step_2_instance.status, "APPROVED")
+
+        # 4. Assert Final Completed Database State
+        submission.refresh_from_db()
+        submission.workflow_instance.refresh_from_db()
+
+        self.assertEqual(submission.status, "APPROVED")
+        self.assertEqual(submission.workflow_instance.status, "APPROVED")
+        self.assertIsNone(submission.workflow_instance.current_step)
+        self.assertIsNotNone(submission.issued_at)
+
+        # Assert Permission ID Format: LP-YYYY-XXXXXX
+        self.assertIsNotNone(submission.permission_id)
+        self.assertTrue(self.re.match(r"^LP-\d{4}-\d{6}$", submission.permission_id))
+
+        # Assert UUIDv4 Verification Token
+        self.assertIsNotNone(submission.verification_token)
+        self.assertEqual(len(str(submission.verification_token)), 36)
+
+        # 5. Generate and Validate PDF Voucher
+        pdf_bytes = self.generate_permission_pdf(submission)
+        self.assertIsNotNone(pdf_bytes)
+        self.assertTrue(pdf_bytes.startswith(b"%PDF"))
+        self.assertGreater(len(pdf_bytes), 1000)
+
+        # 6. Public QR Token Verification
+        url_verify = reverse("verify-permission", args=[str(submission.verification_token)])
+        resp_verify = self.client.get(url_verify)
+        self.assertEqual(resp_verify.status_code, 200)
+        self.assertEqual(resp_verify.context["verification_status"], "VALID")
+        self.assertEqual(resp_verify.context["submission"].permission_id, submission.permission_id)
+        self.assertEqual(resp_verify.context["submission"].submitted_by.email, "rajdeep@apex.test")
+
+        # 7. Audit Trail CSV Export
+        csv_export = self.AuditExportService.generate_organization_audit_csv(self.org)
+        self.assertIn(submission.permission_id, csv_export)
+        self.assertIn("rajdeep@apex.test", csv_export)
+        self.assertIn("Approved for Q3 engineering budget.", csv_export)
+        self.assertIn("Hardware allocated from IT inventory serial #APX-MBP-9042.", csv_export)
+        self.assertIn(str(submission.verification_token), csv_export)
+
+
+class FileUploadSecurityTests(TestCase):
+    """
+    Automated security tests for file upload validation,
+    magic byte filtering, and object-level attachment authorization.
+    """
+
+    def setUp(self):
+        from forms_engine.validators import validate_attachment_security, sanitize_filename
+        from forms_engine.views import can_view_request
+
+        self.validate_attachment_security = validate_attachment_security
+        self.sanitize_filename = sanitize_filename
+        self.can_view_request = can_view_request
+
+        # Org A
+        self.org_a = Organization.objects.create(name="Secure Org A", code="SECA", email="admin@seca.test")
+        self.dept_a = Department.objects.create(organization=self.org_a, name="Eng", code="ENG")
+        self.loc_a = Location.objects.create(organization=self.org_a, name="HQ", code="HQ", address="1 St", city="Blr", state="KA")
+        self.desig_a = Designation.objects.create(organization=self.org_a, name="Eng", code="ENG")
+
+        self.role_emp, _ = Role.objects.get_or_create(code="EMPLOYEE", defaults={"name": "Employee"})
+        self.role_mgr, _ = Role.objects.get_or_create(code="MANAGER", defaults={"name": "Manager"})
+
+        self.user_owner = User.objects.create_user(username="owner_user", email="owner@seca.test", password="pass")
+        self.emp_owner = Employee.objects.create(user=self.user_owner, organization=self.org_a, department=self.dept_a, location=self.loc_a, designation=self.desig_a, role=self.role_emp, employee_code="OWN_01", joining_date="2024-01-01")
+
+        self.user_other = User.objects.create_user(username="other_user", email="other@seca.test", password="pass")
+        self.emp_other = Employee.objects.create(user=self.user_other, organization=self.org_a, department=self.dept_a, location=self.loc_a, designation=self.desig_a, role=self.role_emp, employee_code="OTH_01", joining_date="2024-01-01")
+
+        # Org B
+        self.org_b = Organization.objects.create(name="Foreign Org B", code="SECB", email="admin@secb.test")
+        self.dept_b = Department.objects.create(organization=self.org_b, name="Ops", code="OPS")
+        self.loc_b = Location.objects.create(organization=self.org_b, name="HQ B", code="HQB", address="2 St", city="Mum", state="MH")
+        self.desig_b = Designation.objects.create(organization=self.org_b, name="Ops", code="OPS")
+        self.user_org_b = User.objects.create_user(username="b_user", email="b@secb.test", password="pass")
+        self.emp_org_b = Employee.objects.create(user=self.user_org_b, organization=self.org_b, department=self.dept_b, location=self.loc_b, designation=self.desig_b, role=self.role_emp, employee_code="B_01", joining_date="2024-01-01")
+
+        # Workflow & Submission
+        self.wf_def = WorkflowDefinition.objects.create(organization=self.org_a, name="Doc WF", code="DOC_WF")
+        self.wf_ver = WorkflowVersion.objects.create(workflow=self.wf_def, version=1, is_published=True)
+        self.form_def = FormDefinition.objects.create(organization=self.org_a, name="Doc Form", code="doc-form", workflow=self.wf_ver, is_published=True)
+
+        self.wf_inst = WorkflowInstance.objects.create(workflow_version=self.wf_ver, organization=self.org_a, initiated_by=self.user_owner, status="IN_PROGRESS")
+        self.submission = FormSubmission.objects.create(form=self.form_def, workflow_instance=self.wf_inst, submitted_by=self.user_owner, organization=self.org_a, status="IN_PROGRESS")
+
+        # Create valid attachment
+        test_file = SimpleUploadedFile("invoice.pdf", b"%PDF-1.4 valid pdf content", content_type="application/pdf")
+        self.attachment = RequestAttachment.objects.create(
+            submission=self.submission,
+            file=test_file,
+            original_filename="invoice.pdf",
+            uploaded_by=self.user_owner,
+        )
+
+    def test_valid_pdf_accepted(self):
+        """Valid PDF file passes security validation."""
+        valid_pdf = SimpleUploadedFile("receipt.pdf", b"%PDF-1.4 receipt sample content", content_type="application/pdf")
+        self.validate_attachment_security(valid_pdf)  # Should not raise
+
+    def test_blocked_extension_rejected(self):
+        """Disallowed executable or script extensions raise ValidationError."""
+        from django.core.exceptions import ValidationError
+        bad_file = SimpleUploadedFile("exploit.exe", b"binary content", content_type="application/octet-stream")
+        with self.assertRaises(ValidationError) as ctx:
+            self.validate_attachment_security(bad_file)
+        self.assertIn("disallowed executable or script", str(ctx.exception))
+
+    def test_disguised_executable_magic_bytes_rejected(self):
+        """File with .png extension containing DOS/PE executable 'MZ' header is rejected."""
+        from django.core.exceptions import ValidationError
+        disguised_file = SimpleUploadedFile("avatar.png", b"MZ\x90\x00\x03\x00\x00\x00 executable payload", content_type="image/png")
+        with self.assertRaises(ValidationError) as ctx:
+            self.validate_attachment_security(disguised_file)
+        self.assertIn("executable or script content signatures", str(ctx.exception))
+
+    def test_oversized_file_rejected(self):
+        """Files exceeding 10MB raise ValidationError."""
+        from django.core.exceptions import ValidationError
+        large_file = SimpleUploadedFile("big.pdf", b"0", content_type="application/pdf")
+        large_file.size = 11 * 1024 * 1024  # Mock size 11 MB
+        with self.assertRaises(ValidationError) as ctx:
+            self.validate_attachment_security(large_file)
+        self.assertIn("exceeds the maximum allowed size of 10 MB", str(ctx.exception))
+
+    def test_filename_sanitization(self):
+        """Dangerous directory traversal characters and null bytes are sanitized."""
+        self.assertEqual(self.sanitize_filename("../../etc/passwd.pdf"), "passwd.pdf")
+        self.assertEqual(self.sanitize_filename("invoice\x00.pdf"), "invoice.pdf")
+        self.assertEqual(self.sanitize_filename("C:\\Users\\admin\\doc.pdf"), "doc.pdf")
+
+    def test_attachment_download_tenant_isolated(self):
+        """User from Org B cannot download attachment belonging to Org A (returns 404)."""
+        self.client.force_login(self.user_org_b)
+        url = reverse("download-attachment", args=[self.attachment.pk])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 404)
+
+    def test_attachment_download_unauthorized_user_blocked(self):
+        """Unrelated employee in same Org cannot download attachment (returns 403)."""
+        self.client.force_login(self.user_other)
+        url = reverse("download-attachment", args=[self.attachment.pk])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 403)
+
+    def test_attachment_download_owner_authorized(self):
+        """Owner of request can download their attachment."""
+        self.client.force_login(self.user_owner)
+        url = reverse("download-attachment", args=[self.attachment.pk])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+
+class HealthAndAPIDocsTests(TestCase):
+    """
+    Tests verifying public uptime health monitoring, OpenAPI schema,
+    interactive API documentation, and public Security & Architecture page.
+    """
+
+    def test_health_check_returns_200_json(self):
+        """GET /health/ returns HTTP 200 with minimal status JSON."""
+        url = reverse("health_check")
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data["status"], "healthy")
+        self.assertEqual(data["version"], "1.0.0")
+        self.assertIn("timestamp", data)
+        # Ensure no sensitive database credentials or hostnames are leaked
+        self.assertNotIn("password", str(data).lower())
+        self.assertNotIn("postgres", str(data).lower())
+
+    def test_openapi_schema_returns_200_json(self):
+        """GET /api/openapi.json returns valid OpenAPI 3.0 specification."""
+        url = reverse("openapi-schema")
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data["openapi"], "3.0.3")
+        self.assertIn("/health/", data["paths"])
+        self.assertIn("/verify/{token}/", data["paths"])
+
+    def test_api_docs_ui_returns_200(self):
+        """GET /api/docs/ returns interactive Swagger UI."""
+        url = reverse("api-docs")
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b"swagger-ui", response.content)
+
+    def test_security_architecture_page_returns_200(self):
+        """GET /security/ returns public security & architecture specifications."""
+        url = reverse("security_architecture")
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b"Multi-Tenant Isolation Architecture", response.content)
+        self.assertIn(b"QR Token Generation", response.content)
+
 
 

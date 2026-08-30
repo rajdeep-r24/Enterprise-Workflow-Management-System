@@ -1,0 +1,142 @@
+{% extends "public_base.html" %}
+{% load static %}
+
+{% block title %}Security & Architecture — Anukram{% endblock %}
+{% block meta_description %}Technical specifications, multi-tenant isolation model, RBAC matrix, and security architecture of the Anukram Workflow Management System.{% endblock %}
+
+{% block content %}
+<div style="max-width: 960px; margin: 0 auto; padding: calc(var(--sp-16) + 40px) var(--sp-6) var(--sp-20);">
+
+    <!-- Header -->
+    <div style="margin-bottom: var(--sp-12); text-align: center;">
+        <span class="ff-badge ff-badge--primary" style="margin-bottom: var(--sp-4);">
+            <i class="bi bi-shield-check"></i> System Architecture &amp; Security Specs
+        </span>
+        <h1 style="font-size: clamp(32px, 4vw, 48px); font-weight: 800; letter-spacing: var(--tracking-tighter); color: var(--text-primary); line-height: 1.1; margin-bottom: var(--sp-4);">
+            Security by Design. Verified by Implementation.
+        </h1>
+        <p style="font-size: var(--text-lg); color: var(--text-tertiary); max-width: 680px; margin: 0 auto; line-height: var(--leading-relaxed);">
+            Anukram implements deterministic multi-tenant isolation, role-based access control, tamper-evident audit logging, and scannable QR verification.
+        </p>
+    </div>
+
+    <!-- Quick Spec Badges -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--sp-4); margin-bottom: var(--sp-12);">
+        <div style="background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-xl); padding: var(--sp-5); text-align: center;">
+            <div style="font-size: 24px; color: var(--accent); margin-bottom: var(--sp-2);"><i class="bi bi-diagram-3-fill"></i></div>
+            <div style="font-size: var(--text-sm); font-weight: 700; color: var(--text-primary);">Tenant Isolation</div>
+            <div style="font-size: var(--text-xs); color: var(--text-tertiary); margin-top: 4px;">Middleware + DB Scoping</div>
+        </div>
+        <div style="background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-xl); padding: var(--sp-5); text-align: center;">
+            <div style="font-size: 24px; color: var(--success); margin-bottom: var(--sp-2);"><i class="bi bi-person-badge-fill"></i></div>
+            <div style="font-size: var(--text-sm); font-weight: 700; color: var(--text-primary);">8-Tier RBAC</div>
+            <div style="font-size: var(--text-xs); color: var(--text-tertiary); margin-top: 4px;">Deterministic Routing</div>
+        </div>
+        <div style="background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-xl); padding: var(--sp-5); text-align: center;">
+            <div style="font-size: 24px; color: var(--warning); margin-bottom: var(--sp-2);"><i class="bi bi-qr-code-scan"></i></div>
+            <div style="font-size: var(--text-sm); font-weight: 700; color: var(--text-primary);">QR Verification</div>
+            <div style="font-size: var(--text-xs); color: var(--text-tertiary); margin-top: 4px;">UUIDv4 + ReportLab PDF</div>
+        </div>
+        <div style="background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-xl); padding: var(--sp-5); text-align: center;">
+            <div style="font-size: 24px; color: var(--info); margin-bottom: var(--sp-2);"><i class="bi bi-clock-history"></i></div>
+            <div style="font-size: var(--text-sm); font-weight: 700; color: var(--text-primary);">Audit History</div>
+            <div style="font-size: var(--text-xs); color: var(--text-tertiary); margin-top: 4px;">Append-Only Event Trail</div>
+        </div>
+    </div>
+
+    <!-- Section 1: Tenant Isolation -->
+    <div style="background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-2xl); padding: var(--sp-8); margin-bottom: var(--sp-8);">
+        <h2 style="font-size: var(--text-2xl); font-weight: 800; color: var(--text-primary); margin-bottom: var(--sp-4); display: flex; align-items: center; gap: var(--sp-3);">
+            <i class="bi bi-shield-lock" style="color: var(--accent);"></i> 1. Multi-Tenant Isolation Architecture
+        </h2>
+        <p style="font-size: var(--text-md); color: var(--text-secondary); line-height: var(--leading-relaxed); margin-bottom: var(--sp-4);">
+            Anukram enforces strict organization data boundaries at both the application middleware layer and the database query layer:
+        </p>
+        <ul style="color: var(--text-tertiary); font-size: var(--text-sm); line-height: 1.8; margin-left: var(--sp-6); margin-bottom: var(--sp-6);">
+            <li><strong>Tenant Resolution Middleware:</strong> Resolves the authenticated user's organization on every request and assigns <code>request.tenant</code>.</li>
+            <li><strong>Scoped Tenant Managers:</strong> All models inherit from <code>TenantManager</code> / <code>TenantQuerySet</code> providing <code>.for_tenant(organization)</code>, ensuring queries cannot leak foreign records.</li>
+            <li><strong>Automated Isolation Test Suite:</strong> Cross-tenant access attempts return HTTP 404 / 403 and are covered by automated unit tests.</li>
+        </ul>
+        <div style="background: var(--canvas); border: 1px solid var(--border); border-radius: var(--r-lg); padding: var(--sp-4); font-family: monospace; font-size: 13px; color: var(--accent);">
+            Incoming Request → TenantMiddleware (Resolves request.tenant) → Model.objects.for_tenant(request.tenant) → Isolated Record Set
+        </div>
+    </div>
+
+    <!-- Section 2: RBAC & State Machine -->
+    <div style="background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-2xl); padding: var(--sp-8); margin-bottom: var(--sp-8);">
+        <h2 style="font-size: var(--text-2xl); font-weight: 800; color: var(--text-primary); margin-bottom: var(--sp-4); display: flex; align-items: center; gap: var(--sp-3);">
+            <i class="bi bi-bezier2" style="color: var(--success);"></i> 2. Deterministic Multi-Tier State Machine
+        </h2>
+        <p style="font-size: var(--text-md); color: var(--text-secondary); line-height: var(--leading-relaxed); margin-bottom: var(--sp-4);">
+            Requests transition deterministically through defined stages protected by atomic database row locking (<code>select_for_update</code>) to prevent race conditions:
+        </p>
+        <div style="overflow-x: auto; margin-bottom: var(--sp-6);">
+            <table style="width: 100%; border-collapse: collapse; font-size: var(--text-sm); text-align: left;">
+                <thead>
+                    <tr style="border-bottom: 2px solid var(--border); color: var(--text-primary);">
+                        <th style="padding: 10px;">Role</th>
+                        <th style="padding: 10px;">Hierarchy Level</th>
+                        <th style="padding: 10px;">Responsibilities</th>
+                    </tr>
+                </thead>
+                <tbody style="color: var(--text-tertiary);">
+                    <tr style="border-bottom: 1px solid var(--border);">
+                        <td style="padding: 10px; font-weight: 600; color: var(--text-primary);">EMPLOYEE</td>
+                        <td style="padding: 10px;">Level 1</td>
+                        <td style="padding: 10px;">Submit dynamic requests, upload attachments, track status, add request notes.</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid var(--border);">
+                        <td style="padding: 10px; font-weight: 600; color: var(--text-primary);">MANAGER / IT_HEAD / HR_HEAD / UNIT_HEAD</td>
+                        <td style="padding: 10px;">Level 2–4</td>
+                        <td style="padding: 10px;">Review assigned steps, approve/reject with timestamped remarks, download personal history.</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid var(--border);">
+                        <td style="padding: 10px; font-weight: 600; color: var(--text-primary);">ORG_ADMIN / ADMIN</td>
+                        <td style="padding: 10px;">Level 5</td>
+                        <td style="padding: 10px;">Configure workflows, build forms, manage employees, revoke permissions, export full audit CSVs.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Section 3: QR Token & Audit Logging -->
+    <div style="background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-2xl); padding: var(--sp-8); margin-bottom: var(--sp-8);">
+        <h2 style="font-size: var(--text-2xl); font-weight: 800; color: var(--text-primary); margin-bottom: var(--sp-4); display: flex; align-items: center; gap: var(--sp-3);">
+            <i class="bi bi-qr-code" style="color: var(--warning);"></i> 3. QR Token Generation &amp; Audit Trail
+        </h2>
+        <p style="font-size: var(--text-md); color: var(--text-secondary); line-height: var(--leading-relaxed); margin-bottom: var(--sp-4);">
+            Upon final step approval, Anukram generates an unguessable UUIDv4 verification token and official ReportLab PDF voucher:
+        </p>
+        <ul style="color: var(--text-tertiary); font-size: var(--text-sm); line-height: 1.8; margin-left: var(--sp-6);">
+            <li><strong>Live QR Validation:</strong> Physical gate security or auditors scan the QR code to verify token validity in real-time at <code>/verify/{token}/</code>.</li>
+            <li><strong>Revocation Control:</strong> Administrators can revoke permissions instantly with a recorded revocation reason.</li>
+            <li><strong>Append-Oriented Audit Logs:</strong> Every submission, step assignment, approval, remark, and rejection generates an event row in <code>WorkflowEvent</code> exported in UTF-8 BOM CSV format for compliance reviews.</li>
+        </ul>
+    </div>
+
+    <!-- Section 4: File Security & API Documentation -->
+    <div style="background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-2xl); padding: var(--sp-8);">
+        <h2 style="font-size: var(--text-2xl); font-weight: 800; color: var(--text-primary); margin-bottom: var(--sp-4); display: flex; align-items: center; gap: var(--sp-3);">
+            <i class="bi bi-file-earmark-lock" style="color: var(--info);"></i> 4. File Security &amp; API Reference
+        </h2>
+        <p style="font-size: var(--text-md); color: var(--text-secondary); line-height: var(--leading-relaxed); margin-bottom: var(--sp-4);">
+            Uploaded attachments undergo strict validation:
+        </p>
+        <ul style="color: var(--text-tertiary); font-size: var(--text-sm); line-height: 1.8; margin-left: var(--sp-6); margin-bottom: var(--sp-6);">
+            <li><strong>Extension &amp; Size Checks:</strong> Enforces &le; 10MB limit and restricts uploads strictly to safe document and image formats.</li>
+            <li><strong>Binary Magic Byte Inspection:</strong> Blocks disguised executable binaries (PE, ELF) and embedded scripts.</li>
+            <li><strong>Object-Level Access:</strong> Attachment downloads are authorized strictly to the request owner, assigned approver, or organization admin.</li>
+        </ul>
+        <div style="display: flex; gap: var(--sp-4); flex-wrap: wrap;">
+            <a href="{% url 'api-docs' %}" class="ff-btn ff-btn--primary">
+                <i class="bi bi-code-square"></i> Open Interactive API Docs (Swagger UI)
+            </a>
+            <a href="{% url 'health_check' %}" class="ff-btn ff-btn--secondary" target="_blank">
+                <i class="bi bi-heart-pulse"></i> Check Health Status (/health/)
+            </a>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
