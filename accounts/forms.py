@@ -1,5 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm
+from captcha.fields import CaptchaField
+from axes.handlers.proxy import AxesProxyHandler
 
 
 class LoginForm(AuthenticationForm):
@@ -22,6 +24,16 @@ class LoginForm(AuthenticationForm):
             }
         ),
     )
+
+    def __init__(self, request=None, *args, **kwargs):
+        super().__init__(request, *args, **kwargs)
+        if request:
+            failures = AxesProxyHandler.get_failures(request)
+            if failures >= 3:
+                self.fields['captcha'] = CaptchaField(
+                    label="Security Check",
+                    help_text="Please solve this to verify you are human."
+                )
 
 from .models import User
 

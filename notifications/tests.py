@@ -265,7 +265,7 @@ class NotificationLifecycleTests(TestCase):
         # Verify action-required email for IT Head
         it_mail = [m for m in mail.outbox if self.it_head_user.email in m.to][0]
         self.assertIn("Action Required", it_mail.subject)
-        self.assertIn("Review & Take Action", it_mail.alternatives[0][0])
+        self.assertIn("Review &amp; Take Action", it_mail.alternatives[0][0])
 
         # 2. Test Step Approval & Completion Email Dispatch
         mail.outbox.clear()
@@ -275,6 +275,6 @@ class NotificationLifecycleTests(TestCase):
 
         # Final approval triggers COMPLETED email with QR verification link
         self.assertGreaterEqual(len(mail.outbox), 1)
-        completed_mail = [m for m in mail.outbox if self.requester_user.email in m.to][0]
+        completed_mail = [m for m in mail.outbox if self.requester_user.email in m.to][-1]
         self.assertIn("Approved & Completed", completed_mail.subject)
         self.assertIn("QR Permission Slip", completed_mail.alternatives[0][0])

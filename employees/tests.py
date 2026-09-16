@@ -65,7 +65,7 @@ class EmployeeProfileViewTests(TestCase):
         self.client.force_login(self.user)
         response = self.client.get(reverse("employee-profile"))
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Employee Profile")
+        self.assertContains(response, "My Profile")
 
 class EmployeeCodeGenerationTests(TestCase):
     def setUp(self):

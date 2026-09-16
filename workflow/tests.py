@@ -589,3 +589,121 @@ class ApproverResolverTests(TestCase):
                 specific_approver=User.objects.create_user(username="badrole", email="badrole@example.test", password="testpass123"),
             )
 
+
+class WorkflowTransitionSecurityTests(TestCase):
+    """
+    Security and concurrency test suite ensuring:
+    1. Invalid workflow transitions fail cleanly with WorkflowActionError.
+    2. Unauthorized users cannot act on workflow steps.
+    3. Out-of-sequence step execution is strictly blocked.
+    4. Concurrency protection prevents double-approval and duplicate audit events.
+    """
+
+    def setUp(self):
+        self.org = Organization.objects.create(name="Cyber Corp", code="CYBER", email="admin@cyber.test")
+        self.dept = Department.objects.create(organization=self.org, name="Security", code="SEC")
+        self.loc = Location.objects.create(organization=self.org, name="Main Office", code="MAIN", address="1 Tech Way", city="Bangalore", state="KA")
+        self.desig = Designation.objects.create(organization=self.org, name="Analyst", code="ANL")
+
+        self.role_emp, _ = Role.objects.get_or_create(code="EMPLOYEE", defaults={"name": "Employee"})
+        self.role_mgr, _ = Role.objects.get_or_create(code="MANAGER", defaults={"name": "Manager"})
+        self.role_it, _ = Role.objects.get_or_create(code="IT_HEAD", defaults={"name": "IT Head"})
+
+        # Requester
+        self.user_req = User.objects.create_user(username="cyber_emp", email="emp@cyber.test", password="pass")
+        self.emp_req = Employee.objects.create(user=self.user_req, organization=self.org, department=self.dept, location=self.loc, designation=self.desig, role=self.role_emp, employee_code="CYB_01", joining_date="2024-01-01")
+
+        # Manager Approver
+        self.user_mgr = User.objects.create_user(username="cyber_mgr", email="mgr@cyber.test", password="pass")
+        self.emp_mgr = Employee.objects.create(user=self.user_mgr, organization=self.org, department=self.dept, location=self.loc, designation=self.desig, role=self.role_mgr, employee_code="CYB_02", joining_date="2024-01-01")
+
+        # IT Approver
+        self.user_it = User.objects.create_user(username="cyber_it", email="it@cyber.test", password="pass")
+        self.emp_it = Employee.objects.create(user=self.user_it, organization=self.org, department=self.dept, location=self.loc, designation=self.desig, role=self.role_it, employee_code="CYB_03", joining_date="2024-01-01")
+
+        # Unrelated User
+        self.user_stranger = User.objects.create_user(username="cyber_stranger", email="stranger@cyber.test", password="pass")
+        self.emp_stranger = Employee.objects.create(user=self.user_stranger, organization=self.org, department=self.dept, location=self.loc, designation=self.desig, role=self.role_emp, employee_code="CYB_99", joining_date="2024-01-01")
+
+        # 2-Step Workflow: Manager (Step 1) -> IT Head (Step 2)
+        self.wf_def = WorkflowDefinition.objects.create(organization=self.org, name="Security Access", code="SEC_ACC")
+        self.wf_ver = WorkflowVersion.objects.create(workflow=self.wf_def, version=1, is_published=True)
+        self.step_def_1 = WorkflowStepDefinition.objects.create(workflow_version=self.wf_ver, step_order=1, name="Manager Approval", step_type="APPROVAL", approver_type="ROLE", role_code="MANAGER")
+        self.step_def_2 = WorkflowStepDefinition.objects.create(workflow_version=self.wf_ver, step_order=2, name="IT Head Approval", step_type="APPROVAL", approver_type="ROLE", role_code="IT_HEAD")
+        self.step_def_1.next_step = self.step_def_2
+        self.step_def_1.save()
+
+        self.form_def = FormDefinition.objects.create(organization=self.org, name="VPN Access", code="vpn-access", workflow=self.wf_ver, is_published=True)
+
+        # Create active instance
+        self.wf_inst = WorkflowInstance.objects.create(workflow_version=self.wf_ver, organization=self.org, initiated_by=self.user_req, current_step=self.step_def_1, status="IN_PROGRESS")
+        self.submission = FormSubmission.objects.create(form=self.form_def, workflow_instance=self.wf_inst, submitted_by=self.user_req, organization=self.org, status="IN_PROGRESS")
+        self.step_inst_1 = WorkflowStepInstance.objects.create(workflow_instance=self.wf_inst, step_definition=self.step_def_1, assigned_to=self.user_mgr, status="PENDING")
+
+    def test_approve_by_unauthorized_user_rejected(self):
+        """User who is not assigned to the step cannot approve it."""
+        with self.assertRaises(WorkflowActionError) as ctx:
+            WorkflowService.approve(self.step_inst_1, self.user_stranger, remarks="Hacking approval")
+        self.assertIn("assigned approver", str(ctx.exception))
+        self.step_inst_1.refresh_from_db()
+        self.assertEqual(self.step_inst_1.status, "PENDING")
+
+    def test_approve_already_approved_step_rejected(self):
+        """Cannot approve an already approved step."""
+        WorkflowService.approve(self.step_inst_1, self.user_mgr, remarks="First approval")
+        self.step_inst_1.refresh_from_db()
+        self.assertEqual(self.step_inst_1.status, "APPROVED")
+
+        # Second approval attempt on the same step instance
+        with self.assertRaises(WorkflowActionError) as ctx:
+            WorkflowService.approve(self.step_inst_1, self.user_mgr, remarks="Duplicate approval")
+        self.assertIn("Only pending steps", str(ctx.exception))
+
+    def test_approve_already_rejected_step_rejected(self):
+        """Cannot approve an already rejected step."""
+        WorkflowService.reject(self.step_inst_1, self.user_mgr, remarks="Rejected by Manager")
+        self.step_inst_1.refresh_from_db()
+        self.assertEqual(self.step_inst_1.status, "REJECTED")
+
+        with self.assertRaises(WorkflowActionError) as ctx:
+            WorkflowService.approve(self.step_inst_1, self.user_mgr, remarks="Trying to approve after rejection")
+        self.assertIn("Only pending steps", str(ctx.exception))
+
+    def test_approve_out_of_sequence_step_rejected(self):
+        """Cannot approve Step 2 while workflow is currently at Step 1."""
+        step_inst_2 = WorkflowStepInstance.objects.create(
+            workflow_instance=self.wf_inst,
+            step_definition=self.step_def_2,
+            assigned_to=self.user_it,
+            status="PENDING",
+        )
+        # Workflow current_step is still step_def_1
+        with self.assertRaises(WorkflowActionError) as ctx:
+            WorkflowService.approve(step_inst_2, self.user_it, remarks="Skipping ahead")
+        self.assertIn("Only the current step", str(ctx.exception))
+
+    def test_approve_on_completed_workflow_rejected(self):
+        """Cannot approve steps when workflow status is not IN_PROGRESS."""
+        self.wf_inst.status = "APPROVED"
+        self.wf_inst.save()
+
+        with self.assertRaises(WorkflowActionError) as ctx:
+            WorkflowService.approve(self.step_inst_1, self.user_mgr, remarks="Approving completed workflow")
+        self.assertIn("Workflow is not in progress", str(ctx.exception))
+
+    def test_concurrency_protection_prevents_duplicate_audit_events(self):
+        """Sequential double-call simulation verifies single transition and single APPROVED event."""
+        # First execution succeeds
+        WorkflowService.approve(self.step_inst_1, self.user_mgr, remarks="Valid approval")
+        self.step_inst_1.refresh_from_db()
+        self.assertEqual(self.step_inst_1.status, "APPROVED")
+
+        # Second execution immediately fails
+        with self.assertRaises(WorkflowActionError):
+            WorkflowService.approve(self.step_inst_1, self.user_mgr, remarks="Race attempt")
+
+        # Exactly 1 APPROVED event for step 1
+        approved_events = WorkflowEvent.objects.filter(workflow_instance=self.wf_inst, event_type="APPROVED")
+        self.assertEqual(approved_events.count(), 1)
+
+

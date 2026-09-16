@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /dashboard/
+Disallow: /requests/
+Disallow: /approvals/
+Disallow: /departments/
+Disallow: /employees/
+Disallow: /locations/
+Disallow: /designations/
+
+Sitemap: https://anukram.onrender.com/sitemap.xml

@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0F172A"/>
+      <stop offset="50%" stop-color="#1E1B4B"/>
+      <stop offset="100%" stop-color="#0F172A"/>
+    </linearGradient>
+    <linearGradient id="logo-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4F46E5"/>
+      <stop offset="100%" stop-color="#312E81"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="30%" r="60%">
+      <stop offset="0%" stop-color="#4F46E5" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#0F172A" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <circle cx="600" cy="200" r="500" fill="url(#glow)"/>
+
+  <!-- Logo Box -->
+  <g transform="translate(540, 140)">
+    <rect width="120" height="120" rx="28" fill="url(#logo-bg)" stroke="rgba(255,255,255,0.2)" stroke-width="2"/>
+    <path d="M34 62L60 36L86 62L77 71L60 54L43 71L34 62Z" fill="#FFFFFF"/>
+    <path d="M43 82L60 65L77 82L69 90L60 80L51 90L43 82Z" fill="#FFFFFF" fill-opacity="0.65"/>
+    <circle cx="60" cy="38" r="5.5" fill="#38BDF8"/>
+  </g>
+
+  <!-- Typography -->
+  <text x="600" y="340" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="54" font-weight="800" fill="#FFFFFF" letter-spacing="-1.5">Anukram</text>
+  <text x="600" y="390" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="24" font-weight="600" fill="#818CF8" letter-spacing="2">ENTERPRISE WORKFLOW MANAGEMENT SYSTEM</text>
+  
+  <text x="600" y="450" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#94A3B8">Automated Multi-Tier Approval Chains • Activity History • Live QR Verification</text>
+
+  <!-- Badges -->
+  <g transform="translate(360, 500)">
+    <rect width="140" height="38" rx="19" fill="#1E293B" stroke="#334155"/>
+    <text x="70" y="24" text-anchor="middle" font-family="sans-serif" font-size="14" font-weight="600" fill="#E2E8F0">IT Operations</text>
+  </g>
+  <g transform="translate(520, 500)">
+    <rect width="160" height="38" rx="19" fill="#1E293B" stroke="#334155"/>
+    <text x="80" y="24" text-anchor="middle" font-family="sans-serif" font-size="14" font-weight="600" fill="#E2E8F0">Human Resources</text>
+  </g>
+  <g transform="translate(700, 500)">
+    <rect width="140" height="38" rx="19" fill="#1E293B" stroke="#334155"/>
+    <text x="70" y="24" text-anchor="middle" font-family="sans-serif" font-size="14" font-weight="600" fill="#E2E8F0">Finance &amp; Audit</text>
+  </g>
+</svg>

@@ -8,7 +8,7 @@ from forms_engine.models import FormSubmission
 from notifications.services import NotificationService
 
 from ..models.events import WorkflowEvent
-from ..models.instances import WorkflowStepInstance
+from ..models.instances import WorkflowInstance, WorkflowStepInstance
 from .approver_resolver import ApproverResolver
 
 
@@ -22,7 +22,18 @@ class WorkflowService:
     @transaction.atomic
     def approve(step_instance, user, remarks=""):
 
-        workflow = step_instance.workflow_instance
+        # Acquire row lock for atomic state transitions & concurrency protection
+        step_instance = (
+            WorkflowStepInstance.objects
+            .select_for_update()
+            .select_related("workflow_instance", "step_definition")
+            .get(pk=step_instance.pk)
+        )
+        workflow = (
+            WorkflowInstance.objects
+            .select_for_update()
+            .get(pk=step_instance.workflow_instance_id)
+        )
 
         if step_instance.status != "PENDING":
             raise WorkflowActionError("Only pending steps can be approved")
@@ -223,7 +234,18 @@ class WorkflowService:
     @transaction.atomic
     def reject(step_instance, user, remarks=""):
 
-        workflow = step_instance.workflow_instance
+        # Acquire row lock for atomic state transitions & concurrency protection
+        step_instance = (
+            WorkflowStepInstance.objects
+            .select_for_update()
+            .select_related("workflow_instance", "step_definition")
+            .get(pk=step_instance.pk)
+        )
+        workflow = (
+            WorkflowInstance.objects
+            .select_for_update()
+            .get(pk=step_instance.workflow_instance_id)
+        )
 
         if step_instance.status != "PENDING":
             raise WorkflowActionError("Only pending steps can be rejected")
