@@ -38,6 +38,7 @@ urlpatterns = [
     path("security/", config_views.security_architecture, name="security_architecture"),
     path("robots.txt", config_views.robots_txt, name="robots_txt"),
     path("sitemap.xml", config_views.sitemap_xml, name="sitemap_xml"),
+    path("captcha/", include("captcha.urls")),
 ]
 
 if settings.DEBUG:

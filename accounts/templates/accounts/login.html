@@ -262,6 +262,19 @@
                     </div>
                 </div>
 
+                {% if form.captcha %}
+                <div class="ff-field" style="margin-top:var(--sp-4);">
+                    <label class="ff-label" for="{{ form.captcha.id_for_label }}">{{ form.captcha.label }}</label>
+                    <p class="ff-text-xs ff-text-muted" style="margin-bottom:var(--sp-2);">{{ form.captcha.help_text }}</p>
+                    {{ form.captcha }}
+                    {% if form.captcha.errors %}
+                    <div class="ff-text-xs" style="color:var(--danger);margin-top:var(--sp-1);">
+                        {{ form.captcha.errors }}
+                    </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+
                 <button type="submit" class="ff-btn ff-btn--primary ff-btn--block ff-btn--lg" style="margin-top:var(--sp-2);" id="login-submit-btn">
                     Sign in <i class="bi bi-arrow-right" aria-hidden="true"></i>
                 </button>

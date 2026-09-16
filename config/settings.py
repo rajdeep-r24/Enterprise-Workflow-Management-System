@@ -55,6 +55,8 @@ INSTALLED_APPS = [
     'forms_engine',
     'dashboards',
     'notifications',
+    'axes',
+    'captcha',
 ]
 
 MIDDLEWARE = [
@@ -67,6 +69,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'accounts.middleware.LoginRequiredMiddleware',
     'organizations.middleware.TenantMiddleware',
+    'axes.middleware.AxesMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -99,14 +102,16 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": config("DB_NAME"),
-        "USER": config("DB_USER"),
-        "PASSWORD": config("DB_PASSWORD"),
-        "HOST": config("DB_HOST"),
-        "PORT": config("DB_PORT"),
+        "ENGINE": config("DB_ENGINE", default="django.db.backends.postgresql"),
+        "NAME": config("DB_NAME", default="postgres"),
+        "USER": config("DB_USER", default=""),
+        "PASSWORD": config("DB_PASSWORD", default=""),
+        "HOST": config("DB_HOST", default=""),
+        "PORT": config("DB_PORT", default=""),
     }
 }
+if DATABASES["default"]["ENGINE"] == "django.db.backends.sqlite3":
+    DATABASES["default"]["NAME"] = BASE_DIR / config("DB_NAME", default="db.sqlite3")
 
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
@@ -117,6 +122,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
     {
         'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        'OPTIONS': {'min_length': 12}
     },
     {
         'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
@@ -125,6 +131,27 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+
+AUTHENTICATION_BACKENDS = [
+    'axes.backends.AxesStandaloneBackend',
+    'django.contrib.auth.backends.ModelBackend',
+]
+
+# Axes Security Configuration
+AXES_FAILURE_LIMIT = 5  # Lockout or trigger CAPTCHA after 5 attempts
+AXES_COOLOFF_TIME = 1  # 1 hour lockout
+AXES_LOCKOUT_TEMPLATE = 'accounts/lockout.html'
+AXES_USERNAME_FORM_FIELD = 'username'
+AXES_LOCKOUT_PARAMETERS = [["username", "ip_address"]]
+
+# Session & CSRF Security (Phase 3A)
+SESSION_COOKIE_SECURE = not DEBUG  # True in prod
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = 'Lax'    # Strict breaks cross-site POSTs like SAML/OIDC, Lax is standard
+CSRF_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_HTTPONLY = True        # Since we use Django templates, JS doesn't need to read CSRF
+CSRF_COOKIE_SAMESITE = 'Lax'
+
 
 
 # Internationalization
@@ -188,6 +215,7 @@ IS_PRODUCTION = config("PRODUCTION", default=False, cast=bool)
 if IS_PRODUCTION:
     MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')
     STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
     SECURE_SSL_REDIRECT = True
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True

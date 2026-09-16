@@ -1,0 +1,23 @@
+{% extends "public_base.html" %}
+
+{% block title %}Account Locked{% endblock %}
+
+{% block content %}
+<div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gray-50 dark:bg-gray-900">
+    <div class="max-w-md w-full space-y-8 text-center">
+        <div>
+            <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-white">
+                Account Locked
+            </h2>
+            <p class="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
+                You have exceeded the maximum number of login attempts. Please try again later or contact your administrator.
+            </p>
+        </div>
+        <div class="mt-4">
+            <a href="{% url 'login' %}" class="font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400">
+                Return to Login
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

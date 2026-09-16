@@ -91,7 +91,7 @@ def google_callback(request):
     if not employee.is_active:
         return render(request, "accounts/oauth_error.html", {"error": "Your employee profile is inactive."})
 
-    login(request, user)
+    login(request, user, backend='django.contrib.auth.backends.ModelBackend')
     
     next_url = request.session.pop('oauth_next_url', None)
     if next_url:
