@@ -171,6 +171,9 @@ def approval_inbox(request):
             "workflow_instance",
             "workflow_instance__initiated_by",
             "workflow_instance__current_step",
+            "workflow_instance__workflow_version__workflow",
+            "workflow_instance__formsubmission",
+            "workflow_instance__formsubmission__form",
             "step_definition",
         )
         .filter(
